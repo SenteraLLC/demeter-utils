@@ -1,6 +1,6 @@
 language: python
-python: '3.10'
 dist: focal
+python: 3.10.4
 
 before_install:
 - mkdir .ci/keys
