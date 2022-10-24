@@ -174,7 +174,7 @@ typing_inspect = "^0.8.0"
 
 [package.source]
 type = "git"
-url = "git@github.com:SenteraLLC/demeter"
+url = "ssh://git@github.com/SenteraLLC/demeter.git"
 reference = "v1.1.19"
 resolved_reference = "425268b09533bc71d2905eee67402443b3675110"
 
@@ -828,7 +828,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.10.4"
-content-hash = "52dc6ffc6afb079a56de7418abbf4235afc7f5ae99a4e7366a05c2e266b1aa27"
+content-hash = "4079526773aee7dfe6995a8d8c14e3f0eccb17369b6b28b68588ad380659012b"
 
 [metadata.files]
 attrs = [
