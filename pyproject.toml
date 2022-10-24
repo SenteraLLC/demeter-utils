@@ -14,7 +14,7 @@ python-json-logger = "^2.0.2"
 structlog = "^21.5.0"
 timezonefinder = "^6.0.1"
 typing_extensions = "^4.0.1"
-demeter = {git = "ssh://git@github.com:SenteraLLC/demeter", rev="v1.1.19"}
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", rev="v1.1.19"}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
