@@ -167,7 +167,7 @@ typing_inspect = "^0.8.0"
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
 reference = "add-travis-deploy-key"
-resolved_reference = "b7e5ae6748fcd30891ea35ea0caaa28343110dde"
+resolved_reference = "ddb6379c4e4cb44139996a9adafb306a9e146f2a"
 
 [[package]]
 name = "dictdiffer"
