@@ -77,7 +77,7 @@ python-versions = ">=3.6"
 name = "cfgv"
 version = "3.3.1"
 description = "Validate configuration and produce human readable error messages."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6.1"
 
@@ -141,8 +141,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "demeter"
-version = "1.1.19"
-description = ""
+version = "1.1.23"
+description = "The database schema for agronomic modeling and supporting data science activities"
 category = "main"
 optional = false
 python-versions = "~3.10.4"
@@ -152,7 +152,9 @@ develop = false
 boto3 = "^1.20.48"
 dictdiffer = "^0.9.0"
 geopandas = "^0.10.2"
+joblib = "^1.2.0"
 jsonschema = "^4.4.0"
+pre-commit = "^2.20.0"
 psycopg2 = "^2.9.3"
 python-dotenv = "^0.21.0"
 requests = "^2.27.1"
@@ -164,8 +166,8 @@ typing_inspect = "^0.8.0"
 [package.source]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
-reference = "v1.1.19"
-resolved_reference = "425268b09533bc71d2905eee67402443b3675110"
+reference = "add-travis-deploy-key"
+resolved_reference = "b7e5ae6748fcd30891ea35ea0caaa28343110dde"
 
 [[package]]
 name = "dictdiffer"
@@ -185,7 +187,7 @@ tests = ["check-manifest (>=0.42)", "mock (>=1.3.0)", "pytest (==5.4.3)", "pytes
 name = "distlib"
 version = "0.3.6"
 description = "Distribution utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -193,7 +195,7 @@ python-versions = "*"
 name = "filelock"
 version = "3.8.0"
 description = "A platform independent file lock."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -256,7 +258,7 @@ shapely = ">=1.6"
 name = "identify"
 version = "2.5.6"
 description = "File identification library for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -283,6 +285,14 @@ python-versions = "*"
 name = "jmespath"
 version = "1.0.1"
 description = "JSON Matching Expressions"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
+name = "joblib"
+version = "1.2.0"
+description = "Lightweight pipelining with Python functions"
 category = "main"
 optional = false
 python-versions = ">=3.7"
@@ -351,7 +361,7 @@ python-versions = "*"
 name = "nodeenv"
 version = "1.7.0"
 description = "Node.js virtual environment builder"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*"
 
@@ -405,7 +415,7 @@ python-versions = ">=3.7"
 name = "platformdirs"
 version = "2.5.2"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -429,7 +439,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pre-commit"
 version = "2.20.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -557,7 +567,7 @@ python-versions = "*"
 name = "PyYAML"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -659,7 +669,7 @@ six = "*"
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -708,7 +718,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 name = "virtualenv"
 version = "20.16.5"
 description = "Virtual Python Environment builder"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -724,7 +734,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.10.4"
-content-hash = "4935b2b6c9c34537ed500d38b33bdb50cf48af527cfda9b1619a76c6b9f8d8e8"
+content-hash = "c42d292c6ded8bef53b7eca250f59853de2899c9b26311cd5141635098952891"
 
 [metadata.files]
 attrs = [
@@ -839,6 +849,10 @@ iniconfig = [
 jmespath = [
     {file = "jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
     {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
+]
+joblib = [
+    {file = "joblib-1.2.0-py3-none-any.whl", hash = "sha256:091138ed78f800342968c523bdde947e7a305b8594b910a0fea2ab83c3c6d385"},
+    {file = "joblib-1.2.0.tar.gz", hash = "sha256:e1cee4a79e4af22881164f218d4311f60074197fb707e082e803b61f6d137018"},
 ]
 jsonschema = [
     {file = "jsonschema-4.16.0-py3-none-any.whl", hash = "sha256:9e74b8f9738d6a946d70705dc692b74b5429cd0960d58e79ffecfc43b2221eb9"},
