@@ -8,7 +8,7 @@ authors = []
 python = "~3.10.4"
 click = "*"
 psycopg2 = "^2.9.3"
-demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="add-travis-deploy-key"}
+demeter = {git = "git@github.com:SenteraLLC/demeter", branch="add-travis-deploy-key"}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
