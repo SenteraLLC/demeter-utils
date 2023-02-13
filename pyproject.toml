@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "demeter_utils"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level."
 authors = []
 
@@ -8,7 +8,9 @@ authors = []
 python = "~3.10.4"
 click = "*"
 psycopg2 = "^2.9.3"
-demeter = {git = "git@github.com:SenteraLLC/demeter", branch="add-travis-deploy-key"}
+demeter = {git = "git@github.com:SenteraLLC/demeter", branch="main"}
+pandas = "^1.5.3"
+scipy = "^1.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
