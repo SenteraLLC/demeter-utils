@@ -11,7 +11,7 @@ before_install:
 - ssh-add .ci/keys/id_rsa
 
 install:
-- pip install poetry==1.2.1
+- pip install poetry
 - poetry install
 
 script:
