@@ -2,6 +2,8 @@ from typing import Any, Mapping, Union
 
 from pandas import DataFrame, Series
 
+from ..query import basic_demeter_query
+
 
 # TODO: Could (should) this function be performed in place?
 def add_feature(
@@ -40,3 +42,13 @@ def add_feature(
         return fx(**args)
 
     return df.apply(func=lambda row: generalized_fx(row, fx, cols_to_args), axis=1)
+
+
+def get_field_group_name(cursor: Any, field_group_id: int) -> str:
+    """Gets name of field group name based on ID."""
+    return basic_demeter_query(
+        cursor,
+        table="field_group",
+        cols=["name"],
+        conditions={"field_group_id": field_group_id},
+    )["name"].item()

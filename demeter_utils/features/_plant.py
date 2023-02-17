@@ -1,67 +1,12 @@
-"""Feature functions that operate at the row level within a feature matrix dataframe.
-
-Current inventory:
-- get_applied_fertilizer_until_date_for_field_id()
-- get_days_after_planting()
-- get_observation_type_by_date()
-- get_interpolated_observation_value_at_dap()
-- get_area_under_curve_for_observation()
-- get_field_group_name()
-- get_yield_response_to_application()
-
-What will we need for Phase IV for ABI?
-- get_max_ndvi_for_field()
-- estimate_growth_stage_on_ref_date()
-- get_summarized_weather_variable_by_growth_stage()
-- get_summarized_weather_variable_for_season()
-- get_soil_for_field_id()
-"""
-
 from datetime import datetime
 from typing import Any, List, Union
 
 from numpy import linspace, nan, trapz
-from pandas import NA, DataFrame, Series, Timedelta, merge_asof
+from pandas import NA, DataFrame, Series
 from scipy.interpolate import interp1d
 
-from ..query import basic_demeter_query, get_as_applied, get_obs_type_and_unit_colname
+from ..query import basic_demeter_query
 from ._utils import add_feature
-
-
-def get_applied_fertilizer_until_date_for_field_id(
-    cursor: Any,
-    field_id: int,
-    date_limit: datetime,
-    nutrient: str,
-    method: Union[str, None] = None,
-) -> float:
-    """For a given field ID, gets sum of fertilizer applied for a specified nutrient and, if given, method up until a specified date.
-
-    Args:
-        cursor: Connection to Demeter database.
-        field_id (int): Demeter field ID to find application data for.
-        date_limit (datetime): Reference date to sum application rate information up until to.
-        nutrient (str): Applied nutrient to consider.
-        method (str): Application method to consider; if not given, all methods are considered.
-    """
-    # get all fertilizer activity for this `field_id`
-    df_applied_full = get_as_applied(
-        cursor, field_id=field_id, colname_date="date_performed"
-    )
-
-    # reduce based on end date
-    df_apps = df_applied_full.loc[df_applied_full["date_performed"] < date_limit]
-
-    # if no rows left, then return 0
-    if len(df_apps) == 0:
-        return 0
-
-    # filter on nutrient and method (if available)
-    df_apps = df_apps.loc[df_apps["nutrient"] == nutrient]
-    if method is not None:
-        df_apps = df_apps.loc[df_apps["method"] == method]
-
-    return float(df_apps["rate_lbs_acre"].sum())
 
 
 def get_days_after_planting(
@@ -103,100 +48,6 @@ def get_days_after_planting(
     diff = reference_date - planting_date
 
     return diff.days
-
-
-def get_observation_type_by_date(
-    cursor: Any,
-    field_id: int,
-    reference_date: datetime,
-    obs_type_id: int,
-    unit_type_id: int,
-    date_tol: int = 4,
-    include_date: bool = True,
-    direction: str = "nearest",
-) -> Any:
-    """Get observation of `obs_type_id` and `unit_type_id` for `field_id` that is within `date_tol` days of `reference date`.
-
-    If `include_date` is True, include the actual observation date of the observation as a
-    column in a two-column Series. Otherwise, only return the observed value as a float.
-    If no data matches constraints, then return NA values.
-
-    Args:
-        cursor: Connection to Demeter database.
-        field_id (int): Field ID to look for observations.
-        reference_date (datetime): The reference date to match to observations within `date_tol`
-        obs_type_id (int): Observation type ID to find data for.
-        unit_type_id (int): Unit type ID to find data for.
-
-        date_tol (tol): Maximum difference between observation date and the reference date to
-            consider for the fuzzy match; measured in days and defaults to 4 days.
-
-        include_date (bool): If True, the observation date of the matched observation will be included
-            as a column in a Series. Otherwise, only the value is returned. Defaults to True.
-
-        direction (str): Direct reference to `direction` argument in pandas.merge_asof(); from docs:
-            "Whether to search for prior ('backward'), subsequent ('forward'), or closest ('nearest')
-            matches." Defaults to 'nearest'.
-    """
-
-    msg = "`direction` must be 'backward', 'forward', or 'nearest'"
-    assert direction in [
-        "backward",
-        "forward",
-        "nearest",
-    ], msg
-
-    # figure out column names for final dataframe
-    formatted_colname = get_obs_type_and_unit_colname(
-        cursor, observation_type_id=obs_type_id, unit_type_id=unit_type_id
-    )
-    cols_keep = (
-        ["date_observed", formatted_colname] if include_date else formatted_colname
-    )
-
-    # create dataframe with data constraints
-    df_to_match = DataFrame(
-        {"field_id": [field_id], "reference_date": [reference_date]}
-    )
-
-    # get all observations of this type for this field
-    obs_cols = [
-        "observation_type_id",
-        "unit_type_id",
-        "field_id",
-        "date_observed",
-        "value_observed",
-    ]
-    df_obs = basic_demeter_query(
-        cursor,
-        table="observation",
-        cols=obs_cols,
-        conditions={
-            "observation_type_id": obs_type_id,
-            "unit_type_id": unit_type_id,
-            "field_id": field_id,
-        },
-    )
-
-    # handle lack of data
-    if df_obs is None:
-        df_null = DataFrame(nan, index=[0], columns=cols_keep)
-        return df_null.loc[0]
-
-    # do fuzzy merge based on given date tolerance
-    df_matched = merge_asof(
-        df_to_match,
-        df_obs.sort_values(["date_observed"]),
-        by=["field_id"],
-        left_on="reference_date",
-        right_on="date_observed",
-        tolerance=Timedelta(value=date_tol, unit="days"),
-        direction=direction,
-    )
-
-    df_matched.rename(columns={"value_observed": formatted_colname}, inplace=True)
-
-    return df_matched.loc[0, cols_keep]
 
 
 def get_interpolated_observation_value_at_dap(
@@ -361,42 +212,3 @@ def get_area_under_curve_for_observation(
         }
     )
     return df_final.loc[0]
-
-
-def get_field_group_name(cursor: Any, field_group_id: int) -> str:
-    """Gets name of field group name based on ID."""
-    return basic_demeter_query(
-        cursor,
-        table="field_group",
-        cols=["name"],
-        conditions={"field_group_id": field_group_id},
-    )["name"].item()
-
-
-def get_yield_response_to_application(
-    control_yield: float,
-    treatment_yield: float,
-    treatment_application_rate: float,
-    control_application_rate: float = 0,
-) -> float:
-    """Calculates yield response to an application rate relative to a `control_yield`.
-
-    If difference in application rate between treatment and control is 0, then NA is returned.
-
-    Args:
-        control_yield (float): Reference value of yield to which `treatment_yield` should be compared (often the mean control yield for a site);
-            should be given in units of mass or volume per acre (e.g., bu/acre).
-
-        treatment_yield (float): Value of yield measured for treatment area, where response should be measured; should be given in units of mass
-            or volume per acre (e.g., bu/acre).
-
-        treatment_application_rate (float): Application rate of product applied to treatment area; should be given in units normalized by acre
-
-        control_application_rate (float): Application rate of product applied to control area; should be given in the same units as `treatment_application_rate`.
-            Value defaults to 0.
-    """
-    rate_diff = treatment_application_rate - control_application_rate
-    if rate_diff > 0:
-        return (treatment_yield - control_yield) / rate_diff
-    else:
-        return nan
