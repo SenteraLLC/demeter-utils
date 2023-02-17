@@ -51,6 +51,7 @@ def format_conditions_dict(conditions):
             formatted_conditions = formatted_conditions + [
                 where_col_value_equals_value(key)
             ]
+    return formatted_conditions
 
 
 def format_select_cols(cols: Union[List[str], str, None]):
