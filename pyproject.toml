@@ -7,17 +7,27 @@ authors = []
 [tool.poetry.dependencies]
 python = "~3.10.4"
 click = "*"
-psycopg2 = "^2.9.3"
-demeter = {git = "git@github.com:SenteraLLC/demeter", branch="main"}
 pandas = "^1.5.3"
+psycopg2 = "^2.9.3"
 scipy = "^1.10.0"
+demeter = {git = "git@github.com:SenteraLLC/demeter", branch="main"}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pre-commit = "*"
 sure = "^2.0"
-flake8 = "^4.0"
+flake8 = "^5.0.4"
 black = {version = "^22.6", allow-prereleases = true}
+ipywidgets = "^7.7"
+ipykernel = "^6.15"
+pyppeteer = "^1.0.2"
+jupyterlab = "^3.4.3"
+pyparsing = "^3.0.9"
+types-jsonschema = "^4.4.1"
+pandas-stubs = "^1.2.0"
+mypy = "^0.950"
+mypy-extensions = "^0.4.3"
+
 
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"

@@ -4,3 +4,4 @@ __pycache__/
 *.egg*
 _build/
 .ci/keys/
+scripts/
