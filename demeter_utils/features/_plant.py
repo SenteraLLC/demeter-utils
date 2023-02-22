@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Any, List, Union
 
-from numpy import linspace, nan, trapz
+from numpy import nan, trapz
 from pandas import NA, DataFrame, Series
 from scipy.interpolate import interp1d
 
 from ..query import basic_demeter_query
-from ._utils import add_feature
+from ._utils import add_feature, interpolate_time_series
 
 
 def get_days_after_planting(
@@ -192,12 +192,13 @@ def get_area_under_curve_for_observation(
 
     # maybe fit interpolation function and then integrate
     if interpolate:
-        fx_interpolated = interp1d(df_obs["dap"], df_obs["value_observed"], kind=kind)
-        if dap_bounds is None:
-            xx = linspace(start=df_obs["dap"].min(), stop=df_obs["dap"].max(), num=n_dx)
-        else:
-            xx = linspace(start=dap_bounds[0], stop=dap_bounds[1], num=n_dx)
-        yy = fx_interpolated(xx)
+        xx, yy = interpolate_time_series(
+            x=df_obs["dap"].to_list(),
+            y=df_obs["value_observed"].to_list(),
+            kind=kind,
+            x_bounds=dap_bounds,
+            n_dx=n_dx,
+        )
         auc = trapz(y=yy, x=xx)
     else:
         auc = trapz(y=df_obs["value_observed"].to_list(), x=df_obs["dap"].to_list())
