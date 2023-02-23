@@ -316,18 +316,18 @@ css = ["tinycss2 (>=1.1.0,<1.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.76"
+version = "1.26.77"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.76-py3-none-any.whl", hash = "sha256:b4c2969b7677762914394b8273cc1905dfe5b71f250741c1a575487ae357e729"},
-    {file = "boto3-1.26.76.tar.gz", hash = "sha256:30c7d967ed1c6b5a05643e42cae9d4d36c3f1cb6782637ddc7007a104cfd9027"},
+    {file = "boto3-1.26.77-py3-none-any.whl", hash = "sha256:17f0d782487275cac12676a61b3f1a4900954cc454c842b8551ca47a3dcd59b4"},
+    {file = "boto3-1.26.77.tar.gz", hash = "sha256:bf808f7433629650128ab577a9d4a0f4daf072d9f2f3a907b9d567a6952d9154"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.76,<1.30.0"
+botocore = ">=1.29.77,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -336,14 +336,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.76"
-description = "Type annotations for boto3 1.26.76 generated with mypy-boto3-builder 7.12.4"
+version = "1.26.77"
+description = "Type annotations for boto3 1.26.77 generated with mypy-boto3-builder 7.12.4"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.76.tar.gz", hash = "sha256:160262a2b5bbb82c74df528085c74ab513e70875d894bde7b4a5cd1b7e765a2e"},
-    {file = "boto3_stubs-1.26.76-py3-none-any.whl", hash = "sha256:1acf751d33a66dbf49cd6d64efaa5767f7a7b2d8b2f09a56bf38516c307ec3b0"},
+    {file = "boto3-stubs-1.26.77.tar.gz", hash = "sha256:a828b1d9b97b989d0ce127550f5e66fc5f08f5fd4d96fd59c73dd68de7dd598d"},
+    {file = "boto3_stubs-1.26.77-py3-none-any.whl", hash = "sha256:e32f2bf20fd1be6c813cb6f53ca0d42ab609d88c4865068340a0f4b7c256478a"},
 ]
 
 [package.dependencies]
@@ -386,7 +386,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.76)", "botocore (==1.29.76)"]
+boto3 = ["boto3 (==1.26.77)", "botocore (==1.29.77)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -698,14 +698,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.76"
+version = "1.29.77"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.76-py3-none-any.whl", hash = "sha256:70735b00cd529f152992231ca6757e458e5ec25db43767b3526e9a35b2f143b7"},
-    {file = "botocore-1.29.76.tar.gz", hash = "sha256:c2f67b6b3f8acf2968eafca06526f07b9fb0d27bac4c68a635d51abb675134a7"},
+    {file = "botocore-1.29.77-py3-none-any.whl", hash = "sha256:d8aa7bffe2422de282b2d02945b7b45d5fecf00f67b65eebb0b1fa3de1abc6d0"},
+    {file = "botocore-1.29.77.tar.gz", hash = "sha256:9d94a02f2584b52c65fb3cb309fb1b29d6d0c36d69062722b0275c1c382c44c9"},
 ]
 
 [package.dependencies]
@@ -718,14 +718,14 @@ crt = ["awscrt (==0.16.9)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.29.76"
+version = "1.29.77"
 description = "Type annotations and code completion for botocore"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.29.76-py3-none-any.whl", hash = "sha256:208525a7a3f4fd88cb68ea9f3526773f60eeb1e7aab96beaadd4ecf312a66d12"},
-    {file = "botocore_stubs-1.29.76.tar.gz", hash = "sha256:3eb718c4b5ac99fc2f5be539db04d6f568d69569dc991447b3782d6a1f2179f2"},
+    {file = "botocore_stubs-1.29.77-py3-none-any.whl", hash = "sha256:315ea248f45994aeee888f5c3fe484565bc6fa919406a39ce58bc4a2771c2f8a"},
+    {file = "botocore_stubs-1.29.77.tar.gz", hash = "sha256:8f102b2bb881948bda18c3d4d4bd92d82125c9632ef11311594a2dd6c5981afc"},
 ]
 
 [package.dependencies]
@@ -1101,7 +1101,7 @@ files = [
 name = "defusedxml"
 version = "0.7.1"
 description = "XML bomb protection for Python stdlib modules"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
@@ -1147,7 +1147,7 @@ utils = {git = "ssh://git@github.com/SenteraLLC/py-utils.git", branch = "master"
 
 [package.source]
 type = "git"
-url = "git@github.com:SenteraLLC/demeter"
+url = "ssh://git@github.com/SenteraLLC/demeter.git"
 reference = "main"
 resolved_reference = "47fe5ef21c7cd9d1d6352770a15af6d8289f1b37"
 
@@ -1661,6 +1661,33 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "jira"
+version = "3.4.1"
+description = "Python library for interacting with JIRA via REST APIs."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "jira-3.4.1-py3-none-any.whl", hash = "sha256:9b1286a3eada593bb1c83e12989dc2e7c796867523049fa6a680c3a2757e4d17"},
+    {file = "jira-3.4.1.tar.gz", hash = "sha256:20e2df51cc686f663034543c4dec65783e9c721de6448b433d659d5c95b01c7b"},
+]
+
+[package.dependencies]
+defusedxml = "*"
+packaging = "*"
+requests = ">=2.10.0"
+requests-oauthlib = ">=1.1.0"
+requests-toolbelt = "*"
+typing-extensions = ">=3.7.4.2"
+
+[package.extras]
+async = ["requests-futures (>=0.9.7)"]
+cli = ["ipython (>=4.0.0)", "keyring"]
+docs = ["furo", "sphinx (>=5.0.0)", "sphinx-copybutton"]
+opt = ["PyJWT", "filemagic (>=1.6)", "requests-jwt", "requests-kerberos"]
+test = ["MarkupSafe (>=0.23)", "PyYAML (>=5.1)", "docutils (>=0.12)", "flaky", "oauthlib", "parameterized (>=0.8.1)", "py (>=1.4)", "pytest (>=6.0.0)", "pytest-cache", "pytest-cov", "pytest-instafail", "pytest-sugar", "pytest-timeout (>=1.3.1)", "pytest-xdist (>=2.2)", "requests-mock", "requires.io", "tenacity", "wheel (>=0.24.0)", "xmlrunner (>=1.7.7)", "yanc (>=0.3.3)"]
 
 [[package]]
 name = "jmespath"
@@ -2430,6 +2457,23 @@ files = [
 ]
 
 [[package]]
+name = "oauthlib"
+version = "3.2.2"
+description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
+    {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
+]
+
+[package.extras]
+rsa = ["cryptography (>=3.0.0)"]
+signals = ["blinker (>=1.4.0)"]
+signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
+
+[[package]]
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
@@ -2641,14 +2685,14 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "3.0.4"
+version = "3.1.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pre_commit-3.0.4-py2.py3-none-any.whl", hash = "sha256:9e3255edb0c9e7fe9b4f328cb3dc86069f8fdc38026f1bf521018a05eaf4d67b"},
-    {file = "pre_commit-3.0.4.tar.gz", hash = "sha256:bc4687478d55578c4ac37272fe96df66f73d9b5cf81be6f28627d4e712e752d5"},
+    {file = "pre_commit-3.1.0-py2.py3-none-any.whl", hash = "sha256:7001dfcd174540658822b1fd3630ceadf4f41375a5d1844b5c3b3830f227348c"},
+    {file = "pre_commit-3.1.0.tar.gz", hash = "sha256:61bd9f1b96d3d1e763f2a9a0f8522aed341646800642ff6803c73fac5781f5b7"},
 ]
 
 [package.dependencies]
@@ -3268,6 +3312,40 @@ urllib3 = ">=1.21.1,<1.27"
 [package.extras]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
+
+[[package]]
+name = "requests-oauthlib"
+version = "1.3.1"
+description = "OAuthlib authentication support for Requests."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-oauthlib-1.3.1.tar.gz", hash = "sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a"},
+    {file = "requests_oauthlib-1.3.1-py2.py3-none-any.whl", hash = "sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5"},
+]
+
+[package.dependencies]
+oauthlib = ">=3.0.0"
+requests = ">=2.0.0"
+
+[package.extras]
+rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
+
+[[package]]
+name = "requests-toolbelt"
+version = "0.10.1"
+description = "A utility belt for advanced users of python-requests"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-toolbelt-0.10.1.tar.gz", hash = "sha256:62e09f7ff5ccbda92772a29f394a49c3ad6cb181d568b1337626b2abb628a63d"},
+    {file = "requests_toolbelt-0.10.1-py2.py3-none-any.whl", hash = "sha256:18565aa58116d9951ac39baa288d3adb5b3ff975c4f25eee78555d89e8f247f7"},
+]
+
+[package.dependencies]
+requests = ">=2.0.1,<3.0.0"
 
 [[package]]
 name = "retrying"
@@ -4002,11 +4080,12 @@ version = "3.2.2"
 description = "Python utilities"
 category = "main"
 optional = false
-python-versions = "^3.7"
+python-versions = "^3.8"
 files = []
 develop = false
 
 [package.dependencies]
+jira = "^3.4.1"
 numpy = "*"
 requests = "*"
 retrying = "*"
@@ -4017,7 +4096,7 @@ visvalingamwyatt = "0.1.2"
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/py-utils.git"
 reference = "master"
-resolved_reference = "2c45f1a79df0d2dc1eedf936767c149d4d9195d3"
+resolved_reference = "2f6d3d73b2207eba49a9305d63f8364f1b61f40b"
 
 [[package]]
 name = "virtualenv"
@@ -4320,4 +4399,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "25e1296d4fc9f8908cfa5ef7c635724c1aeb72760b71140d6190dc293ec80ad5"
+content-hash = "9a5205400741dc4876e3c28ae2042e985b2de6a39eb9d9d7634c558d1405d2aa"

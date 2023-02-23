@@ -10,7 +10,7 @@ click = "*"
 pandas = "^1.5.3"
 psycopg2 = "^2.9.3"
 scipy = "^1.10.0"
-demeter = {git = "git@github.com:SenteraLLC/demeter", branch="main"}
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
