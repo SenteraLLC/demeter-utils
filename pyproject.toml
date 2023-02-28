@@ -12,25 +12,24 @@ psycopg2 = "^2.9.3"
 scipy = "^1.10.0"
 demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.scripts]
+demeter_utils = "demeter_utils.cli:cli"
+
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 pre-commit = "*"
-sure = "^2.0"
+sure = "^2.0.1"
 flake8 = "^5.0.4"
-black = {version = "^23.1", allow-prereleases = true}
+black = "^23.1.0"
 ipywidgets = "^7.7"
-ipykernel = "^6.15"
+ipykernel = "^6.21.2"
 pyppeteer = "^1.0.2"
-jupyterlab = "^3.4.3"
+jupyterlab = "^3.6.1"
 pyparsing = "^3.0.9"
 types-jsonschema = "^4.4.1"
 pandas-stubs = "^1.2.0"
 mypy = "^0.950"
 mypy-extensions = "^0.4.3"
-
-
-[tool.poetry.scripts]
-demeter_utils = "demeter_utils.cli:cli"
 
 [tool.isort]
 line_length = 88
