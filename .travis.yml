@@ -3,6 +3,7 @@ dist: focal
 python: 3.10.4
 
 install:
+- pip install virtualenv
 - pip install poetry
 - poetry install
 
