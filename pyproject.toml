@@ -1,24 +1,35 @@
 [tool.poetry]
 name = "demeter_utils"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level."
 authors = []
 
 [tool.poetry.dependencies]
 python = "~3.10.4"
 click = "*"
+pandas = "^1.5.3"
 psycopg2 = "^2.9.3"
-demeter = {git = "git@github.com:SenteraLLC/demeter", branch="add-travis-deploy-key"}
-
-[tool.poetry.dev-dependencies]
-pytest = "*"
-pre-commit = "*"
-sure = "^2.0"
-flake8 = "^4.0"
-black = {version = "^22.6", allow-prereleases = true}
+scipy = "^1.10.0"
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
 
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pre-commit = "*"
+sure = "^2.0.1"
+flake8 = "^5.0.4"
+black = "^23.1.0"
+ipywidgets = "^7.7"
+ipykernel = "^6.21.2"
+pyppeteer = "^1.0.2"
+jupyterlab = "^3.6.1"
+pyparsing = "^3.0.9"
+types-jsonschema = "^4.4.1"
+pandas-stubs = "^1.2.0"
+mypy = "^0.950"
+mypy-extensions = "^0.4.3"
 
 [tool.isort]
 line_length = 88
