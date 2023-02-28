@@ -17,7 +17,7 @@ pytest = "*"
 pre-commit = "*"
 sure = "^2.0"
 flake8 = "^5.0.4"
-black = {version = "^22.6", allow-prereleases = true}
+black = {version = "^23.1", allow-prereleases = true}
 ipywidgets = "^7.7"
 ipykernel = "^6.15"
 pyppeteer = "^1.0.2"
