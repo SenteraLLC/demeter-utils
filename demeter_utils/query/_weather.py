@@ -36,7 +36,8 @@ def query_daily_weather(
         coordinate_list (List[Point]): Spatial coordinates to query (must be lat/lng/WGS-84).
         startdate (datetime): Start date of the query (inclusive); e.g., `date(2023, 3, 28)`.
         startdate (datetime): End date of the query (inclusive); e.g., `date(2023, 3, 28)`.
-        parameters (List)
+        parameters (List): Weather parameters to retrieve weather data for. Must be present in `weather_types` table.
+        wide (bool): If `True`, return data in the wide format; if `False`, return data in the long/tidy format.
 
     Returns:
         GeoDataFrame: With weather data for all coordinates and parameters between startdate and enddate (inclusive).
