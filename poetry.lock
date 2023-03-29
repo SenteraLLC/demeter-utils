@@ -366,18 +366,18 @@ css = ["tinycss2 (>=1.1.0,<1.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.26.100"
+version = "1.26.101"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.100-py3-none-any.whl", hash = "sha256:b5be5bcffe17d70a72622f8ecbb428df7b11ef8d1facdfa984e94c6fc9fa301b"},
-    {file = "boto3-1.26.100.tar.gz", hash = "sha256:567f03ac638c3a6f4af00d88d081df7d6b8de4d127a26543c4ec1e7509e1a626"},
+    {file = "boto3-1.26.101-py3-none-any.whl", hash = "sha256:5f5279a63b359ba8889e9a81b319e745b14216608ffb5a39fcbf269d1af1ea83"},
+    {file = "boto3-1.26.101.tar.gz", hash = "sha256:670ae4d1875a2162e11c6e941888817c3e9cf1bb9a3335b3588d805b7d24da31"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.100,<1.30.0"
+botocore = ">=1.29.101,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -386,14 +386,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.26.100"
-description = "Type annotations for boto3 1.26.100 generated with mypy-boto3-builder 7.14.4"
+version = "1.26.101"
+description = "Type annotations for boto3 1.26.101 generated with mypy-boto3-builder 7.14.4"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "boto3-stubs-1.26.100.tar.gz", hash = "sha256:744d090e1cdb42668e5a3706d95345d4cd70455485d66b30cdb2bde7a8db6d74"},
-    {file = "boto3_stubs-1.26.100-py3-none-any.whl", hash = "sha256:3d00405316e561d951078774e3ee90ab2bf710a9be631062ba5ebd83b612594a"},
+    {file = "boto3-stubs-1.26.101.tar.gz", hash = "sha256:10407d80aecb1aeaea1f092d10c3d651989dce27042e053aeb81af92c1fe7ef9"},
+    {file = "boto3_stubs-1.26.101-py3-none-any.whl", hash = "sha256:468e293342ebe195d730d992c355f7f5ce6351470bb3ddf0345741a77844f007"},
 ]
 
 [package.dependencies]
@@ -435,7 +435,7 @@ backup-gateway = ["mypy-boto3-backup-gateway (>=1.26.0,<1.27.0)"]
 backupstorage = ["mypy-boto3-backupstorage (>=1.26.0,<1.27.0)"]
 batch = ["mypy-boto3-batch (>=1.26.0,<1.27.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.26.0,<1.27.0)"]
-boto3 = ["boto3 (==1.26.100)", "botocore (==1.29.100)"]
+boto3 = ["boto3 (==1.26.101)", "botocore (==1.29.101)"]
 braket = ["mypy-boto3-braket (>=1.26.0,<1.27.0)"]
 budgets = ["mypy-boto3-budgets (>=1.26.0,<1.27.0)"]
 ce = ["mypy-boto3-ce (>=1.26.0,<1.27.0)"]
@@ -749,14 +749,14 @@ xray = ["mypy-boto3-xray (>=1.26.0,<1.27.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.100"
+version = "1.29.101"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.100-py3-none-any.whl", hash = "sha256:d5c4c5bbbbf0ec62a4235ccac1b9bbb579558f7bb3231d7fb6054e1f64d3a623"},
-    {file = "botocore-1.29.100.tar.gz", hash = "sha256:ff6585df3dcef2057be5e54b45d254608d3769d726ea4ccd4e17f77825e5b13d"},
+    {file = "botocore-1.29.101-py3-none-any.whl", hash = "sha256:60c7a7bf8e2a288735e507007a6769be03dc24815f7dc5c7b59b12743f4a31cf"},
+    {file = "botocore-1.29.101.tar.gz", hash = "sha256:7bb60d9d4c49500df55dfb6005c16002703333ff5f69dada565167c8d493dfd5"},
 ]
 
 [package.dependencies]
@@ -769,14 +769,14 @@ crt = ["awscrt (==0.16.9)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.29.100"
+version = "1.29.101"
 description = "Type annotations and code completion for botocore"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.29.100-py3-none-any.whl", hash = "sha256:1afe81ed4f1965eb4347c5496afe166f36a93d39a1c9a22b5bb252180cb614a9"},
-    {file = "botocore_stubs-1.29.100.tar.gz", hash = "sha256:da6c8b8f83950b5fe649eb79725d1e8350468ff21057c42a6b01a77a9e72cf17"},
+    {file = "botocore_stubs-1.29.101-py3-none-any.whl", hash = "sha256:805fa19d0434d4c81643daeb426835fd1c78d2fdd4d24acafe01ae0278448231"},
+    {file = "botocore_stubs-1.29.101.tar.gz", hash = "sha256:ddaec95b33da67e212db8e3ff235c65c3d172bb7e43955f3315114943ab7487e"},
 ]
 
 [package.dependencies]
@@ -1741,22 +1741,23 @@ files = [
 
 [[package]]
 name = "ipywidgets"
-version = "7.7.4"
+version = "7.7.5"
 description = "IPython HTML widgets for Jupyter"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ipywidgets-7.7.4-py2.py3-none-any.whl", hash = "sha256:295b7c9ba2c2e9d0c720b15bfe1f7c082db83540864d3ebc5bf57c92ae008bd6"},
-    {file = "ipywidgets-7.7.4.tar.gz", hash = "sha256:e2cca1f95b4b8e96e5c2c6ac7cfebacafb924a473df94a243a5e68b7b23172c7"},
+    {file = "ipywidgets-7.7.5-py2.py3-none-any.whl", hash = "sha256:d9644e473282ca28a6bc0327372bcad7a41877d0092fea1ed70bd15f28be9270"},
+    {file = "ipywidgets-7.7.5.tar.gz", hash = "sha256:2392943ed30253c84ac36f23f707fa1c9d34461ae5356944481a84d5b08d69b2"},
 ]
 
 [package.dependencies]
+ipykernel = ">=4.5.1"
 ipython = {version = ">=4.0.0", markers = "python_version >= \"3.3\""}
 ipython-genutils = ">=0.2.0,<0.3.0"
 jupyterlab-widgets = {version = ">=1.0.0,<3", markers = "python_version >= \"3.6\""}
 traitlets = ">=4.3.1"
-widgetsnbextension = ">=3.6.0,<3.7.0"
+widgetsnbextension = ">=3.6.4,<3.7.0"
 
 [package.extras]
 test = ["ipykernel", "mock", "pytest (>=3.6.0)", "pytest-cov"]
@@ -2188,14 +2189,14 @@ test = ["codecov", "hatch", "ipykernel", "jupyterlab-server[openapi]", "openapi-
 
 [[package]]
 name = "jupyterlab-widgets"
-version = "1.1.3"
+version = "1.1.4"
 description = "A JupyterLab extension."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "jupyterlab_widgets-1.1.3-py3-none-any.whl", hash = "sha256:93f59c2f848ebdb3c87195c18bc7360eddbc05ddb17f676ea1d8bfba9229b1f5"},
-    {file = "jupyterlab_widgets-1.1.3.tar.gz", hash = "sha256:5285a4316e13f9a6512cb80a0cfec5aafa2c336097ae077a07a60c145f2154fc"},
+    {file = "jupyterlab_widgets-1.1.4-py3-none-any.whl", hash = "sha256:769eb7bfef7e8ab70a7737104555531b09bcfba982f89465d2ae67b99b3f3e81"},
+    {file = "jupyterlab_widgets-1.1.4.tar.gz", hash = "sha256:ea6e7612725e94d0966d64c6344910686f4bf8610533cd40daeba6980659b14d"},
 ]
 
 [[package]]
@@ -3878,14 +3879,14 @@ win32 = ["pywin32"]
 
 [[package]]
 name = "setuptools"
-version = "67.6.0"
+version = "67.6.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.6.0-py3-none-any.whl", hash = "sha256:b78aaa36f6b90a074c1fa651168723acbf45d14cb1196b6f02c0fd07f17623b2"},
-    {file = "setuptools-67.6.0.tar.gz", hash = "sha256:2ee892cd5f29f3373097f5a814697e397cf3ce313616df0af11231e2ad118077"},
+    {file = "setuptools-67.6.1-py3-none-any.whl", hash = "sha256:e728ca814a823bf7bf60162daf9db95b93d532948c4c0bea762ce62f60189078"},
+    {file = "setuptools-67.6.1.tar.gz", hash = "sha256:257de92a9d50a60b8e22abfcbb771571fde0dbf3ec234463212027a4eeecbe9a"},
 ]
 
 [package.extras]
@@ -4213,14 +4214,14 @@ test = ["pre-commit", "pytest (>=7.0)", "pytest-timeout"]
 
 [[package]]
 name = "timezonefinder"
-version = "6.1.10"
+version = "6.2.0"
 description = "fast python package for finding the timezone of any point on earth (coordinates) offline"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4"
 files = [
-    {file = "timezonefinder-6.1.10-cp38-cp38-manylinux_2_35_x86_64.whl", hash = "sha256:024d5422016fc807ca253cba9395bf5176d9efcc5f65d526ef125ea36e808775"},
-    {file = "timezonefinder-6.1.10.tar.gz", hash = "sha256:a7df1aa559789b42bc9a4187ded03668b43221b8f9019d5e66156512b891902a"},
+    {file = "timezonefinder-6.2.0-cp38-cp38-manylinux_2_35_x86_64.whl", hash = "sha256:06aa5926ed31687ea9eb00ab53203631f09a78f307285b4929da4ac4e2889240"},
+    {file = "timezonefinder-6.2.0.tar.gz", hash = "sha256:d41fd2650bb4221fae5a61f9c2767158f9727c4aaca95e24da86394feb704220"},
 ]
 
 [package.dependencies]
@@ -4387,14 +4388,14 @@ files = [
 
 [[package]]
 name = "types-requests"
-version = "2.28.11.16"
+version = "2.28.11.17"
 description = "Typing stubs for requests"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-requests-2.28.11.16.tar.gz", hash = "sha256:9d4002056df7ebc4ec1f28fd701fba82c5c22549c4477116cb2656aa30ace6db"},
-    {file = "types_requests-2.28.11.16-py3-none-any.whl", hash = "sha256:a86921028335fdcc3aaf676c9d3463f867db6af2303fc65aa309b13ae1e6dd53"},
+    {file = "types-requests-2.28.11.17.tar.gz", hash = "sha256:0d580652ce903f643f8c3b494dd01d29367ea57cea0c7ad7f65cf3169092edb0"},
+    {file = "types_requests-2.28.11.17-py3-none-any.whl", hash = "sha256:cc1aba862575019306b2ed134eb1ea994cab1c887a22e18d3383e6dd42e9789b"},
 ]
 
 [package.dependencies]
@@ -4417,14 +4418,14 @@ types-awscrt = "*"
 
 [[package]]
 name = "types-urllib3"
-version = "1.26.25.9"
+version = "1.26.25.10"
 description = "Typing stubs for urllib3"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-urllib3-1.26.25.9.tar.gz", hash = "sha256:160727879bdbe52f11f5feeca092a473f38d68ed3be88abb461b59cda40fb9bc"},
-    {file = "types_urllib3-1.26.25.9-py3-none-any.whl", hash = "sha256:b327d360ba4a9edd80ea82f5990ba19e76175a20b5b64be4b4813d9a1c424caa"},
+    {file = "types-urllib3-1.26.25.10.tar.gz", hash = "sha256:c44881cde9fc8256d05ad6b21f50c4681eb20092552351570ab0a8a0653286d6"},
+    {file = "types_urllib3-1.26.25.10-py3-none-any.whl", hash = "sha256:12c744609d588340a07e45d333bf870069fc8793bcf96bae7a96d4712a42591d"},
 ]
 
 [[package]]
@@ -4690,14 +4691,14 @@ files = [
 
 [[package]]
 name = "widgetsnbextension"
-version = "3.6.3"
+version = "3.6.4"
 description = "IPython HTML widgets for Jupyter"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "widgetsnbextension-3.6.3-py2.py3-none-any.whl", hash = "sha256:5bf98c679f71cdbff02be832ea542eeb456252aff6448e1eb23089c1dcdd44cf"},
-    {file = "widgetsnbextension-3.6.3.tar.gz", hash = "sha256:28cb103f3066a6fdd6fd63264dd2a9709266c351a9a5c4a50a0bfd5ae2557b46"},
+    {file = "widgetsnbextension-3.6.4-py2.py3-none-any.whl", hash = "sha256:3d2d4994aea8681eb438493e439f59f82ba81d91f388a12e55147ae137f4120e"},
+    {file = "widgetsnbextension-3.6.4.tar.gz", hash = "sha256:ad1356c575d5add908afe886255deafb3f9b1589146a99279d1dcba5a05d16a5"},
 ]
 
 [package.dependencies]
