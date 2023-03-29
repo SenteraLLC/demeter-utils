@@ -25,6 +25,7 @@ parameters = [
 ]
 coordinate_list = [
     Point(-90.612269, 44.723885),
+    Point(-90.612249, 44.723825),
     Point(-90.596003, 44.684680),
     Point(-90.636626, 44.690766),
 ]
@@ -37,7 +38,7 @@ gdf_sql = query_daily_weather(
     startdate,
     enddate,
     parameters,
-    wide=True,
+    wide=False,
 )
 
 # %%

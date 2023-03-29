@@ -54,6 +54,8 @@ def query_daily_weather(
     ), q2 AS (
         SELECT d.cell_id, d.date_requested, d.daily_id, d.date, d.weather_type_id, d.value
         FROM daily AS d
+        INNER JOIN q1
+        ON q1.cell_id = d.cell_id
         where d.date >= %(startdate)s and
         d.date <= %(enddate)s and
         weather_type_id in %(weather_type_ids)s
