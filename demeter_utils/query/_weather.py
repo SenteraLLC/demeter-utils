@@ -1,4 +1,5 @@
 """Python wrappers around demeter.weather SQL queries."""
+
 import warnings
 from datetime import date
 from typing import Any, List, Union
@@ -8,6 +9,51 @@ from pandas import DataFrame
 from psycopg2.extensions import AsIs
 from pyproj import CRS
 from shapely.geometry import Point
+
+# from geo_utils.vector import pivot_geodataframe
+
+
+def pivot_geodataframe(
+    gdf: GeoDataFrame,
+    index: Union[str, List[str]],
+    columns: Union[str, List[str]],
+    values: Union[str, List[str]] = None,
+) -> GeoDataFrame:
+    """
+    Return reshaped GeoDataFrame organized by given index / column values.
+
+    See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html for more information.
+    GeoDataFrame.pivot() raises a TypeError unless geometry colummn is converted to WKT. This function converts geometry
+    column to WKT, performs the pivot, then returns the result as a GeoDataFrame, setting the geometry and CRS.
+
+    Args:
+        gdf (GeoDataFrame): Inpute GeoDataFrame (in the long/tidy format).
+        index (Union[str, List[str]]): Column to use to make new frame's index. If None, uses existing index.
+        columns (Union[str, List[str]]): Column to use to make new frame's columns.
+        values (Union[str, List[str]], optional): Column(s) to use for populating new frame's values. If not specified,
+        all remaining columns will be used and the result will have hierarchically indexed columns. Defaults to None.
+
+    Returns:
+        GeoDataFrame: Reshaped GeoDataFrame (in the "wide" format).
+    """
+    geom_name = gdf.geometry.name
+    gdf_wkt = gdf.copy()
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            action="ignore",
+            category=UserWarning,
+            message="Geometry column does not contain geometry.",
+        )
+        gdf_wkt[geom_name] = gdf_wkt[geom_name].to_wkt()  # warning is filtered
+    df_pivot = (
+        gdf_wkt.pivot(index=index, columns=columns, values=values)
+        .rename_axis(None, axis=1)
+        .reset_index()
+    )
+
+    return GeoDataFrame(
+        df_pivot, geometry=GeoSeries.from_wkt(df_pivot[geom_name]), crs=gdf.crs
+    )
 
 
 def get_daily_weather_types(cursor: Any) -> DataFrame:
@@ -102,6 +148,7 @@ def query_daily_weather(
         params=args,
         geom_col="geometry",
         crs=CRS.from_epsg(4326),
+        parse_dates=["date", "date_requested"],
     )
     if wide is True:
         return pivot_geodataframe(
@@ -112,46 +159,3 @@ def query_daily_weather(
         )
     else:
         return gdf_sql
-
-
-def pivot_geodataframe(
-    gdf: GeoDataFrame,
-    index: Union[str, List[str]],
-    columns: Union[str, List[str]],
-    values: Union[str, List[str]] = None,
-) -> GeoDataFrame:
-    """
-    Return reshaped GeoDataFrame organized by given index / column values.
-
-    See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html for more information.
-    GeoDataFrame.pivot() raises a TypeError unless geometry colummn is converted to WKT. This function converts geometry
-    column to WKT, performs the pivot, then returns the result as a GeoDataFrame, setting the geometry and CRS.
-
-    Args:
-        gdf (GeoDataFrame): Inpute GeoDataFrame (in the long/tidy format).
-        index (Union[str, List[str]]): Column to use to make new frame’s index. If None, uses existing index.
-        columns (Union[str, List[str]]): Column to use to make new frame’s columns.
-        values (Union[str, List[str]], optional): Column(s) to use for populating new frame’s values. If not specified,
-        all remaining columns will be used and the result will have hierarchically indexed columns. Defaults to None.
-
-    Returns:
-        GeoDataFrame: Reshaped GeoDataFrame (in the "wide" format).
-    """
-    geom_name = gdf.geometry.name
-    gdf_wkt = gdf.copy()
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            action="ignore",
-            category=UserWarning,
-            message="Geometry column does not contain geometry.",
-        )
-        gdf_wkt[geom_name] = gdf_wkt[geom_name].to_wkt()  # warning is filtered
-    df_pivot = (
-        gdf_wkt.pivot(index=index, columns=columns, values=values)
-        .rename_axis(None, axis=1)
-        .reset_index()
-    )
-
-    return GeoDataFrame(
-        df_pivot, geometry=GeoSeries.from_wkt(df_pivot[geom_name]), crs=gdf.crs
-    )
