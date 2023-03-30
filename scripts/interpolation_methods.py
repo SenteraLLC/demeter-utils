@@ -11,22 +11,17 @@ df_allyears_in = read_csv("/root/git/demeter-utils/ndvi_gimms_allyears.csv")
 df_allyears_in["year"] = pd.DatetimeIndex(df_allyears_in["START DATE"]).year
 
 # %% Clean data
-# create a new column for year and other column for MMDD
+# create a new column for year
 df_allyears = df_allyears_in[df_allyears_in["SAMPLE_VALUE"].notna()]
 # df_2000_NAdropped = df_allyears_NAdropped[df_allyears_NAdropped['year']==2000]
 
 # %% create a list of years
-# years = np.unique(df_allyears_NAdropped['year'].values)
+years = np.unique(df_allyears["year"].values)
 
+# %%create x-axis values for interpolation
 x_new = np.linspace(1, 365, num=365, dtype=int)
-
-# import other interpolation methods from scipy.interpolate
-# create x-axis values for interpolation
-x_new = np.linspace(1, 365, num=365, dtype=int)
-# Plot the new interpolated values obtained using different methods
 
 # %% Loop through each year and set two new columns: interp_type and interp_val
-
 models_by_year = {}
 
 for year in df_allyears["year"].unique():
@@ -48,11 +43,32 @@ for year in df_allyears["year"].unique():
 
 # %% Create a dataframe that estimates the NDVI for each DOY (365x) and each model/year (72x)
 
+# df = df_allyears[df_allyears["year"] == year]
+df_interp = pd.DataFrame(columns=["year", "model_type", "x_new", "y_model"])
 
+for year in df_allyears["year"].unique():
+    df_year = df_allyears.loc[df_allyears["year"] == year]
+    for model_type in [CubicSpline, Akima1DInterpolator, PchipInterpolator]:
+        y_model = model_type(x=df_year["DOY"], y=df_year["SAMPLE_VALUE"])(x_new)
+
+        # data = {
+        #     "year": [year] * len(y_model),
+        #     "model_type":...
+        #     "y_model": y_model
+        # }
+        # df_temp = pd.DataFrame(data = data)
+        # df_interp = pd.concat([df_interp, df_temp], axis = 0)
+
+
+# df_interp = pd.DataFrame(x_new, y_model)
+
+# %% Plotting new dataframe
 # cubic_spline = CubicSpline(x, y)
 # cubic_spline(100)
 # cubic_spline(150)
 
+
+# Plot the new interpolated values obtained using different methods
 # plt.plot(x_new, cubic_spline(x_new), "--", label="spline")
 # plt.plot(x_new, Akima1DInterpolator(x, y)(x_new), "-", label="Akima1D")
 # plt.plot(x_new, PchipInterpolator(x, y)(x_new), "-", label="pchip")
