@@ -11,6 +11,8 @@ pandas = "^1.5.3"
 psycopg2 = "^2.9.3"
 scipy = "^1.10.0"
 demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
+matplotlib = "^3.7.1"
+seaborn = "^0.12.2"
 
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"
