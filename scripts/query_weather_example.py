@@ -83,11 +83,13 @@ coordinate_list = [
     Point(-90.636626, 44.690766),
     Point(-90.636626, 44.690766),
 ]
-startdate = date(2013, 1, 1)
+startdate = date(2023, 1, 1)
 enddate = date(2023, 3, 31)
 
 
 # %% Run query
+wide = False
+include_metadata = False
 
 with catchtime() as t:
     gdf_sql = query_daily_weather(
@@ -97,6 +99,11 @@ with catchtime() as t:
         startdate=startdate,
         enddate=enddate,
         parameters=PARAMETERS_ALL,
-        wide=False,
+        wide=wide,
+        include_metadata=include_metadata,
     )
 print(f"query_daily_weather() time: {t():.1f} seconds")
+
+gdf_sql.columns
+gdf_sql.head()
+# %%

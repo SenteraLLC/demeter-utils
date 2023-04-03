@@ -80,6 +80,7 @@ def query_daily_weather(
     enddate: date,
     parameters: List,
     wide: bool = False,
+    include_metadata: bool = False,
 ) -> GeoDataFrame:
     """
     Queries the `daily` weather table for based on lat/lngs, startdate, enddate, and parameter list.
@@ -90,7 +91,10 @@ def query_daily_weather(
         startdate (datetime): Start date of the query (inclusive); e.g., `date(2023, 3, 28)`.
         startdate (datetime): End date of the query (inclusive); e.g., `date(2023, 3, 28)`.
         parameters (List): Weather parameters to retrieve weather data for. Must be present in `weather_types` table.
-        wide (bool): If `True`, return data in the wide format; if `False`, return data in the long/tidy format.
+        wide (bool): If `True`, return data in the wide format; if `False`, return data in the long/tidy format (default
+        is False).
+        include_metadata (bool): If `True`, return `cell_id` and `date_requested` as extra columns to the output
+        GeoDataFrame (default is False).
 
     Note:
         Any duplicate Points in `coordinate_list` are removed (warning is issued).
@@ -98,6 +102,12 @@ def query_daily_weather(
     Returns:
         GeoDataFrame: With weather data for all coordinates and parameters between startdate and enddate (inclusive).
     """
+    msg = (
+        "`wide` and `include_metadata` are both be set to `True`, which is not supported; set `wide` to `False` if you "
+        + "want metadata returned."
+    )
+    assert not all((include_metadata is True, wide is True)), msg
+
     df_coords = _join_coordinates_to_unique_cell_ids(
         conn.connection.cursor(), coordinate_list
     )  # uses get_cell_id()
@@ -172,17 +182,17 @@ def query_daily_weather(
         .reset_index(drop=True)
     )
 
-    if wide is True:
-        gdf_sql.groupby(["date"]).count()
-
+    if include_metadata is False:  # wide must be `False` because of the assert above
+        gdf_sql.drop(columns=["cell_id", "date_requested"], inplace=True)
+    if wide is False:
+        return gdf_sql
+    else:
         return pivot_geodataframe(
             gdf_sql,
             index=[gdf_sql.geometry.name, "date"],
             columns="weather_type",
             values="value",
         )
-    else:
-        return gdf_sql
 
 
 def query_daily_weather_sql(
