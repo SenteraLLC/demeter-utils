@@ -3,8 +3,7 @@ import logging
 from datetime import date
 from typing import Any, List
 
-from demeter.weather.query import get_daily_weather_types
-from demeter.weather.utils.grid import get_cell_id
+from demeter.weather.query import get_cell_id, get_daily_weather_types
 from geo_utils.vector import pivot_geodataframe
 from geopandas import GeoDataFrame, read_postgis
 from pandas import merge as pd_merge
