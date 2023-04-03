@@ -83,7 +83,7 @@ coordinate_list = [
     Point(-90.636626, 44.690766),
     Point(-90.636626, 44.690766),
 ]
-startdate = date(2023, 1, 1)
+startdate = date(2013, 1, 1)
 enddate = date(2023, 3, 31)
 
 
@@ -97,29 +97,6 @@ with catchtime() as t:
         startdate=startdate,
         enddate=enddate,
         parameters=PARAMETERS_ALL,
-        wide=True,
+        wide=False,
     )
 print(f"query_daily_weather() time: {t():.1f} seconds")
-
-a = gdf_sql[
-    gdf_sql.duplicated([gdf_sql.geometry.name, "date", "weather_type"], keep=False)
-]
-gdf_sql_no_dups = gdf_sql.drop_duplicates(
-    [gdf_sql.geometry.name, "date", "weather_type"]
-)
-# %% SQL only
-
-# with catchtime() as t:
-#     gdf_sql_only_w = query_daily_weather_sql(
-#         conn=conn,
-#         # cursor=cursor,
-#         coordinate_list=coordinate_list,
-#         startdate=startdate,
-#         enddate=enddate,
-#         parameters=PARAMETERS_ALL,
-#         wide=False,
-#     )
-# print(f"query_daily_weather() time: {t():.1f} seconds")
-# %% Timing
-# 1.958 M rows (47 coords (3 unique cell_ids) x 10 years x 11 params): 101.5 seconds
-#
