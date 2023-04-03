@@ -43,9 +43,11 @@ def _join_coordinates_to_unique_cell_ids(
                 ]
             )
 
-        msg = (
-            "Duplicate Points in `coordinate_list` were detected; dropping %s Points from the query.\n",
-            "List of duplicate points:\n    %s",
+        msg = "".join(
+            [
+                "Duplicate Points in `coordinate_list` were detected; dropping %s Points from the query.\n",
+                "List of duplicate points:\n    %s",
+            ]
         )
         logging.warning(
             msg,
