@@ -8,7 +8,7 @@ from demeter.weather.initialize.weather_types import DAILY_WEATHER_TYPES
 from dotenv import load_dotenv
 from shapely.geometry import Point
 
-from demeter_utils.query import query_daily_weather
+from demeter_utils.query import query_daily_weather, query_daily_weather_sql
 
 # %% Connect to database
 c = load_dotenv()
@@ -83,18 +83,35 @@ coordinate_list = [
     Point(-90.636626, 44.690766),
     Point(-90.636626, 44.690766),
 ]
-startdate = date(2013, 1, 1)
+startdate = date(2023, 1, 1)
 enddate = date(2023, 3, 31)
 
+
+# %% Run query
 
 with catchtime() as t:
     gdf_sql = query_daily_weather(
         conn=conn,
+        # cursor=cursor,
         coordinate_list=coordinate_list,
         startdate=startdate,
         enddate=enddate,
         parameters=PARAMETERS_ALL,
         wide=False,
+    )
+print(f"query_daily_weather() time: {t():.1f} seconds")
+
+# %% SQL only
+
+with catchtime() as t:
+    gdf_sql_only_w = query_daily_weather_sql(
+        conn=conn,
+        # cursor=cursor,
+        coordinate_list=coordinate_list,
+        startdate=startdate,
+        enddate=enddate,
+        parameters=PARAMETERS_ALL,
+        wide=True,
     )
 print(f"query_daily_weather() time: {t():.1f} seconds")
 # %% Timing
