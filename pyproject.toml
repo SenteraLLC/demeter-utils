@@ -10,7 +10,7 @@ click = "*"
 pandas = "^1.5.3"
 psycopg2 = "^2.9.3"
 scipy = "^1.10.0"
-demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="DEM-318-fill-gaps"}
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
 
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"
