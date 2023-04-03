@@ -8,7 +8,7 @@ from demeter.weather.initialize.weather_types import DAILY_WEATHER_TYPES
 from dotenv import load_dotenv
 from shapely.geometry import Point
 
-from demeter_utils.query import query_daily_weather, query_daily_weather_sql
+from demeter_utils.query import query_daily_weather
 
 # %% Connect to database
 c = load_dotenv()
@@ -97,23 +97,29 @@ with catchtime() as t:
         startdate=startdate,
         enddate=enddate,
         parameters=PARAMETERS_ALL,
-        wide=False,
-    )
-print(f"query_daily_weather() time: {t():.1f} seconds")
-
-# %% SQL only
-
-with catchtime() as t:
-    gdf_sql_only_w = query_daily_weather_sql(
-        conn=conn,
-        # cursor=cursor,
-        coordinate_list=coordinate_list,
-        startdate=startdate,
-        enddate=enddate,
-        parameters=PARAMETERS_ALL,
         wide=True,
     )
 print(f"query_daily_weather() time: {t():.1f} seconds")
+
+a = gdf_sql[
+    gdf_sql.duplicated([gdf_sql.geometry.name, "date", "weather_type"], keep=False)
+]
+gdf_sql_no_dups = gdf_sql.drop_duplicates(
+    [gdf_sql.geometry.name, "date", "weather_type"]
+)
+# %% SQL only
+
+# with catchtime() as t:
+#     gdf_sql_only_w = query_daily_weather_sql(
+#         conn=conn,
+#         # cursor=cursor,
+#         coordinate_list=coordinate_list,
+#         startdate=startdate,
+#         enddate=enddate,
+#         parameters=PARAMETERS_ALL,
+#         wide=False,
+#     )
+# print(f"query_daily_weather() time: {t():.1f} seconds")
 # %% Timing
 # 1.958 M rows (47 coords (3 unique cell_ids) x 10 years x 11 params): 101.5 seconds
 #
