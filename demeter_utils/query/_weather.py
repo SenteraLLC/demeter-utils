@@ -14,7 +14,7 @@ from shapely import wkt
 from shapely.geometry import Point
 
 
-def _find_duplicate_points(coordinate_list: List[Point]) -> List:
+def find_duplicate_points(coordinate_list: List[Point]) -> List:
     """
     Identifies duplicate Points in `coordinate_list`.
 
@@ -57,7 +57,7 @@ def _join_coordinates_to_unique_cell_ids(
         logging.warning(
             msg,
             n_dups,
-            _find_duplicate_points(coordinate_list),
+            find_duplicate_points(coordinate_list),
         )
         coordinate_list = [wkt.loads(coords) for coords in coordinate_list_no_dups]
     cell_ids = [
