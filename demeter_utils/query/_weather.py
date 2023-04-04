@@ -95,12 +95,12 @@ def query_daily_weather(
         conn (Connection): Active connection to the database.
         coordinate_list (List[Point]): Spatial coordinates to query (must be lat/lng/WGS-84).
         startdate (datetime): Start date of the query (inclusive); e.g., `date(2023, 3, 28)`.
-        startdate (datetime): End date of the query (inclusive); e.g., `date(2023, 3, 28)`.
+        enddate (datetime): End date of the query (inclusive); e.g., `date(2023, 4, 4)`.
         parameters (List): Weather parameters to retrieve weather data for. Must be present in `weather_types` table.
         wide (bool): If `True`, return data in the wide format; if `False`, return data in the long/tidy format (default
         is False).
         include_metadata (bool): If `True`, return `cell_id` and `date_requested` as extra columns to the output
-        GeoDataFrame (default is False).
+        GeoDataFrame; ignored if `wide == True` (default is False).
 
     Note:
         Any duplicate Points in `coordinate_list` are removed (warning is issued).
