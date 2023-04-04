@@ -41,7 +41,8 @@ def _join_coordinates_to_unique_cell_ids(
         coordinates are present, all but one of the duplicate points are dropped by this function (warning is issued).
 
     Returns:
-        GeoDataFrame: With "cell_id" and "geometry" (Point) columns.
+        GeoDataFrame: "geometry" that is a copy of the input Points from `coordinate_list`, with a "cell_id" column
+        joined representing each coordinate's `cell_id` in the demeter weather grid.
     """
     coordinate_list_no_dups = list(set([c.wkt for c in coordinate_list]))
     if len(coordinate_list) != len(coordinate_list_no_dups):
@@ -153,7 +154,6 @@ def query_daily_weather(
     WHERE rn = 1;
     """
     args = {
-        # "cell_id_list": AsIs(", ".join([str(c) for c in cell_id_list])),
         "cell_id_tuple": tuple([str(c) for c in cell_id_list]),
         "startdate": startdate.strftime("%Y-%m-%d"),
         "enddate": enddate.strftime("%Y-%m-%d"),
