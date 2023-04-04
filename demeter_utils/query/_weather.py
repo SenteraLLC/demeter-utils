@@ -8,7 +8,6 @@ from geo_utils.vector import pivot_geodataframe
 from geopandas import GeoDataFrame, read_postgis
 from pandas import merge as pd_merge
 from pandas import read_sql
-from psycopg2.extensions import AsIs
 from pyproj import CRS
 from shapely import wkt
 from shapely.geometry import Point
@@ -141,7 +140,7 @@ def query_daily_weather(
         select d.cell_id, d.date_requested, d.daily_id, d.weather_type_id, d.date, d.value,
             ROW_NUMBER() OVER(PARTITION BY d.cell_id, d.weather_type_id, d.date ORDER BY d.date_requested desc) as rn
         FROM daily AS d
-        WHERE cell_id in (%(cell_id_list)s) and
+        WHERE cell_id in %(cell_id_tuple)s and
         d.date >= %(startdate)s and
         d.date <= %(enddate)s and
         weather_type_id in %(weather_type_ids)s
@@ -154,7 +153,8 @@ def query_daily_weather(
     WHERE rn = 1;
     """
     args = {
-        "cell_id_list": AsIs(", ".join([str(c) for c in cell_id_list])),
+        # "cell_id_list": AsIs(", ".join([str(c) for c in cell_id_list])),
+        "cell_id_tuple": tuple([str(c) for c in cell_id_list]),
         "startdate": startdate.strftime("%Y-%m-%d"),
         "enddate": enddate.strftime("%Y-%m-%d"),
         "weather_type_ids": tuple([x for x in param_dict.keys()]),
@@ -224,9 +224,8 @@ def query_daily_weather_sql(
         GeoDataFrame: With weather data for all coordinates and parameters between startdate and enddate (inclusive).
     """
     stmt = """
-    WITH pairs(x,y) AS (
-    VALUES %(coordinate_list)s
-    ), q1 AS (
+    WITH pairs(x,y) AS
+    VALUES %(coordinate_tuple)s, q1 AS (
         SELECT ST_Point(x, y, 4326) as query_point, (ST_Value(raster_5km.rast_cell_id,ST_Transform(ST_Point(x, y, 4326), world_utm.raster_epsg)))::INTEGER AS cell_id
         FROM world_utm, raster_5km
             CROSS JOIN pairs
@@ -271,9 +270,10 @@ def query_daily_weather_sql(
         .to_dict()["weather_type"]
     )
     args = {
-        "coordinate_list": AsIs(
-            ", ".join([str(tuple((p.x, p.y))) for p in coordinate_list])
-        ),
+        # "coordinate_list": AsIs(
+        #     ", ".join([str(tuple((p.x, p.y))) for p in coordinate_list])
+        # ),
+        "coordinate_tuple": tuple([str(c) for c in coordinate_list]),
         "startdate": startdate.strftime("%Y-%m-%d"),
         "enddate": enddate.strftime("%Y-%m-%d"),
         "weather_type_ids": tuple([x for x in param_dict.keys()]),
