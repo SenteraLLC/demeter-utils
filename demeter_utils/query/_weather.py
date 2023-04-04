@@ -89,7 +89,7 @@ def query_daily_weather(
     include_metadata: bool = False,
 ) -> GeoDataFrame:
     """
-    Queries the `daily` weather table for based on lat/lngs, startdate, enddate, and parameter list.
+    Queries the `daily` weather table based on lat/lngs, startdate, enddate, and parameter list.
 
     Args:
         conn (Connection): Active connection to the database.
