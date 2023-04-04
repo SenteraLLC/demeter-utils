@@ -7,7 +7,7 @@ from ._query import (
     get_planting,
 )
 from ._translate import field_to_dataframe
-from ._weather import query_daily_weather
+from ._weather import find_duplicate_points, query_daily_weather
 
 __all__ = [
     "basic_demeter_query",
@@ -17,5 +17,6 @@ __all__ = [
     "get_harvest",
     "get_as_applied",
     "field_to_dataframe",
+    "find_duplicate_points",
     "query_daily_weather",
 ]
