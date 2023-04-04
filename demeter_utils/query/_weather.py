@@ -100,7 +100,7 @@ def query_daily_weather(
         wide (bool): If `True`, return data in the wide format; if `False`, return data in the long/tidy format (default
         is False).
         include_metadata (bool): If `True`, return `cell_id` and `date_requested` as extra columns to the output
-        GeoDataFrame (default is False).
+        GeoDataFrame; ignored if `wide == True` (default is False).
 
     Note:
         Any duplicate Points in `coordinate_list` are removed (warning is issued).
