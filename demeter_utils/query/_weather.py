@@ -14,6 +14,22 @@ from shapely import wkt
 from shapely.geometry import Point
 
 
+def _find_duplicate_points(coordinate_list: List[Point]) -> List:
+    """
+    Identifies duplicate Points in `coordinate_list`.
+
+    Args:
+        coordinate_list (List[Point]): Spatial coordinates (must be lat/lng/WGS-84).
+
+    Returns:
+        List: WTK points that appear two or more times in `coordinate_list`.
+    """
+    seen = set()
+    return list(
+        set([x for x in [c.wkt for c in coordinate_list] if x in seen or seen.add(x)])
+    )
+
+
 def _join_coordinates_to_unique_cell_ids(
     cursor: Any, coordinate_list: List[Point]
 ) -> GeoDataFrame:
@@ -32,16 +48,6 @@ def _join_coordinates_to_unique_cell_ids(
     if len(coordinate_list) != len(coordinate_list_no_dups):
         n_dups = len(coordinate_list) - len(coordinate_list_no_dups)
 
-        def _find_duplicate_points(coordinate_list):
-            seen = set()
-            return set(
-                [
-                    x
-                    for x in [c.wkt for c in coordinate_list]
-                    if x in seen or seen.add(x)
-                ]
-            )
-
         msg = "".join(
             [
                 "Duplicate Points in `coordinate_list` were detected; dropping %s Points from the query.\n",
@@ -51,7 +57,7 @@ def _join_coordinates_to_unique_cell_ids(
         logging.warning(
             msg,
             n_dups,
-            list(_find_duplicate_points(coordinate_list)),
+            _find_duplicate_points(coordinate_list),
         )
         coordinate_list = [wkt.loads(coords) for coords in coordinate_list_no_dups]
     cell_ids = [
