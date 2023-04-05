@@ -159,6 +159,7 @@ def query_daily_weather(
         "enddate": enddate.strftime("%Y-%m-%d"),
         "weather_type_ids": tuple([x for x in param_dict.keys()]),
     }
+
     # TODO: Should we raise a special error if user tries to get daily weather for cell_id that isn't populated?
     df_sql = read_sql(
         sql=stmt, con=conn, params=args, parse_dates=["date", "date_requested"]
@@ -166,31 +167,32 @@ def query_daily_weather(
 
     # Now that we have data for each cell_id, join back to the input coordinate list and sort.
     gdf_sql = GeoDataFrame(
-        pd_merge(left=df_coords, right=df_sql, how="left", on="cell_id"),
+        pd_merge(left=df_coords.reset_index(), right=df_sql, how="left", on="cell_id"),
         geometry="geometry",
         crs=df_coords.crs,
     )
+
     gdf_sql.insert(
         len(gdf_sql.columns) - 1, "geometry", gdf_sql.pop("geometry")
     )  # Put geom column at end
-    gdf_sql.insert(
-        len(gdf_sql.columns), column="geometry_wkt", value=gdf_sql.geometry.to_wkt()
-    )
+
     gdf_sql = (
         gdf_sql.sort_values(
             by=[
-                "geometry_wkt",
+                "index",
                 "weather_type_id",
                 "date",
             ]  # Inheriting order of df_coords (from coordinate_list)
         )
-        .drop(columns=["geometry_wkt", "weather_type_id"])
+        .drop(columns=["weather_type_id"])
         .reset_index(drop=True)
     )
 
     if include_metadata is False:  # wide must be `False` because of the assert above
         gdf_sql.drop(columns=["cell_id", "date_requested"], inplace=True)
+
     if wide is False:
+        gdf_sql.drop(columns="index", inplace=True)
         return gdf_sql
     else:
         return pivot_geodataframe(
@@ -198,7 +200,8 @@ def query_daily_weather(
             index=[gdf_sql.geometry.name, "date"],
             columns="weather_type",
             values="value",
-        )
+            spatial_index="index",
+        ).drop(columns="index")
 
 
 def query_daily_weather_sql(
