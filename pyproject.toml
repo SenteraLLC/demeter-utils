@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "demeter_utils"
-version = "0.0.4"
-description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level."
+version = "0.0.5"
+description = "Python library that provides a function to determine what days will need a fill-in value for a given temporal resolution."
 authors = []
 
 [tool.poetry.dependencies]
