@@ -69,22 +69,3 @@ plt.show()
 #     "ndvi_pchip1": ndvi_pchip1,
 # }
 # df_temp = pd.DataFrame(data=data)
-
-# %% Function 4
-# def fit_on_complete_data(
-#     df_complete_data: DataFrame,
-#     unfitted_interp_func: Union[Akima1DInterpolator, CubicSpline, PchipInterpolator],
-# ) -> Union[Akima1DInterpolator, CubicSpline, PchipInterpolator]:
-#     """
-#     Step XX: Given a "complete" dataset for the desired temporal resolution (likely includes both
-#     "true" and "fill-in"), fit and return a new interpolation function on the "complete" dataset
-#     """
-#     print("Hello Step 3")
-
-
-# rename column names
-# df_complete_data = df_complete_data.rename(
-#     columns={"value_observed": "SAMPLE VALUE", "date_observed": "START DATE"}
-# )
-
-# fit_complete_data = generate_fill_in_values(df_complete_data, PchipInterpolator)
