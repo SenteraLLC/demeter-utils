@@ -1,17 +1,16 @@
 from datetime import datetime
 from io import StringIO
 
-import matplotlib.pyplot as plt
-import numpy as np
 import requests
 from pandas import read_csv
-from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
+from scipy.interpolate import Akima1DInterpolator
 
 from demeter_utils.interpolate._interpolate import (
-    fill_missing_values,
     find_fill_in_dates,
     generate_fill_in_values,
 )
+
+# from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
 
 # load the true data
 # TODO: read data from cloud
@@ -34,57 +33,3 @@ df_gimms_ndvi = read_csv(text, skiprows=14)
 
 # using `generate_fill_in_values` to generate df_interp
 df_reference_interp = generate_fill_in_values(df_gimms_ndvi, Akima1DInterpolator)
-
-# using `fill_missing_values` to generate df_final
-df_complete_data = fill_missing_values(df_observed, df_reference_interp)
-
-
-# %% Generate the interpolated values for each DOY (defined dates) using different methods and plot them
-
-df = df_complete_data
-df = df.rename(columns={"value_observed": "ndvi_obs"})
-df = df.sort_values(by=["doy_obs"])
-doy_obs = df["doy_obs"]
-ndvi_obs = df["ndvi_obs"]
-doy_interp = np.arange(120, 250, 1, dtype=int)
-
-ndvi_cubic = CubicSpline(doy_obs, ndvi_obs)(doy_interp)
-ndvi_akima = Akima1DInterpolator(doy_obs, ndvi_obs)(doy_interp)
-ndvi_pchip1 = PchipInterpolator(doy_obs, ndvi_obs)(doy_interp)
-
-plt.plot(doy_interp, ndvi_cubic, "--", label="spline")
-plt.plot(doy_interp, ndvi_akima, "-", label="Akima1D")
-plt.plot(doy_interp, ndvi_pchip1, "-", label="pchip1")
-colors = {"True": "green", "False": "red"}
-plt.scatter(doy_obs, ndvi_obs, c=df["available"].map(colors))
-plt.legend()
-plt.ylim(0, 1)
-plt.show()
-
-
-# %% to store the interpolated values
-# data = {
-#     "ndvi_cubic": ndvi_cubic,
-#     "ndvi_akima": ndvi_akima,
-#     "ndvi_pchip1": ndvi_pchip1,
-# }
-# df_temp = pd.DataFrame(data=data)
-
-# %% Function 4
-# def fit_on_complete_data(
-#     df_complete_data: DataFrame,
-#     unfitted_interp_func: Union[Akima1DInterpolator, CubicSpline, PchipInterpolator],
-# ) -> Union[Akima1DInterpolator, CubicSpline, PchipInterpolator]:
-#     """
-#     Step XX: Given a "complete" dataset for the desired temporal resolution (likely includes both
-#     "true" and "fill-in"), fit and return a new interpolation function on the "complete" dataset
-#     """
-#     print("Hello Step 3")
-
-
-# rename column names
-# df_complete_data = df_complete_data.rename(
-#     columns={"value_observed": "SAMPLE VALUE", "date_observed": "START DATE"}
-# )
-
-# fit_complete_data = generate_fill_in_values(df_complete_data, PchipInterpolator)
