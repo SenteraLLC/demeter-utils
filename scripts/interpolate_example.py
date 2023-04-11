@@ -12,6 +12,11 @@ df_true_data = read_csv(
     "/Users/marissakivi/Downloads/df_drone_imagery1.csv",
     parse_dates=["date_observed", "last_updated"],
 )
+
+df_true_data = read_csv(
+    "/root/git/demeter-utils/df_drone_imagery1.csv",
+    parse_dates=["date_observed", "last_updated"],
+)
 # %%
 # using `find_fill_in_dates function` to generate df_observed
 df_merged = find_fill_in_dates(

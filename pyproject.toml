@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "demeter_utils"
 version = "0.0.5"
-description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level. "
+description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level."
 authors = []
 
 [tool.poetry.dependencies]
