@@ -1,3 +1,4 @@
+# %%
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -6,28 +7,21 @@ from pandas import DataFrame, Timedelta
 from pandas import concat as pd_concat
 from pandas import merge_asof, read_csv
 
-# from demeter_utils.interpolate._interpolate import find_fill_in_dates
-
-# %%
-# load the true data
-# TODO: read data from cloud
-# data available at sharepoint:https://sentera.sharepoint.com/:x:/s/demeter/ESR0PKnkjQBIkYDkT9NBVS8B1h5kJHTbJE2tCLgM7QWP7A?e=ioUoFB
-
 df_true_data = read_csv(
     "/root/git/test/df_drone_imagery1.csv",
     parse_dates=["date_observed", "last_updated"],
 )
 
+df_true_data = df_true_data
 datetime_start = datetime(2022, 5, 6)
 datetime_end = datetime(2022, 10, 1)
 temporal_resolution = timedelta(days=10)
 tolerance_alpha = 0.5
 col_datetime = "date_observed"
 col_value = "value_observed"
-recalibrate = True
-
-
 # %%
+
+
 def find_fill_in_dates(
     df_true_data: DataFrame,
     datetime_start: datetime,
@@ -60,30 +54,13 @@ def find_fill_in_dates(
         where `available` column indicates whether a value is available (True) or needs to be predicted.
     """
 
-    ## We need to fix the following things in this function:
-
-    # 1) After doing the merge, add back the rows from `df_in` that were not matched.
-    # For example, in the sample data that you are using, the row from 6-30-2022 is not given in
-    # `df_merged`.
-
-    # 2) Implement the `recalibrate` argument which, if True, will recalibrate the values of
-    # `datetime_proposed` column according to the two closest observed dates. This step will
-    # require that we have all of the original data in `df_merged`.
-
-    # 3) Add `datetime_skeleton` column which will consist of the observed datetime values and the
-    # datetime values where will we need to make inferences
-
-    # 4) Enforce that df_merged['datetime_skeleton'].max() >= datetime_end and
-    # df_merged['datetime_skeleton'].min() <= datetime_start.
-
     # rename the data frame
     df_in = df_true_data.copy()
 
     # determine "length_out" based on temporal resolution
     length_out = int(ceil((datetime_end - datetime_start) / temporal_resolution))
 
-    # create an empty dataframe `df_join` and outline the time windows that need to be represented`
-    # TODO: Question: Do we want to retain other columns in the original dataframe or not???
+    # create an empty dataframe `df_join` and outline the time windows that need to be represented
 
     df_join = DataFrame(data=[], columns=["within_tolerance"])
     list_rq_datetime = [
@@ -112,106 +89,122 @@ def find_fill_in_dates(
     # mark which days are available
     df_merged2.loc[df_merged2[col_value].notna(), "within_tolerance"] = True
 
-    # %%
-    # TODO: Delete this chunk later [Reseting the first and last values of within_tolerance as True]
-    df_merged2.at[0, "within_tolerance"] = True
-    df_merged2.at[0, "date_observed"] = df_merged2.at[0, "datetime_proposed"]
-
-    # %%
+    df3 = df_merged2.copy()
 
     # create column `datetime_skeleton` whose values are the same as `col_datetime`
     # where `within_tolerance`=True and otherwise, are the same as `datetime_proposed`
+    # [No consideration of the input  `recalibration``]
 
-    df3 = df_merged2.copy()
-
-    # create dt_skeleton with considering the recalibration
-    # [Should this be executed only if `recalibrate = False` or is fine in any case]
-
-    df3["dt_skeleton"] = df_merged2.apply(
+    df3["datetime_skeleton"] = df_merged2.apply(
         lambda x: x[col_datetime]
         if x["within_tolerance"] is True
         else x["datetime_proposed"],
         axis=1,
     )
 
-    # sort by "dt_skeleton"
-    df3 = df3.sort_values(by="dt_skeleton")
+    # sort by "datetime_skeleton"
+    df3 = df3.sort_values(by="datetime_skeleton")
 
-    # add date_observed_last' column based on 'within_tolerance' values
-    df3["date_observed_last"] = np.nan
-    df3.loc[df3.within_tolerance is True, "date_observed_last"] = df3.loc[
-        df3.within_tolerance is True, "date_observed"
-    ]
-    df3["date_observed_last"] = df3["date_observed_last"].ffill()
+    # retun only select column in the output dataframe
+    df5 = df3[["within_tolerance", col_datetime, "datetime_skeleton", col_value]].copy()
 
-    # TODO: set the NaT values in 'date_observed_last' column with date from the first row of 'dt_skeleton'
-    # df3["date_observed_last"].fillna((df3.at[0,"dt_skeleton"]))
-
-    # sort by dt_skeleton in descending order and add date_observed_last' column based on 'within_tolerance' values
-    df3 = df3.sort_values(by="dt_skeleton", ascending=False)
-
-    # add date_observed_ahead' column based on 'within_tolerance' values
-    df3["date_observed_ahead"] = np.nan
-    df3.loc[df3.within_tolerance is True, "date_observed_ahead"] = df3.loc[
-        df3.within_tolerance is True, "date_observed"
-    ]
-    df3["date_observed_ahead"] = df3["date_observed_ahead"].ffill()
-
-    # TODO: set the NaT values 'date_observed_ahead' column with date from the last row of 'dt_skeleton"
-
-    # sort by "dt_skeleton"
-    df3 = df3.sort_values(by="dt_skeleton")
-
-    # %% Recalibration function
-    def recalibration(
-        pre_date: datetime, post_date: datetime, splits_num: int
-    ) -> DataFrame:
-        """
-        pre_date: a left end of the date for recalibration, where 'true_value' is available
-        post_date: a right end of the date for recalibration, where 'true_value' is available
-        splits_num: number of split section desired
-        """
-        part_time_len = (post_date - pre_date) / splits_num
-        parts = []
-        marker = pre_date
-
-        for _ in range(splits_num):
-            part = [marker + part_time_len]
-            marker += part_time_len
-            parts.append(part)
-
-        recal_dates_ls = parts[:-1]
-
-        return recal_dates_ls
-
+    ## WHEN INPUT `RECALIBRATE` = `TRUE`
+    # # %%
     if recalibrate is True:
-        df3["datetime_skeleton"] = df3.apply(
-            lambda x: x[col_datetime]
-            if x["within_tolerance"] is True
-            else recalibration(x["date_observed_last"], x["date_observed_ahead"], 2),
+        # add 'date_observed_pre' column based on 'within_tolerance' values
+        # if the first value of 'within_tolerance' is `False` force the first value of 'date_observed_pre' to 'datetime_skeleton'
+        df3["date_observed_pre"] = np.nan
+
+        # NOTE: when executing git commit, it shows error and ask to change `==` to `is`
+        if df3.at[0, "within_tolerance"] is False:
+            df3.at[0, "date_observed_pre"] = datetime_start
+
+        df3.loc[df3.within_tolerance is True, "date_observed_pre"] = df3.loc[
+            df3.within_tolerance is True, "date_observed"
+        ]
+
+        df3["date_observed_pre"] = df3["date_observed_pre"].ffill()
+
+        # sort by datetime_skeleton in descending order and add date_observed_pre' column based on 'within_tolerance' values
+        df3 = df3.sort_values(by="datetime_skeleton", ascending=False)
+
+        # add date_observed_post' column based on 'within_tolerance' values
+        # if the last value of 'within_tolerance' is `False` force the last value of 'date_observed_pre' to corresponding value from 'datetime_skeleton'
+        df3["date_observed_post"] = np.nan
+
+        if df3.iat[0, 0] is False:
+            df3.iat[0, -1] = df3.iat[0, -3]
+
+        df3.loc[df3.within_tolerance is True, "date_observed_post"] = df3.loc[
+            df3.within_tolerance is True, "date_observed"
+        ]
+
+        df3["date_observed_post"] = df3["date_observed_post"].ffill()
+
+        # sort by "dt_skeleton"
+        df3 = df3.sort_values(by="datetime_skeleton")
+
+        df4 = df3.copy()
+
+        # add two columns to df3 `n_dates_split` and `idx` based on the duplicate value
+        df4["idx"] = df4.groupby(
+            (df4["date_observed_pre"] != df4["date_observed_pre"].shift(1)).cumsum()
+        ).cumcount()
+        df4["n_dates_split"] = np.where(
+            (df4["idx"] != 0),
+            ((df4.groupby(["date_observed_pre"]).transform("size")) - 1),
+            0,
+        )
+
+        # %% Recalibration function
+        def recalibration(
+            pre_date: datetime, post_date: datetime, n_dates_split: int, idx: int
+        ) -> DataFrame:
+            """
+            pre_date: a left end of the date for recalibration, where 'true_value' is available
+            post_date: a right end of the date for recalibration, where 'true_value' is available
+            n_dates_split: number of dates between pre_date and post_date as result recalibration
+            idx: index value for the dates obtained from n_dates_split
+            """
+            part_time_len = (post_date - pre_date) / (n_dates_split + 1)
+            parts = []
+            marker = pre_date
+
+            for _ in range(n_dates_split):
+                part = [marker + part_time_len]
+                marker += part_time_len
+                parts.append(part)
+
+            recal_dates_ls = parts[idx - 1]
+            recal_dates_ls = recal_dates_ls[0]
+            return recal_dates_ls
+
+        # this will overwrite the existing column `datetime_skeleton` when recalibrate is True
+        df4["datetime_skeleton"] = df4.apply(
+            lambda x: x["datetime_skeleton"]
+            if x["idx"] == 0
+            else recalibration(
+                x["date_observed_pre"],
+                x["date_observed_post"],
+                x["n_dates_split"],
+                x["idx"],
+            ),
             axis=1,
         )
 
-    # # Example use of recalibration function
-    # recal_dates_ls = recalibration(
-    #     pre_date= datetime(2021,3,15),
-    #     post_date= datetime(2021,3,25),
-    #     splits_num= 3,
-    #     )
+        df6 = df4[
+            ["within_tolerance", col_datetime, "datetime_skeleton", col_value]
+        ].copy()
 
-    # # append the `recal_dates_ls` to column `dt_skeleton`
-    # df3 = df3.append(pd.DataFrame(recal_dates_ls, columns=["dt_skeleton"]), ignore_index = True)
+    if recalibrate is True:
+        return df6
+    else:
+        return df5
 
-    # TODO: Relabel first and last value of 'within_tolerance' as True for ease of operating
-    # with NaT values in 'date_observed_last'/ 'date_observed_ahead' / date_observed
 
-    # %%
-    # PROBLEM 2 fix: if recalibrate is True, re-define the values of
-    # `datetime_skeleton` where `within_tolerance`= False so that the datetime values are
-    # equally spaced between the two nearest observed values. If these missing values are
-    # at the start or end of the time series, then don't change them.
+## need to fix the following things in this function??
+# 4) Enforce that df_merged['datetime_skeleton'].max() >= datetime_end and
+# df_merged['datetime_skeleton'].min() <= datetime_start.
 
-    # PROBLEM 4 fix: check the conditions and add rows as needed so that the start and end datetimes
-    # are accounted for when making predictions
-
-    return df3
+## TODO: Need fixed
+# The last date is missing as it is not able to create an addition row to plug in values in that row
