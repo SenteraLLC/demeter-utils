@@ -114,7 +114,7 @@ df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
 
-# %% test:
+# %% test: only 2 dates, both within datetime_start/end
 dates = [
     datetime(2022, 1, 14),
     datetime(2022, 1, 20, 18),
