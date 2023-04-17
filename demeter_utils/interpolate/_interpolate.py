@@ -40,7 +40,7 @@ def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
 
     df_out.sort_values(by="datetime_skeleton", inplace=True)
 
-    idx_within_tolerance = df_out["within_tolerance"] is True
+    idx_within_tolerance = df_out["within_tolerance"]
 
     # create columns to indicate last and next available "observed" dates for each row
     df_out["datetime_pre"] = np_nan
