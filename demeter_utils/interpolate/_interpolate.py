@@ -1,72 +1,73 @@
-from datetime import datetime
-
-import numpy as np
-import pandas as pd
 from pandas import DataFrame
-from pandas import concat as pd_concat
 
+# from pandas import concat as pd_concat
+# from datetime import datetime
 
-def find_fill_in_dates(
-    df_true_data: DataFrame,
-    starttime: int,
-    endtime: int,
-    temporal_resolution: int,
-    date_plant: datetime,
-) -> DataFrame:
-    """Determine which 'days of year' of 'day after planting' are absent in the input data
-       The input data should have at least `date_observed` and `value_observed` column
+# import numpy as np
+# import pandas as pd
 
-    Args:
-        df_true_data (`DataFrame`): Input ("true") data that is available for a season/year.
-        starttime (`int`): The relative starting date for which data are required.
-        endtime (`int`): The relative end date for which data are required.
-        temporal_resolution (`int`): The minimum temporal resolution desired for the output data.
-        date_plant (`datetime`): The date of planting, if available. Otherwise first day of year which will return "doy" instead of "dap"
+# %%
+# def find_fill_in_dates(
+#     df_true_data: DataFrame,
+#     starttime: int,
+#     endtime: int,
+#     temporal_resolution: int,
+#     date_plant: datetime,
+# ) -> DataFrame:
+#     """Determine which 'days of year' of 'day after planting' are absent in the input data
+#        The input data should have at least `date_observed` and `value_observed` column
 
-    Returns:
-        `DataFrame`: input data concat with a new empty data, column `available` will indicate whether "true" data are
-        available for a given temporal resolution and date range (if avaialbe `True`, else `False`).
-    """
-    # rename the data frame
-    df_in = df_true_data
+#     Args:
+#         df_true_data (`DataFrame`): Input ("true") data that is available for a season/year.
+#         starttime (`int`): The relative starting date for which data are required.
+#         endtime (`int`): The relative end date for which data are required.
+#         temporal_resolution (`int`): The minimum temporal resolution desired for the output data.
+#         date_plant (`datetime`): The date of planting, if available. Otherwise first day of year which will return "doy" instead of "dap"
 
-    # create a new column `dap` for day after planting in data `df_in`
-    df_in["dap"] = (df_in["date_observed"] - date_plant).dt.days
+#     Returns:
+#         `DataFrame`: input data concat with a new empty data, column `available` will indicate whether "true" data are
+#         available for a given temporal resolution and date range (if avaialbe `True`, else `False`).
+#     """
+#     # rename the data frame
+#     df_in = df_true_data
 
-    # create a empty dataframe with all columns in `df_in` dataframe and add a column `dap` based on user input `starttime`, `endtime` and `temporal_resolution`
-    df_join = DataFrame(data=[], columns=df_in.columns)
-    df_join["dap"] = np.arange(
-        np.timedelta64(starttime, "D"),
-        np.timedelta64(endtime, "D"),
-        np.timedelta64(temporal_resolution, "D"),
-    ).astype(np.timedelta64)
-    df_join["dap"] = df_join["dap"].dt.days
+#     # create a new column `dap` for day after planting in data `df_in`
+#     df_in["dap"] = (df_in["date_observed"] - date_plant).dt.days
 
-    # concat two dataframes `df_in` and `df_join`; if `dap` values in two dataframe is duplicate, keep the one from `df_in` only
-    # because `df_in` has `true` values
-    df_observed = (
-        pd_concat([df_in, df_join])
-        .drop_duplicates(subset=["dap"], keep="first")
-        .reset_index(drop=True)
-    )
+#     # create a empty dataframe with all columns in `df_in` dataframe and add a column `dap` based on user input `starttime`, `endtime` and `temporal_resolution`
+#     df_join = DataFrame(data=[], columns=df_in.columns)
+#     df_join["dap"] = np.arange(
+#         np.timedelta64(starttime, "D"),
+#         np.timedelta64(endtime, "D"),
+#         np.timedelta64(temporal_resolution, "D"),
+#     ).astype(np.timedelta64)
+#     df_join["dap"] = df_join["dap"].dt.days
 
-    # create a new column `doy_obs` by extract the day of year from `dap` column
-    df_observed["doy_obs"] = df_observed["dap"] + date_plant.timetuple().tm_yday
+#     # concat two dataframes `df_in` and `df_join`; if `dap` values in two dataframe is duplicate, keep the one from `df_in` only
+#     # because `df_in` has `true` values
+#     df_observed = (
+#         pd_concat([df_in, df_join])
+#         .drop_duplicates(subset=["dap"], keep="first")
+#         .reset_index(drop=True)
+#     )
 
-    # add new column `available` to `df_observed` where true or false is returned based the condition, 'value_observed <=1'
-    available = []
-    for i in df_observed["value_observed"]:
-        if i <= 1:
-            available.append("True")
-        else:
-            available.append("False")
+#     # create a new column `doy_obs` by extract the day of year from `dap` column
+#     df_observed["doy_obs"] = df_observed["dap"] + date_plant.timetuple().tm_yday
 
-    df_observed["available"] = available
+#     # add new column `available` to `df_observed` where true or false is returned based the condition, 'value_observed <=1'
+#     available = []
+#     for i in df_observed["value_observed"]:
+#         if i <= 1:
+#             available.append("True")
+#         else:
+#             available.append("False")
 
-    # sort the dataframe by `doy_obs` in ascending order
-    df_observed = df_observed.sort_values(by=["doy_obs"])
+#     df_observed["available"] = available
 
-    return df_observed
+#     # sort the dataframe by `doy_obs` in ascending order
+#     df_observed = df_observed.sort_values(by=["doy_obs"])
+
+#     return df_observed
 
 
 # %% Example use:
@@ -99,68 +100,68 @@ def find_fill_in_dates(
 #                 NA                    NA                   50      155         False
 #                 NA                    NA                   60      165         False
 
+# %%
+# def generate_fill_in_values(
+#     df_reference_ndvi: DataFrame,
+#     interp_function: str,
+# ) -> DataFrame:
+#     """
+#     # Generate a dataframe with interpolated values given a standard/reference data `df_reference_ndvi' and `interp_function`
+#      The input dataset should have at least `START DATE` and `SAMPLE VALUE` columns.
 
-def generate_fill_in_values(
-    df_reference_ndvi: DataFrame,
-    interp_function: str,
-) -> DataFrame:
-    """
-    # Generate a dataframe with interpolated values given a standard/reference data `df_reference_ndvi' and `interp_function`
-     The input dataset should have at least `START DATE` and `SAMPLE VALUE` columns.
+#     Args:
+#         df_reference_ndvi (`DataFrame`): Input ("reference") data.
+#         interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
 
-    Args:
-        df_reference_ndvi (`DataFrame`): Input ("reference") data.
-        interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
+#     Returns:
+#         `DataFrame`: Input dataset plus three added columns; 'model_type', 'doy_interp' for interpolated temporal resolution and 'ndvi_interp' for interpolated ndvi values.
+#     """
 
-    Returns:
-        `DataFrame`: Input dataset plus three added columns; 'model_type', 'doy_interp' for interpolated temporal resolution and 'ndvi_interp' for interpolated ndvi values.
-    """
+#     # create an arrary of day of year `doy_interp` values for interpolation
+#     doy_interp = np.arange(0, 365, 1).astype(int)
 
-    # create an arrary of day of year `doy_interp` values for interpolation
-    doy_interp = np.arange(0, 365, 1).astype(int)
+#     # Remove NA values from the 'sample value' column in the data 'df_reference_ndvi'
+#     df_reference_ndvi = df_reference_ndvi[df_reference_ndvi["SAMPLE VALUE"].notna()]
 
-    # Remove NA values from the 'sample value' column in the data 'df_reference_ndvi'
-    df_reference_ndvi = df_reference_ndvi[df_reference_ndvi["SAMPLE VALUE"].notna()]
+#     # TODO: For broader use of thie function, define condition to turn the below two chunks only if `doy_obs` column
+#     # is not present in the dataset
 
-    # TODO: For broader use of thie function, define condition to turn the below two chunks only if `doy_obs` column
-    # is not present in the dataset
+#     # Convert the 'start date' column to a datetime object
+#     df_reference_ndvi["START DATE"] = (df_reference_ndvi["START DATE"]).astype(
+#         np.datetime64
+#     )
 
-    # Convert the 'start date' column to a datetime object
-    df_reference_ndvi["START DATE"] = (df_reference_ndvi["START DATE"]).astype(
-        np.datetime64
-    )
+#     # Extract the day of year from the 'start date' column and store it in a new column 'doy_obs'
+#     df_reference_ndvi["doy_obs"] = df_reference_ndvi["START DATE"].apply(
+#         lambda x: x.timetuple().tm_yday
+#     )
 
-    # Extract the day of year from the 'start date' column and store it in a new column 'doy_obs'
-    df_reference_ndvi["doy_obs"] = df_reference_ndvi["START DATE"].apply(
-        lambda x: x.timetuple().tm_yday
-    )
+#     # remane data frame to 'df_forinterp'
+#     df_forinterp = df_reference_ndvi
 
-    # remane data frame to 'df_forinterp'
-    df_forinterp = df_reference_ndvi
+#     # create a new data frame 'df_reference_interp' to store the interpolated values.
+#     df_reference_interp = pd.DataFrame(
+#         columns=["model_type", "doy_interp", "ndvi_interp"]
+#     )
 
-    # create a new data frame 'df_reference_interp' to store the interpolated values.
-    df_reference_interp = pd.DataFrame(
-        columns=["model_type", "doy_interp", "ndvi_interp"]
-    )
+#     # generate interpolated ndvi values using the interp_function specified in function
+#     ndvi_interp = interp_function(
+#         x=df_forinterp["doy_obs"], y=df_forinterp["SAMPLE VALUE"]
+#     )(doy_interp)
 
-    # generate interpolated ndvi values using the interp_function specified in function
-    ndvi_interp = interp_function(
-        x=df_forinterp["doy_obs"], y=df_forinterp["SAMPLE VALUE"]
-    )(doy_interp)
+#     data = {
+#         "model_type": interp_function,
+#         "doy_interp": doy_interp,
+#         "ndvi_interp": ndvi_interp,
+#     }
+#     df_temp = pd.DataFrame(data=data)
+#     df_reference_interp = pd.concat([df_reference_interp, df_temp], axis=0)
 
-    data = {
-        "model_type": interp_function,
-        "doy_interp": doy_interp,
-        "ndvi_interp": ndvi_interp,
-    }
-    df_temp = pd.DataFrame(data=data)
-    df_reference_interp = pd.concat([df_reference_interp, df_temp], axis=0)
-
-    # remove NA values from the dataframe
-    df_reference_interp = df_reference_interp[
-        df_reference_interp["ndvi_interp"].notna()
-    ]
-    return df_reference_interp
+#     # remove NA values from the dataframe
+#     df_reference_interp = df_reference_interp[
+#         df_reference_interp["ndvi_interp"].notna()
+#     ]
+#     return df_reference_interp
 
 
 # %% Example use:
@@ -191,6 +192,7 @@ def generate_fill_in_values(
 #           Akima1DInterpolator         2               0.275
 
 
+# %%
 def fill_missing_values(
     df_observed: DataFrame,
     df_reference_interp: DataFrame,
@@ -200,8 +202,8 @@ def fill_missing_values(
     with corresponding 'ndvi' values from 'df_reference_interp' if the 'doy_obs'and 'doy_interp' values in two dataframes match.
 
     Parameters:
-    df_observed (DataFrame): first dataframe obtained by using `find_fill_in_date` function
-    df_reference_interp (DataFrame): second dataframe obtained by using `generate_fill_in_values` function
+    df_observed (DataFrame): dataframe returned by the `get_datetime_skeleton_for_ts` function
+    df_reference_interp (DataFrame): dataframe returned by `generate_fill_in_values` function
 
     Returns:
     df_final (pandas.DataFrame): updated first dataframe with missing values filled
@@ -211,7 +213,7 @@ def fill_missing_values(
     df_final = df_observed.copy()
 
     # Find the missing 'value_observed' values in df_observed
-    missing_ndvi = df_final["available"] == "False"
+    missing_ndvi = df_final["within_tolerance"] == "False"
 
     # Create a dictionary to map 'doy_interp' values in df_interp to 'ndvi_interp' values
     doy_ndvi_dict = dict(
