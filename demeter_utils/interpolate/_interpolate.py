@@ -167,9 +167,8 @@ def find_fill_in_dates(
     list_rq_datetime = [
         datetime_start + (temporal_resolution * x) for x in range(length_out + 1)
     ]
-    list_rq_datetime[
-        -1
-    ] = datetime_end  # ensure last value of rq_datetime is datetime_end
+    # ensure last value of rq_datetime is datetime_end
+    list_rq_datetime[-1] = datetime_end
 
     df_join["datetime_proposed"] = list_rq_datetime
     df_join["within_tolerance"] = False
