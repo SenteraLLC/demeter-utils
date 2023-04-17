@@ -50,6 +50,7 @@ def plot_and_compare(df_test: DataFrame):
     plt.axvline(x=ends[0], c="black")
     plt.axvline(x=ends[1], c="black")
     plt.ylim(0, 3)
+    plt.xticks(rotation=60)
     plt.show()
 
 
@@ -122,3 +123,5 @@ values = [fx(dt) for dt in dates]
 df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
+
+# %%
