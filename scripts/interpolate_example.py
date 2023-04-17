@@ -66,7 +66,7 @@ df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
 
-# %% test case 2: start date on outside of range
+# %% test case 2: earliest date before start date and latest date inside date range
 dates = [
     datetime(2021, 12, 31),
     datetime(2022, 1, 14),
