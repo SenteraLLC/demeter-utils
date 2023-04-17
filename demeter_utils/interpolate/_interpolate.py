@@ -70,20 +70,21 @@ def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
     df_out.loc[idx_within_tolerance, "datetime_post"] = df_out.loc[
         idx_within_tolerance, "datetime_skeleton"
     ]
-    df_out["datetime_post"] = df_out["datetime_post"].ffill()
+    df_out["datetime_post"].ffill(inplace=True)
 
     # sort once more
     df_out.sort_values(by="datetime_skeleton", inplace=True)
 
     # add two columns to indicate num splits (`n_dates_split`) and split index (`idx`)
     df_out["idx"] = df_out.groupby(by=["datetime_pre", "datetime_post"]).cumcount() + 1
-    df_out.loc[df_out["datetime_post"] == df_out["datetime_pre"], "idx"] = 0
+    df_out.loc[
+        df_out["datetime_post"] == df_out["datetime_pre"], "idx"
+    ] = 0  # change idx to 0 for matched rows
 
     df_out["n_dates_split"] = df_out.groupby(by=["datetime_pre", "datetime_post"])[
         "idx"
     ].transform("max")
 
-    # this will overwrite the existing column `datetime_skeleton` when recalibrate is True
     df_out["datetime_skeleton"] = df_out.apply(
         lambda row: row["datetime_skeleton"]
         if row["idx"] == 0
