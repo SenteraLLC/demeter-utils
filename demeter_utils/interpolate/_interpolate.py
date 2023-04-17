@@ -169,7 +169,7 @@ def find_fill_in_dates(
     ]
     list_rq_datetime[
         -1
-    ] = datetime_end  # sometimes last value of rq_datetime can be after datetime_end
+    ] = datetime_end  # ensure last value of rq_datetime is datetime_end
 
     df_join["datetime_proposed"] = list_rq_datetime
     df_join["within_tolerance"] = False
