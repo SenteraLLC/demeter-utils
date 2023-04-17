@@ -1,10 +1,20 @@
 from datetime import datetime, timedelta
+from typing import Dict
 
 from numpy import ceil
 from numpy import nan as np_nan
 from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
 from pandas import merge_asof
+
+
+def _get_row_template(col_value: str) -> Dict:
+    return {
+        "within_tolerance": [False],
+        "datetime_skeleton": [NaT],
+        "datetime_proposed": [NaT],
+        col_value: [np_nan],
+    }
 
 
 def _recalibrate_date_split(
@@ -147,7 +157,6 @@ def find_fill_in_dates(
         where `within_tolerance` column indicates whether an observed value was available (True) for a given
         time point or still needs to be predicted.
     """
-    # rename the data frame
     df_in = df_true_data.copy()
 
     # determine "length_out" based on temporal resolution
@@ -158,7 +167,9 @@ def find_fill_in_dates(
     list_rq_datetime = [
         datetime_start + (temporal_resolution * x) for x in range(length_out + 1)
     ]
-    list_rq_datetime[-1] = datetime_end
+    list_rq_datetime[
+        -1
+    ] = datetime_end  # sometimes last value of rq_datetime can be after datetime_end
 
     df_join["datetime_proposed"] = list_rq_datetime
     df_join["within_tolerance"] = False
@@ -196,28 +207,14 @@ def find_fill_in_dates(
         axis=1,
     )
 
-    # sort by "datetime_skeleton"
-    df.sort_values(by="datetime_skeleton", inplace=True)
-    df.reset_index(drop=False, inplace=True)
-
-    cols_keep = [
-        "within_tolerance",
-        "datetime_skeleton",
-        "datetime_proposed",
-        col_value,
-    ]
-    df = df[cols_keep]
+    row_template = _get_row_template(col_value)
+    cols_keep = list(row_template.keys())
+    df = df.sort_values(by="datetime_skeleton").reset_index(drop=False)[cols_keep]
 
     if recalibrate:
         df = _recalibrate_datetime_skeleton(df)
 
     # check that the full time range is covered
-    row_template = {
-        "within_tolerance": [False],
-        "datetime_skeleton": [NaT],
-        "datetime_proposed": [NaT],
-        col_value: [np_nan],
-    }
     if df["datetime_skeleton"].min() > datetime_start:
         first_row = row_template.copy()
         first_row["datetime_skeleton"] = [datetime_start]
