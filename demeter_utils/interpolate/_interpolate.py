@@ -188,10 +188,14 @@ def find_fill_in_dates(
         df_merged, col_datetime=col_datetime, col_value=col_value
     )
 
-    # add the rows from `df_in` that were not included in `df_merged`
+    # add the rows from `df_in` that were not included in `df_merged`...
     idx_missing = ~df_in[col_datetime].isin(df_merged[col_datetime])
     df_missing = df_in.loc[idx_missing][[col_datetime, col_value]]
     df_missing.insert(0, "datetime_proposed", NaT)
+
+    # ... unless they are outside of the desired date range
+    df_missing = df_missing.loc[df_missing[col_datetime] >= datetime_start]
+    df_missing = df_missing.loc[df_missing[col_datetime] <= datetime_end]
     df = pd_concat([df_merged, df_missing], axis=0, ignore_index=True)
 
     # indicate where data is available
