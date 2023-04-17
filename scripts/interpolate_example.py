@@ -54,7 +54,7 @@ def plot_and_compare(df_test: DataFrame):
     plt.show()
 
 
-# %% test case 1: missing start and end dates
+# %% test case 1: all dates within range, no observed dates matched on start or end date
 dates = [
     datetime(2022, 1, 5),
     datetime(2022, 1, 14),
