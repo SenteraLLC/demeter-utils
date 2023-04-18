@@ -26,10 +26,11 @@ def _recalibrate_date_split(
     """
     Gets `idx` of `n_dates_split` evenly-spaced split points between `datetime_pre` and `datetime_post`.
 
-    datetime_pre (datetime): Lower bound of the date range to be split.
-    datetime_post (datetime): Upper bound of the date range to be split.
-    n_dates_split (int): Number of evenly-spaced split points within date range.
-    idx (int): Indicates which split index (starting from 1) should be returned.
+    Args:
+         datetime_pre (datetime): Lower bound of the date range to be split.
+         datetime_post (datetime): Upper bound of the date range to be split.
+         n_dates_split (int): Number of evenly-spaced split points within date range.
+         idx (int): Indicates which split index (starting from 1) should be returned.
     """
     datetime_delta = (datetime_post - datetime_pre) / (n_dates_split + 1)
 
@@ -127,7 +128,7 @@ def _maybe_fix_duplicate_matches(
     return df_merged
 
 
-def find_fill_in_dates(
+def get_datetime_skeleton_for_ts(
     df_true_data: DataFrame,
     datetime_start: datetime,
     datetime_end: datetime,
@@ -151,8 +152,8 @@ def find_fill_in_dates(
         col_datetime (`str`): Column name for column in `df_true_data` that holds time series temporal data.
         col_value (`str`): Column name for column in `df_true_data` that holds time series value data.
 
-        recalibrate (`bool`): Should the proposed temporal skeleton for the time series be recalibrated
-            according to available data?
+        recalibrate (`bool`): Whether `date_skeleton` dates should be adjusted so they are evenly spaced between the
+            previous and subsequent observed dates. Defaults to True.
 
     Returns:
         `DataFrame` containing desired time series data with date information held in `datetime_skeleton`
