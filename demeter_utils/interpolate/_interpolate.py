@@ -234,7 +234,7 @@ def get_datetime_skeleton_for_ts(
     return df
 
 
-# %%
+# %% NOTE: Review required for the code below this only
 def generate_fill_in_values(
     df_reference_ndvi: DataFrame,
     datetime_start: datetime,
@@ -254,134 +254,63 @@ def generate_fill_in_values(
         interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
 
     Returns `DataFrame` wtih following columns:
-        "datetime_interp": Datetime for the value observed/interpolated
+        "datetime_interp": Datetime for the value observed and interpolated
         "doy_interp": Day of the year for the corresponding `datetime_interp`
         "model_type": Interpolation model/function used
-        "ndvi_interp": Value of NDVI observed/interpolated
+        "sample_value_interp": Values of sample (say NDVI) observed and interpolated
 
     """
 
     # copy the `df_reference_ndvi` as `df_forinterp`
     df_forinterp = df_reference_ndvi.copy()
 
-    # Remove NA values from the 'sample_value' column in the data 'df_forinterp'
+    # Remove row with NA values in the 'sample_value' column from the data 'df_forinterp'
     df_forinterp = df_forinterp[df_forinterp["sample_value"].notna()]
 
     # Convert the 'date_start' column to a datetime.datetime() object
     df_forinterp["date_start"] = (df_forinterp["date_start"]).astype(datetime64)
 
-    # Extract the day of year from the 'date_start' column and store it in a new column 'doy_obs'
-    df_forinterp["doy_obs"] = df_forinterp["date_start"].apply(
-        lambda x: x.timetuple().tm_yday
-    )
-
     # create an arrary of `datetime_interp` values for interpolation
     datetime_interp = arange(datetime_start, datetime_end, temporal_resolution)
 
-    # create a temp df `df_forinterp_temp` to store `datetime_interp` and `doy_interp`
+    # create a temp df `df_forinterp_temp` to store `datetime_interp`
     df_forinterp_temp = DataFrame(datetime_interp, columns=["datetime_interp"]).astype(
         datetime64
     )
 
-    # convert the `datetime_interp` to `doy_interp` and add the values to a new column
-    df_forinterp_temp["doy_interp"] = df_forinterp_temp["datetime_interp"].apply(
-        lambda x: x.timetuple().tm_yday
-    )
-
-    doy_interp = df_forinterp_temp["doy_interp"]
+    # # %% NOTE: CASE 1 - Interpolate based on `datetime` without converting to integer
 
     # assign `x_interp`, `x_obs` and `y_obs` values
-    x_interp = doy_interp  # Or, datetime_interp: The code does not work for datetime_interp as of now
-    x_obs = df_forinterp["doy_obs"]
+    x_interp = df_forinterp_temp["datetime_interp"]
+    x_obs = df_forinterp["date_start"]
     y_obs = df_forinterp["sample_value"]
 
-    # create a new data frame 'df_reference_interp' to store the interpolated values.
-    df_reference_interp = DataFrame(columns=["model_type", "doy_interp", "ndvi_interp"])
+    # create a new data frame 'df_ref_interp' to store the interpolated values.
+    df_ref_interp = DataFrame(
+        columns=["model_type", "datetime_interp", "sample_value_interp"]
+    )
 
-    # generate interpolated ndvi values using the interp_function specified in function
-    ndvi_interp = interp_function(x=x_obs, y=y_obs)(x_interp)
+    # generate interpolated sample values using the `interp_function` specified in function
+    sample_value_interp = interp_function(x=x_obs, y=y_obs)(x_interp)
 
     data = {
         "model_type": str(interp_function),
-        "doy_interp": x_interp,
-        "ndvi_interp": ndvi_interp,
+        "datetime_interp": x_interp,
+        "sample_value_interp": sample_value_interp,
     }
     df_temp = DataFrame(data=data)
 
-    # create a df `df_reference_interp` with concat of `df_reference_interp` and `df_temp`
-    df_reference_interp = pd_concat([df_reference_interp, df_temp], axis=0)
+    # create a df `df_reference_interp` with concat of `df_ref_interp` and `df_temp`
+    df_reference_interp = pd_concat([df_ref_interp, df_temp], axis=0)
 
-    # create a df `df_reference_interp_merged` by merging `df_reference_interp` and `df_forinterp_temp` based on 'doy_interp' column
+    # create a df `df_reference_interp_merged` by merging `df_reference_interp` and `df_forinterp_temp` based on 'datetime_interp_int' column
     df_reference_interp_merged = merge(
-        df_forinterp_temp, df_reference_interp, on="doy_interp"
+        df_forinterp_temp, df_reference_interp, on="datetime_interp"
     )
 
     # remove NA values from the dataframe
     df_reference_interp_merged = df_reference_interp_merged[
-        df_reference_interp_merged["ndvi_interp"].notna()
+        df_reference_interp_merged["sample_value_interp"].notna()
     ]
+
     return df_reference_interp_merged
-
-
-# df_interp = generate_fill_in_values(
-#     df_reference_ndvi = df_gimms_ndvi,
-#     datetime_start = datetime(2019, 5, 6),
-#     datetime_end = datetime(2019, 10, 1),
-#     temporal_resolution = timedelta(days=1),
-#     interp_function = CubicSpline,
-#     )
-
-# %% Example:
-#     True data:
-#               START DATE         SAMPLE VALUE
-#               2022-05-01             0.4
-#               2022-05-15             0.5
-#               2022-05-25             0.6
-
-#     Desired output for:
-#         df_interp = generate_fill_in_values(
-#     df_reference_ndvi = df_gimms_ndvi,
-#     datetime_start = datetime(2019, 5, 6),
-#     datetime_end = datetime(2019, 10, 1),
-#     temporal_resolution = timedelta(days=1),
-#     interp_function = CubicSpline,
-#     )
-#
-#               model_type         doy_interp        ndvi_interp
-#           Akima1DInterpolator         1               0.265
-#           Akima1DInterpolator         2               0.275
-
-
-# %% TODO: Delete if `doy_interp` is used instead of `datetime_interp`
-# convert `doy_interp` to float
-# def dt64_to_float(dt64):
-#     Converts numpy.datetime64 to year as float.
-
-#     Rounded to days
-
-#     Parameters
-#     ----------
-#     dt64 : np.datetime64 or np.ndarray(dtype='datetime64[X]')
-#         date data
-
-#     Returns
-#     -------
-#     float or np.ndarray(dtype=float)
-#         Year in floating point representation
-#     """
-
-#     year = dt64.astype('M8[Y]')
-#     days = (dt64 - year).astype('timedelta64[D]')
-#     year_next = year + np.timedelta64(1, 'Y')
-#     days_of_year = (year_next.astype('M8[D]') - year.astype('M8[D]')
-#                     ).astype('timedelta64[D]')
-#     dt_float = 1970 + year.astype(float) + days / (days_of_year)
-#     return dt_float
-
-# doy_interp_float = dt64_to_float(doy_interp)
-
-
-# TODO: Delete this if not required
-# datetime_obs_array = df_forinterp["date_start"].to_numpy()
-# datetime_obs_float = dt64_to_float(datetime_obs_array)
-# %%

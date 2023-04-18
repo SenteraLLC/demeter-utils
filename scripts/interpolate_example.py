@@ -137,6 +137,27 @@ plot_and_compare(df_test)
 
 # %% Test for function `generate_fill_in_values`
 
+# %% Example:
+#     True data:
+#               date_start         sample_value
+#               2019-05-01             0.4
+#               2019-05-15             0.5
+#               2019-05-25             0.6
+
+#     Desired output for:
+#         df_interp = generate_fill_in_values(
+#     df_reference_ndvi = df_gimms_ndvi,
+#     datetime_start = datetime(2019, 5, 1),
+#     datetime_end = datetime(2019, 10, 1),
+#     temporal_resolution = timedelta(days=1),
+#     interp_function = CubicSpline,
+#     )
+#
+#           datetime_interp         model_type                 ndvi_interp
+#           2019-05-01             Akima1DInterpolator            0.265
+#           2019-05-02             Akima1DInterpolator            0.275
+#           2019-05-03             Akima1DInterpolator            0.285
+
 # load the standard/reference data
 # TODO: Use the function by Marissa
 GIMMS_COLS = {
@@ -156,13 +177,18 @@ df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
     GIMMS_COLS.values()
 ]
 
-
 # using `generate_fill_in_values` to generate df_interp
-df_reference_interp = df_interp = generate_fill_in_values(
+df_interp = generate_fill_in_values(
     df_reference_ndvi=df_gimms_ndvi,
     datetime_start=datetime(2019, 5, 6),
     datetime_end=datetime(2019, 10, 1),
     temporal_resolution=timedelta(days=1),
     interp_function=Akima1DInterpolator,
 )
-# %%
+# %% Check the distribution of interpolated values and the observed values
+df_observed = df_gimms_ndvi
+df_interpolated = df_interp
+plt.plot(df_interpolated["datetime_interp"], df_interpolated["ndvi_interp"], ".r-")
+plt.scatter(df_observed["date_start"], df_observed["sample_value"], c="b")
+plt.xticks(rotation=60)
+plt.show()
