@@ -127,7 +127,7 @@ def _maybe_fix_duplicate_matches(
     return df_merged
 
 
-def find_fill_in_dates(
+def get_datetime_skeleton_for_ts(
     df_true_data: DataFrame,
     datetime_start: datetime,
     datetime_end: datetime,
