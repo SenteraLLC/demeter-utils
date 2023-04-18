@@ -278,8 +278,6 @@ def generate_fill_in_values(
         datetime64
     )
 
-    # # %% NOTE: CASE 1 - Interpolate based on `datetime` without converting to integer
-
     # assign `x_interp`, `x_obs` and `y_obs` values
     x_interp = df_forinterp_temp["datetime_interp"]
     x_obs = df_forinterp["date_start"]
