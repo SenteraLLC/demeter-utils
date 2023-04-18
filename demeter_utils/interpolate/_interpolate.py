@@ -196,8 +196,9 @@ def find_fill_in_dates(
     df_missing.insert(0, "datetime_proposed", NaT)
 
     # ... unless they are outside of the desired date range
-    df_missing = df_missing.loc[df_missing[col_datetime] >= datetime_start]
-    df_missing = df_missing.loc[df_missing[col_datetime] <= datetime_end]
+    tolerance = tolerance_alpha * temporal_resolution
+    df_missing = df_missing.loc[df_missing[col_datetime] >= datetime_start - tolerance]
+    df_missing = df_missing.loc[df_missing[col_datetime] <= datetime_end + tolerance]
     df = pd_concat([df_merged, df_missing], axis=0, ignore_index=True)
 
     # indicate where data is available
