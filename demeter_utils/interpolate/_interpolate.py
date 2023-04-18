@@ -151,8 +151,8 @@ def find_fill_in_dates(
         col_datetime (`str`): Column name for column in `df_true_data` that holds time series temporal data.
         col_value (`str`): Column name for column in `df_true_data` that holds time series value data.
 
-        recalibrate (`bool`): Should the proposed temporal skeleton for the time series be recalibrated
-            according to available data?
+        recalibrate (`bool`): Whether `date_skeleton` dates should be adjusted so they are evenly spaced between the
+            previous and subsequent observed dates. Defaults to True.
 
     Returns:
         `DataFrame` containing desired time series data with date information held in `datetime_skeleton`
