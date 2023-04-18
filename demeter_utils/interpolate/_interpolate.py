@@ -124,6 +124,8 @@ def _maybe_fix_duplicate_matches(
         df_merged.loc[duplicated & matched_rows, col_datetime] = NaT
         df_merged.loc[duplicated & matched_rows, col_value] = np_nan
 
+    return df_merged
+
 
 def find_fill_in_dates(
     df_true_data: DataFrame,
@@ -184,7 +186,7 @@ def find_fill_in_dates(
     )
 
     # ensure no values matched twice (happens if date falls along halfway point)
-    _maybe_fix_duplicate_matches(
+    df_merged = _maybe_fix_duplicate_matches(
         df_merged, col_datetime=col_datetime, col_value=col_value
     )
 
