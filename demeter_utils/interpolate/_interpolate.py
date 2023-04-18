@@ -26,10 +26,11 @@ def _recalibrate_date_split(
     """
     Gets `idx` of `n_dates_split` evenly-spaced split points between `datetime_pre` and `datetime_post`.
 
-    datetime_pre (datetime): Lower bound of the date range to be split.
-    datetime_post (datetime): Upper bound of the date range to be split.
-    n_dates_split (int): Number of evenly-spaced split points within date range.
-    idx (int): Indicates which split index (starting from 1) should be returned.
+    Args:
+         datetime_pre (datetime): Lower bound of the date range to be split.
+         datetime_post (datetime): Upper bound of the date range to be split.
+         n_dates_split (int): Number of evenly-spaced split points within date range.
+         idx (int): Indicates which split index (starting from 1) should be returned.
     """
     datetime_delta = (datetime_post - datetime_pre) / (n_dates_split + 1)
 
