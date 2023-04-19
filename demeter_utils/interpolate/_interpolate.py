@@ -234,8 +234,7 @@ def get_datetime_skeleton_for_ts(
     return df
 
 
-# %% NOTE: Review required for the code below this only
-def generate_fill_in_values(
+def populate_fill_in_values(
     df_reference: DataFrame,
     df_skeleton: DataFrame,
     interp_function: str,

@@ -8,8 +8,8 @@ from pandas import DataFrame, read_csv
 from scipy.interpolate import PchipInterpolator
 
 from demeter_utils.interpolate._interpolate import (
-    generate_fill_in_values,
     get_datetime_skeleton_for_ts,
+    populate_fill_in_values,
 )
 
 # from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
@@ -178,7 +178,7 @@ df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
     GIMMS_COLS.values()
 ]
 
-df_skeleton_final = generate_fill_in_values(
+df_skeleton_final = populate_fill_in_values(
     df_reference=df_gimms_ndvi,
     df_skeleton=df_skeleton,
     interp_function=PchipInterpolator,
