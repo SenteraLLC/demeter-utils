@@ -5,7 +5,7 @@ from io import StringIO
 import matplotlib.pyplot as plt
 import requests
 from pandas import DataFrame, read_csv
-from scipy.interpolate import Akima1DInterpolator
+from scipy.interpolate import PchipInterpolator
 
 from demeter_utils.interpolate._interpolate import (
     generate_fill_in_values,
@@ -132,32 +132,33 @@ df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
 
-# %%
-
+#######################################################################
 
 # %% Test for function `generate_fill_in_values`
+# %% Step 0: Generate dataframe from dem-357
 
-# %% Example:
-#     True data:
-#               date_start         sample_value
-#               2019-05-01             0.4
-#               2019-05-15             0.5
-#               2019-05-25             0.6
+dates = [
+    datetime(2022, 4, 1),
+    datetime(2022, 5, 13),
+    datetime(2022, 6, 20),
+    datetime(2022, 8, 15),
+]
+values = [0.25, 0.32, 0.50, 0.65]
+df_test = DataFrame(data={"date_start": dates, "sample_value": values})
 
-#     Desired output for:
-#         df_interp = generate_fill_in_values(
-#     df_reference_ndvi = df_gimms_ndvi,
-#     datetime_start = datetime(2019, 5, 1),
-#     datetime_end = datetime(2019, 10, 1),
-#     temporal_resolution = timedelta(days=1),
-#     interp_function = CubicSpline,
-#     )
+df_skeleton = get_datetime_skeleton_for_ts(
+    df_true_data=df_test,
+    datetime_start=datetime(2022, 3, 1),
+    datetime_end=datetime(2022, 10, 31),
+    temporal_resolution=timedelta(days=7),
+    tolerance_alpha=0.5,
+    col_datetime="date_start",
+    col_value="sample_value",
+    recalibrate=False,
+)
+
+# %% Step 1: Load the reference data and and generate dataframe from dem-358
 #
-#           datetime_interp         model_type                 ndvi_interp
-#           2019-05-01             Akima1DInterpolator            0.265
-#           2019-05-02             Akima1DInterpolator            0.275
-#           2019-05-03             Akima1DInterpolator            0.285
-
 # load the standard/reference data
 # TODO: Use the function by Marissa
 GIMMS_COLS = {
@@ -170,25 +171,26 @@ GIMMS_COLS = {
     "MAX VALUE": "max_hist_value",
 }
 req = requests.get(
-    "https://glam1.gsfc.nasa.gov/api/gettbl/v4?sat=MOD&version=v11&layer=NDVI&mask=NASS_2011-2016_corn&shape=ADM&ids=110955&ts_type=seasonal&years=2019&start_month=1&num_months=12&format=csv"
+    "https://glam1.gsfc.nasa.gov/api/gettbl/v4?sat=MOD&version=v11&layer=NDVI&mask=NASS_2011-2016_corn&shape=ADM&ids=110955&ts_type=seasonal&years=2022&start_month=1&num_months=12&format=csv"
 )
 text = StringIO(req.content.decode("utf-8"))
 df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
     GIMMS_COLS.values()
 ]
 
-# using `generate_fill_in_values` to generate df_interp
-df_interp = generate_fill_in_values(
-    df_reference_ndvi=df_gimms_ndvi,
-    datetime_start=datetime(2019, 5, 6),
-    datetime_end=datetime(2019, 10, 1),
-    temporal_resolution=timedelta(days=1),
-    interp_function=Akima1DInterpolator,
+df_skeleton_final = generate_fill_in_values(
+    df_reference=df_gimms_ndvi,
+    df_skeleton=df_skeleton,
+    interp_function=PchipInterpolator,
 )
+
 # %% Check the distribution of interpolated values and the observed values
-df_observed = df_gimms_ndvi
-df_interpolated = df_interp
-plt.plot(df_interpolated["datetime_interp"], df_interpolated["ndvi_interp"], ".r-")
-plt.scatter(df_observed["date_start"], df_observed["sample_value"], c="b")
+df_final = df_skeleton_final
+colors = {True: "blue", False: "red"}
+plt.scatter(
+    df_final["datetime_skeleton"],
+    df_final["sample_value"],
+    c=df_final["true_data"].map(colors),
+)
 plt.xticks(rotation=60)
 plt.show()

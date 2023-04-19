@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 from typing import Dict
 
-from numpy import arange, ceil, datetime64
+from numpy import ceil, datetime64
 from numpy import nan as np_nan
 from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
-from pandas import merge, merge_asof
+from pandas import merge_asof
 
 
 def _get_row_template(col_value: str) -> Dict:
@@ -236,33 +236,25 @@ def get_datetime_skeleton_for_ts(
 
 # %% NOTE: Review required for the code below this only
 def generate_fill_in_values(
-    df_reference_ndvi: DataFrame,
-    datetime_start: datetime,
-    datetime_end: datetime,
-    temporal_resolution: timedelta,
+    df_reference: DataFrame,
+    df_skeleton: DataFrame,
     interp_function: str,
 ) -> DataFrame:
     """
-    # Generate a dataframe with interpolated values given a standard/reference data `df_reference_ndvi' and `interp_function`
+    # Generate a dataframe with interpolated values given a standard/reference data `df_reference', `df_skeleton` and `interp_function`
      The input dataset should have at least `date_start` and `sample_value` columns.
 
     Args:
-        df_reference_ndvi (`DataFrame`): Input ("reference") data.
-        datetime_start (`datetime.datetime`): Starting datetime for interpolation of reference data.
-        datetime_end (`datetime.datetime`): Ending datetime for interpolation of reference data.
-        temporal_resolution (`datetime.timedelta`): The minimum temporal resolution desired for the output interpolation of reference data.
+        df_reference (`DataFrame`): Standard ("reference") data.
+        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
         interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
 
-    Returns `DataFrame` wtih following columns:
-        "datetime_interp": Datetime for the value observed and interpolated
-        "doy_interp": Day of the year for the corresponding `datetime_interp`
-        "model_type": Interpolation model/function used
-        "sample_value_interp": Values of sample (say NDVI) observed and interpolated
-
+    Returns `DataFrame` wtih following column added to the `df_skeleton`:
+        "inference_value": Datetime for the value observed and interpolated based on df_reference
     """
 
     # copy the `df_reference_ndvi` as `df_forinterp`
-    df_forinterp = df_reference_ndvi.copy()
+    df_forinterp = df_reference.copy()
 
     # Remove row with NA values in the 'sample_value' column from the data 'df_forinterp'
     df_forinterp = df_forinterp[df_forinterp["sample_value"].notna()]
@@ -270,45 +262,36 @@ def generate_fill_in_values(
     # Convert the 'date_start' column to a datetime.datetime() object
     df_forinterp["date_start"] = (df_forinterp["date_start"]).astype(datetime64)
 
-    # create an arrary of `datetime_interp` values for interpolation
-    datetime_interp = arange(datetime_start, datetime_end, temporal_resolution)
-
-    # create a temp df `df_forinterp_temp` to store `datetime_interp`
-    df_forinterp_temp = DataFrame(datetime_interp, columns=["datetime_interp"]).astype(
-        datetime64
-    )
-
     # assign `x_interp`, `x_obs` and `y_obs` values
-    x_interp = df_forinterp_temp["datetime_interp"]
+    x_interp = df_skeleton["datetime_skeleton"]
     x_obs = df_forinterp["date_start"]
     y_obs = df_forinterp["sample_value"]
 
-    # create a new data frame 'df_ref_interp' to store the interpolated values.
-    df_ref_interp = DataFrame(
-        columns=["model_type", "datetime_interp", "sample_value_interp"]
-    )
-
     # generate interpolated sample values using the `interp_function` specified in function
-    sample_value_interp = interp_function(x=x_obs, y=y_obs)(x_interp)
+    inference_value = interp_function(x=x_obs, y=y_obs)(x_interp)
 
-    data = {
-        "model_type": str(interp_function),
-        "datetime_interp": x_interp,
-        "sample_value_interp": sample_value_interp,
-    }
-    df_temp = DataFrame(data=data)
+    # add the values to a new column `inference_value` in `df_skeleton`
+    df_skeleton_in = df_skeleton.copy()
+    df_skeleton_in["inference_value"] = inference_value
 
-    # create a df `df_reference_interp` with concat of `df_ref_interp` and `df_temp`
-    df_reference_interp = pd_concat([df_ref_interp, df_temp], axis=0)
-
-    # create a df `df_reference_interp_merged` by merging `df_reference_interp` and `df_forinterp_temp` based on 'datetime_interp_int' column
-    df_reference_interp_merged = merge(
-        df_forinterp_temp, df_reference_interp, on="datetime_interp"
+    # replace the NaN values in `sample_value` column with values in `inference_value` column
+    # based on the `within_tolerance` condition
+    df_skeleton_in["sample_value"] = df_skeleton_in.apply(
+        lambda row: row["sample_value"]
+        if row["within_tolerance"] is True
+        else row["inference_value"],
+        axis=1,
     )
 
-    # remove NA values from the dataframe
-    df_reference_interp_merged = df_reference_interp_merged[
-        df_reference_interp_merged["sample_value_interp"].notna()
+    # Keep the selected columns only and rename as required
+    columns_selected = {
+        "within_tolerance": "true_data",
+        "datetime_skeleton": "datetime_skeleton",
+        "sample_value": "sample_value",
+    }
+
+    df_skeleton_out = df_skeleton_in.rename(columns=columns_selected)[
+        [*columns_selected.values()]
     ]
 
-    return df_reference_interp_merged
+    return df_skeleton_out
