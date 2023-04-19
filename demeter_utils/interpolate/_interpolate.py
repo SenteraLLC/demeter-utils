@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, Union
 
 from numpy import ceil, datetime64
 from numpy import nan as np_nan
 from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
 from pandas import merge_asof
+from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
 
 
 def _get_row_template(col_value: str) -> Dict:
@@ -234,22 +235,18 @@ def get_datetime_skeleton_for_ts(
     return df
 
 
-def populate_fill_in_values(
+def get_inference_fx_from_df_reference(
     df_reference: DataFrame,
-    df_skeleton: DataFrame,
-    interp_function: str,
-) -> DataFrame:
+    interp_type: str,
+) -> Union[Akima1DInterpolator, CubicSpline, PchipInterpolator]:
     """
-    # Generate a dataframe with interpolated values given a standard/reference data `df_reference', `df_skeleton` and `interp_function`
-     The input dataset should have at least `date_start` and `sample_value` columns.
+    # Generate a inference function from a reference data based on interpolation type
 
     Args:
         df_reference (`DataFrame`): Standard ("reference") data.
-        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
-        interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
+        interp_type (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
 
-    Returns `DataFrame` wtih following column added to the `df_skeleton`:
-        "inference_value": Datetime for the value observed and interpolated based on df_reference
+    Returns the fitted interpolation function
     """
 
     # copy the `df_reference_ndvi` as `df_forinterp`
@@ -261,13 +258,37 @@ def populate_fill_in_values(
     # Convert the 'date_start' column to a datetime.datetime() object
     df_forinterp["date_start"] = (df_forinterp["date_start"]).astype(datetime64)
 
-    # assign `x_interp`, `x_obs` and `y_obs` values
-    x_interp = df_skeleton["datetime_skeleton"]
+    # assign `x_obs` and `y_obs` values
     x_obs = df_forinterp["date_start"]
     y_obs = df_forinterp["sample_value"]
 
-    # generate interpolated sample values using the `interp_function` specified in function
-    inference_value = interp_function(x=x_obs, y=y_obs)(x_interp)
+    # create the `infer_fucntion` function
+    def infer_function(x_interp):
+        return interp_type(x=x_obs, y=y_obs)(x_interp)
+
+    return infer_function
+
+
+def populate_fill_in_values(
+    df_skeleton: DataFrame,
+    infer_function: Union[Akima1DInterpolator, CubicSpline, PchipInterpolator],
+) -> DataFrame:
+    """
+    # Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`
+
+    Args:
+        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
+        infer_function (`str`): function returned by `get_inference_fx_from_df_reference`
+
+    Returns:
+        `DataFrame` (`df_skeleton`) wtih the updated `sample_value` column where NaN values are replaed by predicted/inference values obtained from `infer_function`.
+    """
+
+    # assign `x_interp` values
+    x_interp = df_skeleton["datetime_skeleton"]
+
+    # generate predicted sample values using the `infer_function` specified in function
+    inference_value = infer_function(x_interp)
 
     # add the values to a new column `inference_value` in `df_skeleton`
     df_skeleton_in = df_skeleton.copy()

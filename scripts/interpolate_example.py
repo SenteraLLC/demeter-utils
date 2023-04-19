@@ -9,6 +9,7 @@ from scipy.interpolate import PchipInterpolator
 
 from demeter_utils.interpolate._interpolate import (
     get_datetime_skeleton_for_ts,
+    get_inference_fx_from_df_reference,
     populate_fill_in_values,
 )
 
@@ -157,8 +158,8 @@ df_skeleton = get_datetime_skeleton_for_ts(
     recalibrate=False,
 )
 
-# %% Step 1: Load the reference data and and generate dataframe from dem-358
-#
+# %% Step 1: Load the reference data and generate an infer_function
+
 # load the standard/reference data
 # TODO: Use the function by Marissa
 GIMMS_COLS = {
@@ -178,10 +179,15 @@ df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
     GIMMS_COLS.values()
 ]
 
-df_skeleton_final = populate_fill_in_values(
+infer_function = get_inference_fx_from_df_reference(
     df_reference=df_gimms_ndvi,
-    df_skeleton=df_skeleton,
-    interp_function=PchipInterpolator,
+    interp_type=PchipInterpolator,
+)
+
+# %% Step 2: generate dataframe from dem-358
+
+df_skeleton_final = populate_fill_in_values(
+    df_skeleton=df_skeleton, infer_function=infer_function
 )
 
 # %% Check the distribution of interpolated values and the observed values
