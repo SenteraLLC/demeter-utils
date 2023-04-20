@@ -1,20 +1,15 @@
 from datetime import datetime, timedelta
-from typing import Callable, Dict
 
-from numpy import ceil, datetime64
+from numpy import ceil
 from numpy import nan as np_nan
-from pandas import DataFrame, NaT, Series, Timedelta
+from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
-from pandas import merge_asof, to_numeric
+from pandas import merge_asof
 
-
-def _get_row_template(col_value: str) -> Dict:
-    return {
-        "within_tolerance": [False],
-        "datetime_skeleton": [NaT],
-        "datetime_proposed": [NaT],
-        col_value: [np_nan],
-    }
+from demeter_utils.temporal_inference._utils import (
+    _get_row_template,
+    _maybe_fix_duplicate_matches,
+)
 
 
 def _recalibrate_date_split(
@@ -112,19 +107,6 @@ def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
     )
 
     return df_out
-
-
-def _maybe_fix_duplicate_matches(
-    df_merged: DataFrame, col_datetime: str, col_value: str
-):
-    """If an observed value matched more than once to a "proposed" datetime, undo the later match."""
-    matched_rows = df_merged[col_datetime].notna()
-    duplicated = df_merged.duplicated([col_datetime, col_value], keep="first")
-    if any(duplicated & matched_rows):
-        df_merged.loc[duplicated & matched_rows, col_datetime] = NaT
-        df_merged.loc[duplicated & matched_rows, col_value] = np_nan
-
-    return df_merged
 
 
 def get_datetime_skeleton_for_ts(
@@ -232,78 +214,3 @@ def get_datetime_skeleton_for_ts(
         df = pd_concat([df, DataFrame(last_row)], axis=0)
 
     return df
-
-
-def get_inference_fx_from_df_reference(
-    df_reference: DataFrame,
-    interp_type: str,
-    col_datetime: str = "date_start",
-    col_value: str = "sample_value",
-) -> Callable:
-    """
-    # Generate a inference function from a reference data based on interpolation type
-
-    Args:
-        df_reference (`DataFrame`): Standard ("reference") data.
-        interp_type (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
-        col_datetime (`str`): Column name for column in `df_reference` that holds time series temporal data.
-        col_value (`str`): Column name for column in `df_reference` that holds time series value data.
-
-    Returns the fitted interpolation function
-    """
-
-    # copy the `df_reference_ndvi` as `df_forinterp`
-    df_forinterp = df_reference.copy()
-
-    # Remove row with NA values in the 'sample_value' column from the data 'df_forinterp'
-    df_forinterp = df_forinterp[df_forinterp[col_value].notna()]
-
-    # Convert the 'date_start' column to a datetime.datetime() object
-    df_forinterp[col_datetime] = (df_forinterp[col_datetime]).astype(datetime64)
-
-    # assign `x_obs` and `y_obs` values
-    x_obs = df_forinterp[col_datetime]
-    y_obs = df_forinterp[col_value]
-
-    # define the function
-    fx = interp_type(x=x_obs, y=y_obs)
-
-    return fx
-
-
-def populate_fill_in_values(
-    df_skeleton: DataFrame,
-    infer_function: Callable,
-) -> DataFrame:
-    """
-    Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`.
-
-    The `infer_function` should be created such that it can create reasonable predictions for the
-    spatiotemporal AOI relevant to `df_skeleton`. This is especially important to keep in mind with regard to
-    the date range that `infer_function` has knowledge of. For example, if one wants to train a function on
-    2020 data to make 2021 inferences, the inference time series should be adjusted artificially in order to
-    match the trained date range/growing season.
-
-    Args:
-        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
-        infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of
-        interest for missing values in `df_skeleton`.
-
-    Returns:
-        DataFrame:  Replaces NaN values in "sample_value" column with inferences from `infer_function` arg.
-    """
-    df_skeleton_in = df_skeleton.copy()
-
-    # replace the NaN values in `sample_value` column with values in `inference_value` column
-    df_skeleton_in["sample_value"] = df_skeleton_in.apply(
-        lambda row: row["sample_value"]
-        if row["within_tolerance"] is True
-        else infer_function(to_numeric(Series([row.datetime_skeleton])))[0],
-        axis=1,
-    )
-
-    # Rename "within_tolerance" and filter columns
-    df_skeleton_out = df_skeleton_in.rename(columns={"within_tolerance": "true_data"})[
-        ["true_data", "datetime_skeleton", "sample_value"]
-    ]
-    return df_skeleton_out
