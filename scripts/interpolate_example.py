@@ -1,6 +1,4 @@
 # %%
-from datetime import datetime, timedelta
-
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
@@ -8,14 +6,13 @@ from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolato
 from demeter_utils.interpolate._interpolate import interpolation
 
 df_skeleton_final = DataFrame
+df_skeleton_new = DataFrame
 
 # %% Step 2: generate an interpolated dataframe from dem-360
 
 df_interp = interpolation(
     df_complete=df_skeleton_final,
-    datetime_start=datetime(2022, 3, 1),
-    ddatetime_end=datetime(2022, 10, 31),
-    temporal_resolution=timedelta(days=1),
+    df_skeleton=df_skeleton_new,
     interp_function=PchipInterpolator,
 )
 
@@ -24,17 +21,13 @@ df_interp_pchip1 = df_interp
 
 df_interp_cubic_spline = interpolation(
     df_complete=df_skeleton_final,
-    datetime_start=datetime(2022, 3, 1),
-    ddatetime_end=datetime(2022, 10, 31),
-    temporal_resolution=timedelta(days=1),
+    df_skeleton=df_skeleton_new,
     interp_function=CubicSpline,
 )
 
 df_interp_akima = interpolation(
     df_complete=df_skeleton_final,
-    datetime_start=datetime(2022, 3, 1),
-    ddatetime_end=datetime(2022, 10, 31),
-    temporal_resolution=timedelta(days=1),
+    df_skeleton=df_skeleton_new,
     interp_function=Akima1DInterpolator,
 )
 

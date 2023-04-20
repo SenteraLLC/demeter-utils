@@ -1,28 +1,23 @@
-from datetime import datetime, timedelta
-
 from numpy import datetime64
 from pandas import DataFrame
 from pandas import concat as pd_concat
 
-from demeter_utils.interpolate._interpolate import get_datetime_skeleton_for_ts
-
 
 def interpolation(
     df_complete: DataFrame,
-    datetime_start: datetime,
-    datetime_end: datetime,
-    temporal_resolution: timedelta,
-    interp_function: str,
+    df_skeleton: DataFrame,
+    interp_type: str,
+    col_datetime: str = "datetime_skeleton",
+    col_value: str = "sample_value",
 ) -> DataFrame:
     """
-    Given a pandas dataframe 'df_complete' and 'interp_function', interpolate the values in 'df_complete'
+    Given pandas dataframe 'df_complete', `df_skeleton`, and `interp_type` it will interpolate the values in 'df_complete' based on `interp_type` passed for each datetime in `df_skeleton`
 
-    Parameters:
-    df_complete (DataFrame): dataframe returned by the `populate_fill_in_values` function
-    datetime_start (`datetime.datetime`): Starting datetime for needed time series [value can be same as in `get_datetime_skeleton_for_ts` function]
-    datetime_end (`datetime.datetime`): Ending datetime for needed time series [value can be same as in `get_datetime_skeleton_for_ts` function]
-    temporal_resolution (`datetime.timedelta`): The minimum temporal resolution desired for the output time series [value different than in `get_datetime_skeleton_for_ts` function].
-    interp_function (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
+    Args:
+        df_complete (DataFrame): dataframe returned by the `populate_fill_in_values` function
+        interp_type (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
+        col_datetime (`str`): Column name for column in `df_complete` that holds time series temporal data.
+        col_value (`str`): Column name for column in `df_complete` that holds time series value data.
 
     Returns:
     df_final (pandas.DataFrame): dataframe with `sample_values` for each datetime within desired datetime range and temporal resolution
@@ -33,34 +28,18 @@ def interpolation(
 
     # TODO: Rename the `datetime_skeleton` column in function `populate_fill_in_values`
     # Convert the 'datetime_skeleton' column to a datetime.datetime() object
-    df_complete_in["datetime_skeleton"] = (df_complete_in["datetime_skeleton"]).astype(
-        datetime64
-    )
-
-    # create an `df_skeleton` using fuction `get_datetime_skeleton_for_ts`
-    df_skeleton = get_datetime_skeleton_for_ts(
-        df_true_data=df_complete_in,
-        datetime_start=datetime_start,
-        datetime_end=datetime_end,
-        temporal_resolution=temporal_resolution,
-        tolerance_alpha=0.5,
-        col_datetime="datetime_skeleton",
-        col_value="sample_value",
-        recalibrate=True,
-    )
+    df_complete_in[col_datetime] = (df_complete_in[col_datetime]).astype(datetime64)
 
     # assign `x_interp`, `x_obs` and `y_obs` values
     x_interp = df_skeleton["datetime_skeleton"]
-    x_obs = df_complete_in["datetime_skeleton"]
-    y_obs = df_complete_in["sample_value"]
+    x_obs = df_complete_in[col_datetime]
+    y_obs = df_complete_in[col_value]
 
-    # create a dictionary of interp_functions
-
-    # generate interpolated sample values using the `interp_function` specified in function
-    sample_value_interp = interp_function(x=x_obs, y=y_obs)(x_interp)
+    # generate interpolated sample values using the `interp_type` specified in function
+    sample_value_interp = interp_type(x=x_obs, y=y_obs)(x_interp)
 
     data = {
-        "model_type": interp_function,
+        "model_type": interp_type,
         "sample_value_interp": sample_value_interp,
     }
 
