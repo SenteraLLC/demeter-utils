@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, Union
+from typing import Callable, Dict
 
 from numpy import ceil, datetime64
 from numpy import nan as np_nan
