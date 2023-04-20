@@ -285,7 +285,8 @@ def populate_fill_in_values(
 
     Args:
         df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
-        infer_function (`str`): function returned by `get_inference_fx_from_df_reference`
+        infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of 
+              interest for missing values in `df_skeleton`.
 
     Returns:
         `DataFrame` (`df_skeleton`) wtih the updated `sample_value` column where NaN values are replaed by predicted/inference values obtained from `infer_function`.
