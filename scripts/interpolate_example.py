@@ -1,10 +1,10 @@
-# %%
+# %% Imports
 from datetime import datetime, timedelta
 
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-from demeter_utils.interpolate._interpolate import get_datetime_skeleton_for_ts
+from demeter_utils.temporal_inference import get_datetime_skeleton_for_ts
 
 
 # %% psuedo-inference function
@@ -123,5 +123,3 @@ values = [fx(dt) for dt in dates]
 df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
-
-# %%

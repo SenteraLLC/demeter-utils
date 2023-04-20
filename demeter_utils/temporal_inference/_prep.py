@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Dict
 
 from numpy import ceil
 from numpy import nan as np_nan
@@ -7,14 +6,10 @@ from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
 from pandas import merge_asof
 
-
-def _get_row_template(col_value: str) -> Dict:
-    return {
-        "within_tolerance": [False],
-        "datetime_skeleton": [NaT],
-        "datetime_proposed": [NaT],
-        col_value: [np_nan],
-    }
+from demeter_utils.temporal_inference._utils import (
+    _get_row_template,
+    _maybe_fix_duplicate_matches,
+)
 
 
 def _recalibrate_date_split(
@@ -43,9 +38,8 @@ def _recalibrate_date_split(
 
 def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
     """Recalibrate `datetime_skeleton` so missing time points are evenly-spaced between observed time points.
-
     Args:
-        df (DataFrame): Input dataframe to recalibrate based on "datetime_skeleton" and "within_tolerance"
+    df (DataFrame): Input dataframe to recalibrate based on "datetime_skeleton" and "within_tolerance"
     """
     df_out = df.copy()
 
@@ -113,19 +107,6 @@ def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
     )
 
     return df_out
-
-
-def _maybe_fix_duplicate_matches(
-    df_merged: DataFrame, col_datetime: str, col_value: str
-):
-    """If an observed value matched more than once to a "proposed" datetime, undo the later match."""
-    matched_rows = df_merged[col_datetime].notna()
-    duplicated = df_merged.duplicated([col_datetime, col_value], keep="first")
-    if any(duplicated & matched_rows):
-        df_merged.loc[duplicated & matched_rows, col_datetime] = NaT
-        df_merged.loc[duplicated & matched_rows, col_value] = np_nan
-
-    return df_merged
 
 
 def get_datetime_skeleton_for_ts(
