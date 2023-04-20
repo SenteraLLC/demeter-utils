@@ -289,7 +289,7 @@ def populate_fill_in_values(
               interest for missing values in `df_skeleton`.
 
     Returns:
-        `DataFrame` (`df_skeleton`) wtih the updated `sample_value` column where NaN values are replaed by predicted/inference values obtained from `infer_function`.
+        DataFrame:  Replaces NaN values in "sample_value" column with inferences from `infer_function` arg.
     """
 
     # assign `x_interp` values
