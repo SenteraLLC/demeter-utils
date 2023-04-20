@@ -271,7 +271,7 @@ def get_inference_fx_from_df_reference(
 
 def populate_fill_in_values(
     df_skeleton: DataFrame,
-    infer_function: Union[Akima1DInterpolator, CubicSpline, PchipInterpolator],
+    infer_function: Callable,
 ) -> DataFrame:
     """
     # Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`
