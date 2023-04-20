@@ -3,10 +3,9 @@ from typing import Callable, Dict
 
 from numpy import ceil, datetime64
 from numpy import nan as np_nan
-from pandas import DataFrame, NaT, Timedelta
+from pandas import DataFrame, NaT, Series, Timedelta
 from pandas import concat as pd_concat
-from pandas import merge_asof
-from scipy.interpolate import Akima1DInterpolator, CubicSpline, PchipInterpolator
+from pandas import merge_asof, to_numeric
 
 
 def _get_row_template(col_value: str) -> Dict:
@@ -238,7 +237,7 @@ def get_datetime_skeleton_for_ts(
 def get_inference_fx_from_df_reference(
     df_reference: DataFrame,
     interp_type: str,
-) -> Union[Akima1DInterpolator, CubicSpline, PchipInterpolator]:
+) -> Callable:
     """
     # Generate a inference function from a reference data based on interpolation type
 
@@ -275,39 +274,30 @@ def populate_fill_in_values(
 ) -> DataFrame:
     """
     Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`.
-    
-    The `infer_function` should be created such that it can create reasonable predictions for the 
-    spatiotemporal AOI relevant to `df_skeleton`. This is especially important to keep in mind with regard to 
-    the date range that `infer_function` has knowledge of. For example, if one wants to train a function on 
-    2020 data to make 2021 inferences, the inference time series should be adjusted artificially in order to 
+
+    The `infer_function` should be created such that it can create reasonable predictions for the
+    spatiotemporal AOI relevant to `df_skeleton`. This is especially important to keep in mind with regard to
+    the date range that `infer_function` has knowledge of. For example, if one wants to train a function on
+    2020 data to make 2021 inferences, the inference time series should be adjusted artificially in order to
     match the trained date range/growing season.
- 
+
 
     Args:
         df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
-        infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of 
-              interest for missing values in `df_skeleton`.
+        infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of
+        interest for missing values in `df_skeleton`.
 
     Returns:
         DataFrame:  Replaces NaN values in "sample_value" column with inferences from `infer_function` arg.
     """
-
-    # assign `x_interp` values
-    x_interp = df_skeleton["datetime_skeleton"]
-
-    # generate predicted sample values using the `infer_function` specified in function
-    inference_value = infer_function(x_interp)
-
     # add the values to a new column `inference_value` in `df_skeleton`
     df_skeleton_in = df_skeleton.copy()
-    df_skeleton_in["inference_value"] = inference_value
 
     # replace the NaN values in `sample_value` column with values in `inference_value` column
-    # based on the `within_tolerance` condition
     df_skeleton_in["sample_value"] = df_skeleton_in.apply(
         lambda row: row["sample_value"]
         if row["within_tolerance"] is True
-        else row["inference_value"],
+        else infer_function(to_numeric(Series([row.datetime_skeleton])))[0],
         axis=1,
     )
 
