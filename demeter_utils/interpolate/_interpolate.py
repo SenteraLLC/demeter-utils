@@ -281,7 +281,6 @@ def populate_fill_in_values(
     2020 data to make 2021 inferences, the inference time series should be adjusted artificially in order to
     match the trained date range/growing season.
 
-
     Args:
         df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton_for_ts" function
         infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of
@@ -290,7 +289,6 @@ def populate_fill_in_values(
     Returns:
         DataFrame:  Replaces NaN values in "sample_value" column with inferences from `infer_function` arg.
     """
-    # add the values to a new column `inference_value` in `df_skeleton`
     df_skeleton_in = df_skeleton.copy()
 
     # replace the NaN values in `sample_value` column with values in `inference_value` column
@@ -301,15 +299,8 @@ def populate_fill_in_values(
         axis=1,
     )
 
-    # Keep the selected columns only and rename as required
-    columns_selected = {
-        "within_tolerance": "true_data",
-        "datetime_skeleton": "datetime_skeleton",
-        "sample_value": "sample_value",
-    }
-
-    df_skeleton_out = df_skeleton_in.rename(columns=columns_selected)[
-        [*columns_selected.values()]
+    # Rename "within_tolerance" and filter columns
+    df_skeleton_out = df_skeleton_in.rename(columns={"within_tolerance": "true_data"})[
+        ["true_data", "datetime_skeleton", "sample_value"]
     ]
-
     return df_skeleton_out
