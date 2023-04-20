@@ -6,6 +6,8 @@ from pandas import DataFrame, Series, to_numeric
 def populate_fill_in_values(
     df_skeleton: DataFrame,
     infer_function: Callable,
+    col_value: str = "sample_value",
+    col_datetime: str = "datetime_skeleton",
 ) -> DataFrame:
     """
     Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`.
@@ -22,13 +24,13 @@ def populate_fill_in_values(
         interest for missing values in `df_skeleton`.
 
     Returns:
-        DataFrame:  Replaces NaN values in "sample_value" column with inferences from `infer_function` arg.
+        DataFrame:  Replaces NaN values in `col_value` column with inferences from `infer_function` arg.
     """
     df_skeleton_in = df_skeleton.copy()
 
     # replace the NaN values in `sample_value` column with values in `inference_value` column
-    df_skeleton_in["sample_value"] = df_skeleton_in.apply(
-        lambda row: row["sample_value"]
+    df_skeleton_in[col_value] = df_skeleton_in.apply(
+        lambda row: row[col_value]
         if row["within_tolerance"] is True
         else infer_function(to_numeric(Series([row.datetime_skeleton])))[0],
         axis=1,
@@ -36,6 +38,6 @@ def populate_fill_in_values(
 
     # Rename "within_tolerance" and filter columns
     df_skeleton_out = df_skeleton_in.rename(columns={"within_tolerance": "true_data"})[
-        ["true_data", "datetime_skeleton", "sample_value"]
+        ["true_data", col_datetime, col_value]
     ]
     return df_skeleton_out
