@@ -37,7 +37,7 @@ dates = [
     datetime(2022, 7, 25),
     datetime(2022, 9, 10),
 ]
-values = [0.41, 0.55, 0.68, 0.73, 0.51]
+values = [0.41, 0.55, 0.68, 0.73, 0.54]
 df_test = DataFrame(data={"date_start": dates, "sample_value": values})
 
 df_skeleton = get_datetime_skeleton(
