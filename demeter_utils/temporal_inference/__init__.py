@@ -1,9 +1,9 @@
 from ._inference import populate_fill_in_values
 from ._prep import get_datetime_skeleton_for_ts
-from ._train import get_inference_fx_from_df_reference
+from ._train import train_inference_from_df
 
 __all__ = [
     "get_datetime_skeleton_for_ts",
-    "get_inference_fx_from_df_reference",
+    "train_inference_from_df",
     "populate_fill_in_values",
 ]
