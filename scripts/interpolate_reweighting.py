@@ -4,6 +4,7 @@ from io import StringIO
 
 import matplotlib.pyplot as plt
 import requests
+from numpy import datetime64
 from pandas import DataFrame, read_csv
 from scipy.interpolate import PchipInterpolator
 
@@ -27,7 +28,7 @@ def plot_ts(df_skeleton_final: DataFrame):
     plt.show()
 
 
-# %% Step 0: Generate dataframe
+# %% Example 1: Made up data
 
 dates = [
     datetime(2022, 6, 6),
@@ -41,13 +42,32 @@ df_test = DataFrame(data={"date_start": dates, "sample_value": values})
 
 df_skeleton = get_datetime_skeleton(
     df_true=df_test,
-    datetime_start=datetime(2022, 4, 1),
-    datetime_end=datetime(2022, 11, 30),
+    datetime_start=datetime(2022, 3, 1),
+    datetime_end=datetime(2022, 10, 31),
     col_datetime="date_start",
     col_value="sample_value",
     temporal_resolution_min=None,
     tolerance_alpha=0.5,
-    recalibrate=False,
+    recalibrate=True,
+)
+
+# %% Example 2: Loaded data
+df_true = read_csv("/mnt/c/Users/Tyler/Downloads/df_drone_imagery1.csv")
+df_true.rename(
+    columns={"date_observed": "date_start", "value_observed": "sample_value"},
+    inplace=True,
+)
+df_true["date_start"] = (df_true["date_start"]).astype(datetime64)
+
+df_skeleton = get_datetime_skeleton(
+    df_true=df_true,
+    datetime_start=datetime(2022, 3, 1),
+    datetime_end=datetime(2022, 10, 31),
+    col_datetime="date_start",
+    col_value="sample_value",
+    temporal_resolution_min=None,
+    tolerance_alpha=0.5,
+    recalibrate=True,
 )
 
 # %% Step 1: Load the reference data and generate an infer_function
@@ -77,7 +97,10 @@ infer_function = get_inference_fx_from_df_reference(
 # %% Step 2: Populate full dataframe
 
 df_skeleton_full = populate_fill_in_values(
-    df_skeleton=df_skeleton, infer_function=infer_function
+    df_skeleton=df_skeleton,
+    infer_function=infer_function,
+    col_value="sample_value",
+    col_datetime="datetime_skeleton",
 )
 plot_ts(df_skeleton_full)
 
@@ -89,6 +112,9 @@ temporal_res_true = get_mean_temporal_resolution(
 )
 temporal_res_fillin = get_mean_temporal_resolution(
     df_skeleton_full, col_subset="true_data", col_date="datetime_skeleton", subset=False
+)
+temporal_res_all = get_mean_temporal_resolution(
+    df_skeleton_full, col_subset="true_data", col_date="datetime_skeleton", subset=None
 )
 
 
