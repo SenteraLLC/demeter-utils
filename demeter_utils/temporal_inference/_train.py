@@ -4,9 +4,9 @@ from numpy import datetime64
 from pandas import DataFrame
 
 
-def get_inference_fx_from_df_reference(
+def train_inference_from_df(
     df_reference: DataFrame,
-    interp_type: str,
+    interp_type: Callable,
     col_datetime: str = "date_start",
     col_value: str = "sample_value",
 ) -> Callable:
@@ -15,7 +15,9 @@ def get_inference_fx_from_df_reference(
 
     Args:
         df_reference (`DataFrame`): Standard ("reference") data.
-        interp_type (`str`): Model type for interpolation, "CubicSpline" for cubic spline, "Akima1DInterpolator" for akima1DInterpolator, "PchipInterpolator" for pchip_interpolator
+        interp_type (`Callable`): Function (a model type for interpolation ["CubicSpline", "Akima1DInterpolator" or "PchipInterpolator"]) that takes `datetime` and `sample_value`
+        from reference data and `datetime` for desired output data and returns `interpolated sample_value`.
+
         col_datetime (`str`): Column name for column in `df_reference` that holds time series temporal data.
         col_value (`str`): Column name for column in `df_reference` that holds time series value data.
 
