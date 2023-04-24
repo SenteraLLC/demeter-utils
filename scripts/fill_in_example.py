@@ -28,7 +28,7 @@ df_skeleton = get_datetime_skeleton(
     df_true_data=df_test,
     datetime_start=datetime(2022, 3, 1),
     datetime_end=datetime(2022, 10, 31),
-    temporal_resolution=timedelta(days=7),
+    temporal_resolution_min=timedelta(days=7),
     tolerance_alpha=0.5,
     col_datetime="date_start",
     col_value="sample_value",

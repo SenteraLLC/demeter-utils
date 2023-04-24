@@ -22,10 +22,10 @@ def plot_and_compare(df_test: DataFrame):
         df_true_data=df_test,
         datetime_start=ends[0],
         datetime_end=ends[1],
-        temporal_resolution=timedelta(days=2),
-        tolerance_alpha=0.5,
         col_datetime="date",
         col_value="value",
+        temporal_resolution_min=timedelta(days=2),
+        tolerance_alpha=0.5,
         recalibrate=True,
     )
     value = [1] * len(df)
@@ -34,10 +34,10 @@ def plot_and_compare(df_test: DataFrame):
         df_true_data=df_test,
         datetime_start=ends[0],
         datetime_end=ends[1],
-        temporal_resolution=timedelta(days=2),
-        tolerance_alpha=0.5,
         col_datetime="date",
         col_value="value",
+        temporal_resolution_min=timedelta(days=2),
+        tolerance_alpha=0.5,
         recalibrate=False,
     )
     value_recalibrate = [2] * len(df_recalibrate)
