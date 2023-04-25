@@ -37,7 +37,7 @@ def _add_missing_rows(
     return pd_concat([df_merged, df_missing], axis=0, ignore_index=True)
 
 
-def _check_ceiling(
+def _check_min_resolution(
     df: DataFrame, temporal_resolution_min: Timedelta, col_datetime: str
 ) -> Timedelta:
     """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution."""
@@ -236,7 +236,9 @@ def get_datetime_skeleton(
     """
 
     df = df_true.copy()
-    temporal_resolution_min = _check_ceiling(df, temporal_resolution_min, col_datetime)
+    temporal_resolution_min = _check_min_resolution(
+        df, temporal_resolution_min, col_datetime
+    )
     df_join = _create_df_join(datetime_start, datetime_end, temporal_resolution_min)
 
     # do fuzzy match on `col_datetime` based on temporal resolution
