@@ -149,15 +149,12 @@ for factor in df[col_factor].unique():
 
     plt.plot(doy_interp, value_interpolated, "--", label="interpolated")
 
-    # True data points
-    plt.plot(df_factor["doy_obs"], df_factor["value_observed"], "o", label="True")
-
-    # True and Infered data points
-    plt.plot(
+    # Check the distribution of interpolated values and the observed values
+    colors = {True: "blue", False: "red"}
+    plt.scatter(
         df_complete["doy_obs"],
         df_complete["value_observed"],
-        "v",
-        label="True + Inferred",
+        c=df_complete["true_data"].map(colors),
     )
 
     plt.legend()
