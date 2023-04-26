@@ -14,22 +14,17 @@ from demeter_utils.temporal_inference import (
     populate_fill_in_values_1,
 )
 
-# TODO: Delete `populate_fill_in_values_1` from import as well as from `` `__init__.py` once `dbl_sigmoid_function` can take `datetime` as input instead of `doy`
+# TODO: Replace `populate_fill_in_values_1` with `populate_fill_in_values` in import and
+# delete `populate_fill_in_values_1` from `__init__.py` once `dbl_sigmoid_function` can take `datetime` as input instead of `doy`
 
-###########################################
-### Example use for `dbl_sigmoid_function_1
-###########################################
-# %% `
-parameters = [0.169, 1.1859, 0.069, 169.5442, 0.0228, 244.912]
-doy_pred = arange(0, 365, 7)
-values_pred = dbl_sigmoid_function_1(params=parameters, t=doy_pred)
+# %% Testing on real data
+# link to data: https://sentera.sharepoint.com/:x:/s/demeter/ESR0PKnkjQBIkYDkT9NBVS8B1h5kJHTbJE2tCLgM7QWP7A?e=Vtcdlw
 
-
-###########################################
-### Example use for `dbl_sigmoid_function_2`
-###########################################
-# %%
-# link to the data: https://sentera.sharepoint.com/:x:/s/demeter/EYyjTpLaVCNPqqnIMYc4H0sBdfkcZPmv7fhnONJ483R0FA?e=jTNm2m
+########################################################
+### Given a "complete" dataset for the desired temporal resolution (likely includes both "true" and "fill-in"),
+### fit a new interpolation function on the "complete" dataset and return values for each datetime required.
+########################################################
+# %% DEM 357
 # loading the data
 df_true_in = read_csv("df_drone_imagery.csv")
 df_full = df_true_in.copy()
@@ -37,59 +32,34 @@ df_full = df_true_in.copy()
 # Convert the 'date_start' column to a datetime.datetime() object
 df_full["date_observed"] = (df_full["date_observed"]).astype(datetime64)
 
-# select column for factoring as well for `datetime` and `value`
+# select column for factoring
 col_factor = "field_id"
 col_datetime = "date_observed"
 col_value = "value_observed"
 
-# NOTE: This is required only if factoring is required
+# NOTE: This chunk is required only if factoring is required
 # subsetting the data to include only 5 field_id and 1 `unit_type_id`
 df_subset = df_full[df_full["unit_type_id"] == 1]
 df = df_subset[(df_subset[col_factor].isin([1, 2, 3, 4, 5]))]
 
-#  to calculate `doy' NOTE: can be deleted when `dbl_sigmoid_functions` takes `datetime` as input
+# to calculate `doy'
+# NOTE: can be deleted when `dbl_sigmoid_functions` takes `datetime` as input
 year = (df[col_datetime].dt.year).unique
 date_year_start = datetime(2022, 1, 1)  # TODO: extract `year` from 'col_datetime'
 df["doy_obs"] = (df[col_datetime] - date_year_start).dt.days
 
-# %%
-###########################################
-### CASE 1: train a function on true/observed data, predict values for each DOY, and generate a plot
-###########################################
+# TODO: Delete this if code works fine
+# create a datetime skeleton for interpolation
+# datetime_interp = arange(
+#     datetime(2022, 6, 1), datetime(2022, 9, 30), timedelta(days=1)
+# ).astype("datetime64[ns]")
 
-# NOTE: a for loop is used to account for factors in the dataframe
+# %% DEM 358
+# use of factor to account for each field_id.
 for factor in df[col_factor].unique():
     df_factor = df.loc[df[col_factor] == factor]
 
-    # Obtain a double sigmoid function for a given data
-    dbl_sigmoid_func = dbl_sigmoid_function_2(
-        df=df_factor, col_datetime="doy_obs", col_value="value_observed", guess=None
-    )
-
-    # obtain the interpolated values based on the the function for each week of year
-    doy_pred = arange(0, 365, 7)
-    values_pred = dbl_sigmoid_func(doy_pred)
-
-    # Plot the results
-    plt.scatter(
-        df_factor["doy_obs"], df_factor["value_observed"], c="green", label="observed"
-    )
-    plt.scatter(doy_pred, values_pred, c="orange", label="predicted")
-    plt.legend()
-    plt.title(factor)
-    plt.show()
-
-# %%
-###########################################
-### CASE 2: Obtain a `df_skeleton`, train a function on reference data, replace NaN values in df_skeleton from reference dataset,
-### train a function on complete true and false dataset, generate new reference values and replace NaN values in df_skeleton,
-### train a function on new complete true and false dataset, predict values for each DOY, and generate plots
-###########################################
-
-for factor in df[col_factor].unique():
-    df_factor = df.loc[df[col_factor] == factor]
-
-    # generate a skeleton dataframe with `col_value` for each datetime where available and NA where `col_value` are unavailable
+    # generate a skeleton dataframe with `sample_values` for each datetime where available and NA where `sample_values` are unavailable
     df_skeleton = get_datetime_skeleton_for_ts(
         df_true_data=df_factor,
         datetime_start=datetime(2022, 3, 1),
@@ -132,8 +102,6 @@ for factor in df[col_factor].unique():
     date_year_start = datetime(2022, 1, 1)  # TODO: Get `year` value from the dataframe
     df_gimms_ndvi["doy_obs"] = (df_gimms_ndvi["date_start"] - date_year_start).dt.days
 
-    # %%
-
     # generate the infer_function
     infer_function = dbl_sigmoid_function_2(
         df=df_gimms_ndvi, col_datetime="doy_obs", col_value="sample_value", guess=None
@@ -147,63 +115,57 @@ for factor in df[col_factor].unique():
     df_skeleton["doy_obs"] = (
         df_skeleton["datetime_skeleton"] - date_year_start
     ).dt.days
-
     # %%
-    # generate a dataframe where NA values in the input df are replaced with values obtained using the `infer_function`
-    df_skeleton_final = populate_fill_in_values_1(
+
+    # generate dataframe where NA values are replaced with values obtained using the `infer_function`
+    df_complete = populate_fill_in_values_1(
         df_skeleton=df_skeleton,
         infer_function=infer_function,
         col_datetime="doy_obs",  # TODO: Check the df_skeleton for input
         col_value="value_observed",
     )
 
-    # re-train the infer_function on `df_skeleton_final`
-    infer_function_2 = dbl_sigmoid_function_2(
-        df=df_skeleton_final,
+    # %% DEM 360
+    # train a new infer_function on df_complete
+    infer_function_new = dbl_sigmoid_function_2(
+        df=df_complete,
         col_datetime="doy_obs",
         col_value="value_observed",
         guess=None,
     )
 
-    # generate another dataframe where NA values in the input df `df_skeleton` are replaced with values obtained using the `infer_function_2`
-    df_skeleton_final_2 = populate_fill_in_values_1(
-        df_skeleton=df_skeleton,
-        infer_function=infer_function_2,
-        col_datetime="doy_obs",
-        col_value="value_observed",
-    )
+    # %% Plots
+    # create a datetime skeleton for interpolation
+    # TODO: delete doy_interp once the datetime_interp works
+    # TODO: replace doy_interp with `datetime_inter` for plotting
+    # TODO: replace `doy_obs` with `datetime_skeleton` for plotting
+    doy_interp = arange(0, 365, 7)
 
-    # re-train the infer_function on `df_skeleton_final_2`
-    infer_function_3 = dbl_sigmoid_function_2(
-        df=df_skeleton_final_2,
-        col_datetime="doy_obs",
-        col_value="value_observed",
-        guess=None,
-    )
+    # datetime_interp = arange(
+    #     datetime(2022, 3, 1), datetime(2022, 10, 31), timedelta(days=1)
+    # ).astype("datetime64[ns]")
 
-    # obtain the interpolated values based on the `infer_function_3`
-    doy_pred = arange(0, 365, 7)
-    values_pred_infer3 = infer_function_3(doy_pred)
-    values_pred_infer2 = infer_function_2(doy_pred)
-    values_pred_infer = infer_function(doy_pred)
+    value_interpolated = infer_function_new(doy_interp)
 
-    # Plot the results
-    plt.plot(doy_pred, values_pred_infer3, "--", label="predicted_3")
-    plt.plot(doy_pred, values_pred_infer2, "--", label="predicted_2")
-    plt.plot(doy_pred, values_pred_infer, "--", label="predicted")
+    plt.plot(doy_interp, value_interpolated, "--", label="interpolated")
+
+    # True data points
+    plt.plot(df_factor["doy_obs"], df_factor["value_observed"], "o", label="True")
+
+    # True and Infered data points
     plt.plot(
-        df_gimms_ndvi["doy_obs"], df_gimms_ndvi["sample_value"], "--", label="reference"
+        df_complete["doy_obs"],
+        df_complete["value_observed"],
+        "v",
+        label="True + Inferred",
     )
 
-    colors = {True: "blue", False: "red"}
-    plt.scatter(
-        df_skeleton_final_2["doy_obs"],
-        df_skeleton_final_2["value_observed"],
-        c=df_skeleton_final_2["true_data"].map(colors),
-    )
     plt.legend()
-    plt.title(factor)
+    # plt.ylim(0, 1)
+    plt.xticks(rotation=60)
     plt.show()
+    plt.title(factor + 1)
+
 
 ######################################################
 ## Code cleaned above this
@@ -211,7 +173,7 @@ for factor in df[col_factor].unique():
 
 # %%
 ##################################################################
-#### Double sigmoid function [Based on datetime]
+#### Sample Double sigmoid function [Based on datetime]
 #### NOTE: Not working as expected, need work around `datetime`
 ##################################################################
 datetime_obs = df_gimms_ndvi["date_start"]
@@ -263,3 +225,13 @@ plt.scatter(datetime_obs, value_obs, c="green")
 # plot the predicted data
 plt.plot(datetime_pred, value_pred, "--", label="Predicted")
 plt.show()
+
+
+###########################################
+### Example use for `dbl_sigmoid_function_1
+###########################################
+# %%
+parameters = [0.169, 1.1859, 0.069, 169.5442, 0.0228, 244.912]
+doy_pred = arange(0, 365, 7)
+values_pred = dbl_sigmoid_function_1(params=parameters, t=doy_pred)
+# %%
