@@ -78,7 +78,9 @@ def _create_df_proposed(
     return df_proposed
 
 
-def _describe_data(df: DataFrame, col_value: str, col_datetime: str) -> DataFrame:
+def _map_observed_datetimes(
+    df: DataFrame, col_value: str, col_datetime: str
+) -> DataFrame:
     """Adds "within tolerance" and "datetime_skeleton" columns to input DataFrame."""
     # indicate where data is available
     df.loc[df[col_value].notna(), "within_tolerance"] = True
@@ -270,7 +272,7 @@ def get_datetime_skeleton(
         datetime_start,
         datetime_end,
     )
-    df_describe = _describe_data(df_full, col_value, col_datetime)
+    df_describe = _map_observed_datetimes(df_full, col_value, col_datetime)
     if recalibrate:
         df_describe = _recalibrate_datetime_skeleton(df_describe)
     df_out = _ensure_full_temporal_extent(
