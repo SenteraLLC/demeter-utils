@@ -40,7 +40,10 @@ def _add_missing_rows(
 def _check_min_resolution(
     df: DataFrame, temporal_resolution_min: Timedelta, col_datetime: str
 ) -> Timedelta:
-    """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution."""
+    """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution.
+    
+    If "true_data" not given as a column in `df`, all values in `df` are assumed to be observed data.
+    """
     if "true_data" not in df.columns:
         df["true_data"] = True
     temporal_res_true = get_mean_temporal_resolution(
