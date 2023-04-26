@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import requests
 from numpy import arange, datetime64
 from pandas import read_csv
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import CubicSpline
 
 from demeter_utils.temporal_inference import (
     get_datetime_skeleton_for_ts,
@@ -16,6 +16,9 @@ from demeter_utils.temporal_inference import (
 
 # %% Testing on real data
 # link to data: https://sentera.sharepoint.com/:x:/s/demeter/ESR0PKnkjQBIkYDkT9NBVS8B1h5kJHTbJE2tCLgM7QWP7A?e=Vtcdlw
+
+# Define the interpolation method to use [change the method here to test for different methods]
+interpolation_method = CubicSpline
 
 ########################################################
 ### Given a "complete" dataset for the desired temporal resolution (likely includes both "true" and "fill-in"),
@@ -85,7 +88,7 @@ for factor in df[col_factor].unique():
     # generate the infer_function
     infer_function = train_inference_from_df(
         df_reference=df_gimms_ndvi,
-        interp_type=PchipInterpolator,
+        interp_type=interpolation_method,
     )
 
     # generate dataframe where NA values are replaced with values obtained using the `infer_function`
@@ -100,7 +103,7 @@ for factor in df[col_factor].unique():
     # train a new infer_function on df_complete
     infer_function_new = train_inference_from_df(
         df_reference=df_complete,
-        interp_type=PchipInterpolator,
+        interp_type=interpolation_method,
         col_datetime="datetime_skeleton",
         col_value="value_observed",
     )
@@ -115,19 +118,15 @@ for factor in df[col_factor].unique():
 
     plt.plot(datetime_interp, value_interpolated, "--", label="interpolated")
 
-    # True data points
-    plt.plot(df_factor["date_observed"], df_factor["value_observed"], "o", label="True")
-
-    # True and Infered data points
-    plt.plot(
+    # Check the distribution of interpolated values and the observed values
+    colors = {True: "blue", False: "red"}
+    plt.scatter(
         df_complete["datetime_skeleton"],
         df_complete["value_observed"],
-        "v",
-        label="True + Inferred",
+        c=df_complete["true_data"].map(colors),
     )
 
     plt.legend()
-    # plt.ylim(0, 1)
     plt.xticks(rotation=60)
     plt.show()
     plt.title(factor + 1)
