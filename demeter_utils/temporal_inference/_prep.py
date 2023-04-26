@@ -41,7 +41,7 @@ def _check_min_resolution(
     df: DataFrame, temporal_resolution_min: Timedelta, col_datetime: str
 ) -> Timedelta:
     """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution.
-    
+
     If "true_data" not given as a column in `df`, all values in `df` are assumed to be observed data.
     """
     if "true_data" not in df.columns:
@@ -53,7 +53,7 @@ def _check_min_resolution(
         temporal_resolution_min = temporal_res_true
     if temporal_resolution_min > temporal_res_true:
         logging.warning(
-            "Ceiling temporal resolution was set to a resolution coarser than that of the true resolution."
+            "Minimum temporal resolution was set to a resolution coarser than that of the true resolution."
         )
     return temporal_resolution_min
 
