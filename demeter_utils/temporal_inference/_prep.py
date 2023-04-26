@@ -58,24 +58,24 @@ def _check_min_resolution(
     return temporal_resolution_min
 
 
-def _create_df_join(
+def _create_df_proposed(
     datetime_start: datetime, datetime_end: datetime, temporal_resolution_min: Timedelta
 ):
-    """Creates df_join based on temporal extent and resolution."""
+    """Creates df_proposed based on temporal extent and resolution."""
     # determine "length_out" based on temporal resolution
     length_out = int(ceil((datetime_end - datetime_start) / temporal_resolution_min))
 
-    # create an empty dataframe `df_join` and outline the time windows that need to be represented
-    df_join = DataFrame(data=[], columns=["within_tolerance"])
+    # create an empty dataframe `df_proposed` and outline the time windows that need to be represented
+    df_proposed = DataFrame(data=[], columns=["within_tolerance"])
     list_rq_datetime = [
         datetime_start + (temporal_resolution_min * x) for x in range(length_out + 1)
     ]
     # ensure last value of rq_datetime is datetime_end
     list_rq_datetime[-1] = datetime_end
 
-    df_join["datetime_proposed"] = list_rq_datetime
-    df_join["within_tolerance"] = False
-    return df_join
+    df_proposed["datetime_proposed"] = list_rq_datetime
+    df_proposed["within_tolerance"] = False
+    return df_proposed
 
 
 def _describe_data(df: DataFrame, col_value: str, col_datetime: str) -> DataFrame:
@@ -242,11 +242,13 @@ def get_datetime_skeleton(
     temporal_resolution_min = _check_min_resolution(
         df, temporal_resolution_min, col_datetime
     )
-    df_join = _create_df_join(datetime_start, datetime_end, temporal_resolution_min)
+    df_proposed = _create_df_proposed(
+        datetime_start, datetime_end, temporal_resolution_min
+    )
 
     # do fuzzy match on `col_datetime` based on temporal resolution
     df_merged = merge_asof(
-        df_join,
+        df_proposed,
         df[[col_datetime, col_value]],
         left_on="datetime_proposed",
         right_on=col_datetime,
