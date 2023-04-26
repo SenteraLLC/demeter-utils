@@ -37,10 +37,13 @@ def _add_missing_rows(
     return pd_concat([df_merged, df_missing], axis=0, ignore_index=True)
 
 
-def _check_ceiling(
+def _check_min_resolution(
     df: DataFrame, temporal_resolution_min: Timedelta, col_datetime: str
 ) -> Timedelta:
-    """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution."""
+    """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution.
+
+    If "true_data" not given as a column in `df`, all values in `df` are assumed to be observed data.
+    """
     if "true_data" not in df.columns:
         df["true_data"] = True
     temporal_res_true = get_mean_temporal_resolution(
@@ -50,32 +53,34 @@ def _check_ceiling(
         temporal_resolution_min = temporal_res_true
     if temporal_resolution_min > temporal_res_true:
         logging.warning(
-            "Ceiling temporal resolution was set to a resolution coarser than that of the true resolution."
+            "Minimum temporal resolution was set to a resolution coarser than that of the true resolution."
         )
     return temporal_resolution_min
 
 
-def _create_df_join(
+def _create_df_proposed(
     datetime_start: datetime, datetime_end: datetime, temporal_resolution_min: Timedelta
 ):
-    """Creates df_join based on temporal extent and resolution."""
+    """Creates df_proposed based on temporal extent and resolution."""
     # determine "length_out" based on temporal resolution
     length_out = int(ceil((datetime_end - datetime_start) / temporal_resolution_min))
 
-    # create an empty dataframe `df_join` and outline the time windows that need to be represented
-    df_join = DataFrame(data=[], columns=["within_tolerance"])
+    # create an empty dataframe `df_proposed` and outline the time windows that need to be represented
+    df_proposed = DataFrame(data=[], columns=["within_tolerance"])
     list_rq_datetime = [
         datetime_start + (temporal_resolution_min * x) for x in range(length_out + 1)
     ]
     # ensure last value of rq_datetime is datetime_end
     list_rq_datetime[-1] = datetime_end
 
-    df_join["datetime_proposed"] = list_rq_datetime
-    df_join["within_tolerance"] = False
-    return df_join
+    df_proposed["datetime_proposed"] = list_rq_datetime
+    df_proposed["within_tolerance"] = False
+    return df_proposed
 
 
-def _describe_data(df: DataFrame, col_value: str, col_datetime: str) -> DataFrame:
+def _map_observed_datetimes(
+    df: DataFrame, col_value: str, col_datetime: str
+) -> DataFrame:
     """Adds "within tolerance" and "datetime_skeleton" columns to input DataFrame."""
     # indicate where data is available
     df.loc[df[col_value].notna(), "within_tolerance"] = True
@@ -223,7 +228,7 @@ def get_datetime_skeleton(
         col_value (str, optional): Column name for column in `df_true` that holds time series value data. Defaults to
         "value_observed".
         temporal_resolution_min (timedelta, optional): The minimum temporal resolution desired for the output time
-        series; if None, the temporal resolution of `col_datetime` in `df_true` is calucalted and used as
+        series; if None, the temporal resolution of `col_datetime` in `df_true` is calculated and used as
         `temporal_resolution_min`. Defaults to None.
         tolerance_alpha (float, optional): Proportion of `temporal_resolution` to use as `tolerance` when performing
         fuzzy merge on proposed and observed datetime values. Defaults to 0.5.
@@ -236,12 +241,16 @@ def get_datetime_skeleton(
     """
 
     df = df_true.copy()
-    temporal_resolution_min = _check_ceiling(df, temporal_resolution_min, col_datetime)
-    df_join = _create_df_join(datetime_start, datetime_end, temporal_resolution_min)
+    temporal_resolution_min = _check_min_resolution(
+        df, temporal_resolution_min, col_datetime
+    )
+    df_proposed = _create_df_proposed(
+        datetime_start, datetime_end, temporal_resolution_min
+    )
 
     # do fuzzy match on `col_datetime` based on temporal resolution
     df_merged = merge_asof(
-        df_join,
+        df_proposed,
         df[[col_datetime, col_value]],
         left_on="datetime_proposed",
         right_on=col_datetime,
@@ -263,7 +272,7 @@ def get_datetime_skeleton(
         datetime_start,
         datetime_end,
     )
-    df_describe = _describe_data(df_full, col_value, col_datetime)
+    df_describe = _map_observed_datetimes(df_full, col_value, col_datetime)
     if recalibrate:
         df_describe = _recalibrate_datetime_skeleton(df_describe)
     df_out = _ensure_full_temporal_extent(
