@@ -26,7 +26,9 @@ interpolation_method = CubicSpline
 ########################################################
 # %% DEM 357
 # loading the data
-df_true_in = read_csv("df_drone_imagery.csv")
+df_true_in = read_csv(
+    "/Users/marissakivi/Desktop/df_drone_imagery1.csv", parse_dates=["date_observed"]
+)
 df_full = df_true_in.copy()
 
 # Convert the 'date_start' column to a datetime.datetime() object
@@ -130,3 +132,4 @@ for factor in df[col_factor].unique():
     plt.xticks(rotation=60)
     plt.show()
     plt.title(factor + 1)
+# %%

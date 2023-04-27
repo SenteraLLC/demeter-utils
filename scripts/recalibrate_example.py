@@ -123,3 +123,4 @@ values = [fx(dt) for dt in dates]
 df_test = DataFrame(data={"date": dates, "value": values})
 
 plot_and_compare(df_test)
+# %%
