@@ -10,13 +10,13 @@ def populate_fill_in_values(
     col_datetime: str = "datetime_skeleton",
 ) -> DataFrame:
     """
-    Generate a dataframe with predicted values given a `df_skeleton` and `infer_function`.
+    Generate a dataframe with predicted values given `df_skeleton` and `infer_function`.
 
     The `infer_function` should be created such that it can create reasonable predictions for the
     spatiotemporal AOI relevant to `df_skeleton`. This is especially important to keep in mind with regard to
     the date range that `infer_function` has knowledge of. For example, if one wants to train a function on
     2020 data to make 2021 inferences, the inference time series should be adjusted artificially in order to
-    match the trained date range/growing season.
+    match the trained date range/growing season (or vice versa).
 
     Args:
         df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton" function

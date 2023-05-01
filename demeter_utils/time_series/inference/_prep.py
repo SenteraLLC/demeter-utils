@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime, timedelta
 
 from numpy import ceil
@@ -7,10 +6,9 @@ from pandas import DataFrame, NaT, Timedelta
 from pandas import concat as pd_concat
 from pandas import merge_asof
 
-from demeter_utils.temporal_inference._utils import (
-    _get_row_template,
+from demeter_utils.time_series.inference._utils import (
+    _get_df_skeleton_row_template,
     _maybe_fix_duplicate_matches,
-    get_mean_temporal_resolution,
 )
 
 
@@ -35,27 +33,6 @@ def _add_missing_rows(
     df_missing = df_missing.loc[df_missing[col_datetime] >= datetime_start - tolerance]
     df_missing = df_missing.loc[df_missing[col_datetime] <= datetime_end + tolerance]
     return pd_concat([df_merged, df_missing], axis=0, ignore_index=True)
-
-
-def _check_min_resolution(
-    df: DataFrame, temporal_resolution_min: Timedelta, col_datetime: str
-) -> Timedelta:
-    """Checks validity of `temporal_resolution_min`, and issues warning if it is coarser than true resolution.
-
-    If "true_data" not given as a column in `df`, all values in `df` are assumed to be observed data.
-    """
-    if "true_data" not in df.columns:
-        df["true_data"] = True
-    temporal_res_true = get_mean_temporal_resolution(
-        df, col_subset="true_data", col_date=col_datetime, subset=True
-    )
-    if temporal_resolution_min is None:
-        temporal_resolution_min = temporal_res_true
-    if temporal_resolution_min > temporal_res_true:
-        logging.warning(
-            "Minimum temporal resolution was set to a resolution coarser than that of the true resolution."
-        )
-    return temporal_resolution_min
 
 
 def _create_df_proposed(
@@ -92,7 +69,7 @@ def _map_observed_datetimes(
         else row["datetime_proposed"],
         axis=1,
     )
-    row_template = _get_row_template(col_value)
+    row_template = _get_df_skeleton_row_template(col_value)
     cols_keep = list(row_template.keys())
     return df.sort_values(by="datetime_skeleton").reset_index(drop=False)[cols_keep]
 
@@ -102,7 +79,7 @@ def _ensure_full_temporal_extent(
 ):
     """Ensure the full time range is covered."""
     df_out = df.copy()
-    row_template = _get_row_template(col_value)
+    row_template = _get_df_skeleton_row_template(col_value)
     if df["datetime_skeleton"].min() > datetime_start:
         first_row = row_template.copy()
         first_row["datetime_skeleton"] = [datetime_start]
@@ -210,9 +187,9 @@ def get_datetime_skeleton(
     df_true: DataFrame,
     datetime_start: datetime,
     datetime_end: datetime,
+    temporal_resolution_min: timedelta,
     col_datetime: str = "date_observed",
     col_value: str = "value_observed",
-    temporal_resolution_min: timedelta = None,
     tolerance_alpha: float = 0.5,
     recalibrate: bool = True,
 ) -> DataFrame:
@@ -241,9 +218,6 @@ def get_datetime_skeleton(
     """
 
     df = df_true.copy()
-    temporal_resolution_min = _check_min_resolution(
-        df, temporal_resolution_min, col_datetime
-    )
     df_proposed = _create_df_proposed(
         datetime_start, datetime_end, temporal_resolution_min
     )

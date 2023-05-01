@@ -4,6 +4,7 @@ from numpy import datetime64
 from pandas import DataFrame
 
 
+# TODO: Deprecate this function since it is interpolating reference data alone
 def get_inference_fx_from_df_reference(
     df_reference: DataFrame,
     interp_type: str,

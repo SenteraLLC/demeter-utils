@@ -7,7 +7,7 @@ import requests
 from pandas import DataFrame, read_csv
 from scipy.interpolate import PchipInterpolator
 
-from demeter_utils.temporal_inference import (
+from demeter_utils.time_series.inference import (
     get_datetime_skeleton,
     get_inference_fx_from_df_reference,
     populate_fill_in_values,

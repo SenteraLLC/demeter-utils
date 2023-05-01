@@ -4,52 +4,39 @@ from io import StringIO
 
 import matplotlib.pyplot as plt
 import requests
-from numpy import datetime64
-from pandas import DataFrame, read_csv
-from scipy.interpolate import PchipInterpolator
+from pandas import DataFrame
+from pandas import concat as pd_concat
+from pandas import read_csv, to_datetime
 
-from demeter_utils.temporal_inference import (
+from demeter_utils.time_series.interpolate import (
     assign_group_weights,
-    get_datetime_skeleton,
-    get_inference_fx_from_df_reference,
-    get_mean_temporal_resolution,
-    moving_average_weights,
-    populate_fill_in_values,
     weighted_moving_average,
 )
 
-# %% Functions
+col_dt = "date_observed"
+col_value = "value_observed"
+step_size = timedelta(days=14)
+window_size = timedelta(days=10)
+group_weights = {"GIMMS": 0.05, "drone": 1.0}
 
 
-def plot_ts(df_skeleton_final: DataFrame, df_line: DataFrame = None):
-    colors = {True: "blue", False: "red"}
+# %% Visualization functions
+def plot_ts(df: DataFrame, df_wtd: DataFrame = None):
+    colors = {"drone": "black", "GIMMS": "red"}
     plt.scatter(
-        df_skeleton_final["datetime_skeleton"],
-        df_skeleton_final["sample_value"],
-        c=df_skeleton_final["true_data"].map(colors),
+        df[col_dt],
+        df[col_value],
+        c=df["source"].map(colors),
     )
     plt.xticks(rotation=60)
 
-    if df_line is not None:
-        plt.plot(df_line["datetime"].to_list(), df_line["weighted_mean"].to_list())
-
-    plt.show()
-
-
-def plot_new_weights(x, wts, source):
-    colors = {True: "blue", False: "red"}
-    plt.scatter(
-        x,
-        wts,
-        c=source.map(colors),
-    )
-    plt.xticks(rotation=60)
+    if df_wtd is not None:
+        plt.plot(df_wtd["t"].to_list(), df_wtd["y"].to_list())
 
     plt.show()
 
 
 # %% Load the reference data and generate an infer_function
-
 GIMMS_COLS = {
     "START DATE": "date_start",
     "END DATE": "date_end",
@@ -66,14 +53,13 @@ text = StringIO(req.content.decode("utf-8"))
 df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
     GIMMS_COLS.values()
 ]
-
-infer_function = get_inference_fx_from_df_reference(
-    df_reference=df_gimms_ndvi,
-    interp_type=PchipInterpolator,
-)
+df_gimms_clean = df_gimms_ndvi.rename(
+    columns={"date_start": col_dt, "sample_value": col_value}
+).dropna(subset=[col_value], axis=0)
+df_gimms_clean[col_dt] = to_datetime(df_gimms_clean[col_dt])
+df_gimms_clean.insert(0, "source", "GIMMS")
 
 # %% Example 1: Made up data
-
 dates = [
     datetime(2022, 6, 6),
     datetime(2022, 6, 20),
@@ -81,108 +67,54 @@ dates = [
     datetime(2022, 9, 10),
 ]
 values = [0.41, 0.55, 0.73, 0.54]
-df_test = DataFrame(data={"date_start": dates, "sample_value": values})
-
-temp_resolution = timedelta(days=10)
-
-df_skeleton = get_datetime_skeleton(
-    df_true=df_test,
-    datetime_start=datetime(2022, 3, 1),
-    datetime_end=datetime(2022, 10, 31),
-    col_datetime="date_start",
-    col_value="sample_value",
-    temporal_resolution_min=temp_resolution,
-    tolerance_alpha=0.5,
-    recalibrate=True,
+df_test = DataFrame(
+    data={
+        "source": ["drone"] * len(dates),
+        col_dt: dates,
+        col_value: values,
+    }
 )
 
-df_skeleton_full = populate_fill_in_values(
-    df_skeleton=df_skeleton,
-    infer_function=infer_function,
-    col_value="sample_value",
-    col_datetime="datetime_skeleton",
-)
-# plot_ts(df_skeleton_full)
+df_full = pd_concat([df_gimms_clean[df_test.columns], df_test], axis=0)
 
 
-df_skeleton_full["source"] = df_skeleton_full["true_data"].map(
-    {False: "GIMMS", True: "Drone"}
+df_full["weight"] = assign_group_weights(
+    groups=df_full["source"], group_weights=group_weights
 )
-group_weights = {"GIMMS": 0.10, "Drone": 1.0}
-df_skeleton_full["weight"] = assign_group_weights(
-    groups=df_skeleton_full["source"], group_weights=group_weights
-)
-bin_dt = df_skeleton_full["datetime_skeleton"]
-values = df_skeleton_full["sample_value"]
-weights = df_skeleton_full["weight"]
-# OR
-# group_weights = {False: 0.10, True: 1.0}
-# df_skeleton_full["weight"] = assign_group_weights(groups=df_skeleton_full["true_data"], group_weights=group_weights)
-step_size = temp_resolution
-window_size = temp_resolution * 1.5
 
 df_weighted_mean = weighted_moving_average(
-    bin_dt, values, weights, step_size, window_size
+    t=df_full[col_dt],
+    y=df_full[col_value],
+    step_size=step_size,
+    window_size=window_size,
+    weights=df_full["weight"],
 )
-plot_ts(df_skeleton_full, df_weighted_mean)
 
-new_wts = moving_average_weights(bin_dt, weights, step_size, window_size)
-plot_new_weights(
-    new_wts["datetime"], new_wts["weights_moving_avg"], df_skeleton_full["true_data"]
-)
+plot_ts(df_full, df_weighted_mean)
 
 # %% Example 2: Loaded data
 
-df_true = read_csv("/mnt/c/Users/Tyler/Downloads/df_drone_imagery1.csv")
-# df_true = read_csv("/Users/marissakivi/Desktop/df_drone_imagery1.csv")
-df_true.rename(
-    columns={"date_observed": "date_start", "value_observed": "sample_value"},
-    inplace=True,
+# df_true = read_csv("/mnt/c/Users/Tyler/Downloads/df_drone_imagery1.csv")
+df_true = read_csv(
+    "/Users/marissakivi/Desktop/df_drone_imagery1.csv", parse_dates=[col_dt]
 )
-df_true["date_start"] = (df_true["date_start"]).astype(datetime64)
+df_true.insert(0, "source", "drone")
+df_full = pd_concat([df_gimms_clean, df_true[["source", col_dt, col_value]]], axis=0)
 
-temporal_resolution_min = timedelta(days=15)
-step_size = timedelta(days=10)
-window_size = step_size * 1.5
 
-df_skeleton = get_datetime_skeleton(
-    df_true=df_true,
-    datetime_start=datetime(2022, 3, 1),
-    datetime_end=datetime(2022, 10, 31),
-    col_datetime="date_start",
-    col_value="sample_value",
-    # temporal_resolution_min=None,
-    temporal_resolution_min=temporal_resolution_min,
-    tolerance_alpha=0.5,
-    recalibrate=True,
+df_full["weight"] = assign_group_weights(
+    groups=df_full["source"], group_weights=group_weights
 )
-
-df_skeleton_full = populate_fill_in_values(
-    df_skeleton=df_skeleton,
-    infer_function=infer_function,
-    col_value="sample_value",
-    col_datetime="datetime_skeleton",
-)
-# plot_ts(df_skeleton_full)
-
-group_weights = {False: 0.10, True: 1.0}
-df_skeleton_full["weight"] = assign_group_weights(
-    groups=df_skeleton_full["true_data"], group_weights=group_weights
-)
-bin_dt = df_skeleton_full["datetime_skeleton"]
-values = df_skeleton_full["sample_value"]
-weights = df_skeleton_full["weight"]
-
-
 df_weighted_mean = weighted_moving_average(
-    bin_dt, values, weights, step_size, window_size
+    t=df_full[col_dt],
+    y=df_full[col_value],
+    step_size=step_size,
+    window_size=window_size,
+    weights=df_full["weight"],
 )
-plot_ts(df_skeleton_full, df_weighted_mean)
 
-new_wts = moving_average_weights(bin_dt, weights, step_size, window_size)
-plot_new_weights(
-    new_wts["datetime"], new_wts["weights_moving_avg"], df_skeleton_full["true_data"]
-)
+plot_ts(df_full, df_weighted_mean)
+
 
 # %% Example 3: EOY data
 
@@ -191,116 +123,23 @@ dates = [
     datetime(2022, 9, 10),
 ]
 values = [0.73, 0.54]
-df_test = DataFrame(data={"date_start": dates, "sample_value": values})
+df_test = DataFrame(data={col_dt: dates, col_value: values})
+df_test.insert(0, "source", "drone")
 
-temp_resolution = timedelta(days=10)
+df_full = pd_concat([df_gimms_clean[df_test.columns], df_test], axis=0)
 
-df_skeleton = get_datetime_skeleton(
-    df_true=df_test,
-    datetime_start=datetime(2022, 3, 1),
-    datetime_end=datetime(2022, 10, 31),
-    col_datetime="date_start",
-    col_value="sample_value",
-    temporal_resolution_min=temp_resolution,
-    tolerance_alpha=0.5,
-    recalibrate=True,
+df_full["weight"] = assign_group_weights(
+    groups=df_full["source"], group_weights=group_weights
 )
-
-df_skeleton_full = populate_fill_in_values(
-    df_skeleton=df_skeleton,
-    infer_function=infer_function,
-    col_value="sample_value",
-    col_datetime="datetime_skeleton",
-)
-# plot_ts(df_skeleton_full)
-
-df_skeleton_full["source"] = df_skeleton_full["true_data"].map(
-    {False: "GIMMS", True: "Drone"}
-)
-weights = {"GIMMS": 0.10, "Drone": 1.0}
-df_skeleton_full["weight"] = assign_group_weights(
-    groups=df_skeleton_full["source"], group_weights=group_weights
-)
-bin_dt = df_skeleton_full["datetime_skeleton"]
-values = df_skeleton_full["sample_value"]
-weights = df_skeleton_full["weight"]
-step_size = temp_resolution
-window_size = temp_resolution * 1.5
 
 df_weighted_mean = weighted_moving_average(
-    bin_dt, values, weights, step_size, window_size
-)
-plot_ts(df_skeleton_full, df_weighted_mean)
-
-new_wts = moving_average_weights(bin_dt, weights, step_size, window_size)
-plot_new_weights(
-    new_wts["datetime"], new_wts["weights_moving_avg"], df_skeleton_full["true_data"]
+    t=df_full[col_dt],
+    y=df_full[col_value],
+    step_size=step_size,
+    window_size=window_size,
+    weights=df_full["weight"],
 )
 
-# %% Example 4: Higher resolution
-dates = [
-    datetime(2022, 6, 6),
-    datetime(2022, 6, 20),
-    datetime(2022, 7, 25),
-    datetime(2022, 9, 10),
-]
-values = [0.41, 0.55, 0.73, 0.54]
-df_test = DataFrame(data={"date_start": dates, "sample_value": values})
+plot_ts(df_full, df_weighted_mean)
 
-temp_resolution = timedelta(days=5)
-
-df_skeleton = get_datetime_skeleton(
-    df_true=df_test,
-    datetime_start=datetime(2022, 3, 1),
-    datetime_end=datetime(2022, 10, 31),
-    col_datetime="date_start",
-    col_value="sample_value",
-    temporal_resolution_min=temp_resolution,
-    tolerance_alpha=0.5,
-    recalibrate=True,
-)
-
-df_skeleton_full = populate_fill_in_values(
-    df_skeleton=df_skeleton,
-    infer_function=infer_function,
-    col_value="sample_value",
-    col_datetime="datetime_skeleton",
-)
-# plot_ts(df_skeleton_full)
-
-df_skeleton_full["source"] = df_skeleton_full["true_data"].map(
-    {False: "GIMMS", True: "Drone"}
-)
-weights = {"GIMMS": 0.10, "Drone": 1.0}
-df_skeleton_full["weight"] = assign_group_weights(
-    groups=df_skeleton_full["source"], group_weights=group_weights
-)
-bin_dt = df_skeleton_full["datetime_skeleton"]
-values = df_skeleton_full["sample_value"]
-weights = df_skeleton_full["weight"]
-step_size = temp_resolution
-window_size = temp_resolution * 1.5
-
-df_weighted_mean = weighted_moving_average(
-    bin_dt, values, weights, step_size, window_size
-)
-plot_ts(df_skeleton_full, df_weighted_mean)
-
-new_wts = moving_average_weights(bin_dt, weights, step_size, window_size)
-plot_new_weights(
-    new_wts["datetime"], new_wts["weights_moving_avg"], df_skeleton_full["true_data"]
-)
-
-
-# %% Check the distribution of interpolated values and the observed values
-
-# 1. Get average temporal resolution of "true" data
-temporal_res_true = get_mean_temporal_resolution(
-    df_skeleton_full, col_subset="true_data", col_date="datetime_skeleton", subset=True
-)
-temporal_res_fillin = get_mean_temporal_resolution(
-    df_skeleton_full, col_subset="true_data", col_date="datetime_skeleton", subset=False
-)
-temporal_res_all = get_mean_temporal_resolution(
-    df_skeleton_full, col_subset="true_data", col_date="datetime_skeleton", subset=None
-)
+# %%

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-from demeter_utils.temporal_inference import get_datetime_skeleton
+from demeter_utils.time_series.inference import get_datetime_skeleton
 
 
 # %% psuedo-inference function
