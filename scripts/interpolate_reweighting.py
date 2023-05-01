@@ -7,7 +7,9 @@ import requests
 from pandas import DataFrame
 from pandas import concat as pd_concat
 from pandas import read_csv, to_datetime
+from scipy.interpolate import BSpline, splrep
 
+from demeter_utils.time import convert_dt_to_unix, get_timedelta_days
 from demeter_utils.time_series.interpolate import (
     assign_group_weights,
     weighted_moving_average,
@@ -21,7 +23,29 @@ group_weights = {"GIMMS": 0.05, "drone": 1.0}
 
 
 # %% Visualization functions
-def plot_ts(df: DataFrame, df_wtd: DataFrame = None):
+
+
+def spline_smoothing(df_wtd_mean: DataFrame, s: float = None) -> DataFrame:
+    # create daily time series for plotting smoothing splines
+    date_start = df_wtd_mean["t"].min()
+    date_end = df_wtd_mean["t"].max()
+    n_days = abs(int(get_timedelta_days(date_start=date_start, date_end=date_end)))
+    x_hat = [date_start + (idx * timedelta(days=1)) for idx in range(n_days + 1)]
+
+    # convert all datetimes to unix
+    xt_hat = [convert_dt_to_unix(xval, relative_epoch=date_start) for xval in x_hat]
+    xt = [
+        convert_dt_to_unix(xval, relative_epoch=date_start) for xval in df_wtd_mean["t"]
+    ]
+
+    splines = splrep(x=xt, y=df_wtd_mean["y"], s=s)
+    fx = BSpline(*splines)
+    y = fx(xt_hat)
+
+    return DataFrame(data={"t": x_hat, "y": y})
+
+
+def plot_ts(df: DataFrame, df_wtd: DataFrame = None, df_splines: DataFrame = None):
     colors = {"drone": "black", "GIMMS": "red"}
     plt.scatter(
         df[col_dt],
@@ -31,7 +55,10 @@ def plot_ts(df: DataFrame, df_wtd: DataFrame = None):
     plt.xticks(rotation=60)
 
     if df_wtd is not None:
-        plt.plot(df_wtd["t"].to_list(), df_wtd["y"].to_list())
+        plt.plot(df_wtd["t"].to_list(), df_wtd["y"].to_list(), c="black")
+
+    if df_splines is not None:
+        plt.plot(df_splines["t"].to_list(), df_splines["y"].to_list(), "--", c="black")
 
     plt.show()
 
@@ -90,7 +117,9 @@ df_weighted_mean = weighted_moving_average(
     weights=df_full["weight"],
 )
 
-plot_ts(df_full, df_weighted_mean)
+df_splines = spline_smoothing(df_weighted_mean)
+
+plot_ts(df_full, df_splines=df_splines)
 
 # %% Example 2: Loaded data
 
@@ -113,7 +142,9 @@ df_weighted_mean = weighted_moving_average(
     weights=df_full["weight"],
 )
 
-plot_ts(df_full, df_weighted_mean)
+df_splines = spline_smoothing(df_weighted_mean)
+
+plot_ts(df_full, df_splines=df_splines)
 
 
 # %% Example 3: EOY data
@@ -140,6 +171,8 @@ df_weighted_mean = weighted_moving_average(
     weights=df_full["weight"],
 )
 
-plot_ts(df_full, df_weighted_mean)
+df_splines = spline_smoothing(df_weighted_mean)
+
+plot_ts(df_full, df_splines=df_splines)
 
 # %%
