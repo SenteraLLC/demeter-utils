@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-from demeter_utils.temporal_inference import get_datetime_skeleton_for_ts
+from demeter_utils.time_series.inference import get_datetime_skeleton
 
 
 # %% psuedo-inference function
@@ -18,26 +18,26 @@ ends = [datetime(2022, 1, 1), datetime(2022, 1, 31)]
 
 
 def plot_and_compare(df_test: DataFrame):
-    df = get_datetime_skeleton_for_ts(
+    df = get_datetime_skeleton(
         df_true_data=df_test,
         datetime_start=ends[0],
         datetime_end=ends[1],
-        temporal_resolution=timedelta(days=2),
-        tolerance_alpha=0.5,
         col_datetime="date",
         col_value="value",
+        temporal_resolution_min=timedelta(days=2),
+        tolerance_alpha=0.5,
         recalibrate=True,
     )
     value = [1] * len(df)
 
-    df_recalibrate = get_datetime_skeleton_for_ts(
+    df_recalibrate = get_datetime_skeleton(
         df_true_data=df_test,
         datetime_start=ends[0],
         datetime_end=ends[1],
-        temporal_resolution=timedelta(days=2),
-        tolerance_alpha=0.5,
         col_datetime="date",
         col_value="value",
+        temporal_resolution_min=timedelta(days=2),
+        tolerance_alpha=0.5,
         recalibrate=False,
     )
     value_recalibrate = [2] * len(df_recalibrate)

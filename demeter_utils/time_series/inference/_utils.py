@@ -4,7 +4,7 @@ from numpy import nan as np_nan
 from pandas import DataFrame, NaT
 
 
-def _get_row_template(col_value: str) -> Dict:
+def _get_df_skeleton_row_template(col_value: str) -> Dict:
     return {
         "within_tolerance": [False],
         "datetime_skeleton": [NaT],
