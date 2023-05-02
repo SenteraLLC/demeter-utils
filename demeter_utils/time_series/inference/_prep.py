@@ -204,9 +204,8 @@ def get_datetime_skeleton(
         to "date_observed".
         col_value (str, optional): Column name for column in `df_true` that holds time series value data. Defaults to
         "value_observed".
-        temporal_resolution_min (timedelta, optional): The minimum temporal resolution desired for the output time
-        series; if None, the temporal resolution of `col_datetime` in `df_true` is calculated and used as
-        `temporal_resolution_min`. Defaults to None.
+        temporal_resolution_min (timedelta): The minimum temporal resolution desired for the output time
+        series.
         tolerance_alpha (float, optional): Proportion of `temporal_resolution` to use as `tolerance` when performing
         fuzzy merge on proposed and observed datetime values. Defaults to 0.5.
         recalibrate (bool, optional): Whether `date_skeleton` dates should be adjusted so they are evenly spaced between
