@@ -127,6 +127,7 @@ plot_ts(df_full, df_splines=df_splines)
 df_true = read_csv(
     "/Users/marissakivi/Desktop/df_drone_imagery1.csv", parse_dates=[col_dt]
 )
+df_true["date_observed"] = to_datetime(df_true["date_observed"])
 df_true.insert(0, "source", "drone")
 df_full = pd_concat([df_gimms_clean, df_true[["source", col_dt, col_value]]], axis=0)
 
