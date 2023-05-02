@@ -29,8 +29,10 @@ def convert_dt_to_unix(
 
     Args:
         dt (datetime): Datetime to convert to unix time.
-        relative_epoch (datetime, optional): Datetime to adjust the unix time relative to. Defaults to
-        datetime.utcfromtimestamp(0).
+
+        relative_epoch (datetime, optional): Datetime value to use as Unix origin point
+            (i.e., t = 0) for dt conversion; defaults to 1970-01-01 (or
+            datetime.utcfromtimestamp(0)) which is the canonical Unix epoch.
     """
     return (to_datetime(dt) - to_datetime(relative_epoch)) // Timedelta("1s")
 
@@ -42,8 +44,10 @@ def convert_unix_to_dt(
 
     Args:
         unix (int): Unix time to convert to a datetime.
-        relative_epoch (datetime, optional): Datetime to adjust the unix time relative to. Defaults to
-        datetime.utcfromtimestamp(0).
+
+        relative_epoch (datetime, optional): Datetime value to use as Unix origin point
+            (i.e., t = 0) for dt conversion; defaults to 1970-01-01 (or
+            datetime.utcfromtimestamp(0)) which is the canonical Unix epoch.
     """
     tdelta = unix * Timedelta("1s")
     dt = to_datetime(relative_epoch) + tdelta
