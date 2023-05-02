@@ -46,7 +46,7 @@ def _gaussian_kernel(
     mean `t_mu` and standard deviation `t_simga`.
 
     Args:
-        t_unix (Series): The unix time series temporal data contributing to .
+        t_unix (Series): The input unix time series for which to apply the gaussian kernel.
         t_mean (int): The center of the gaussian distribution.
         t_sigma (float): The standard deviation of the gaussian distribution.
 
