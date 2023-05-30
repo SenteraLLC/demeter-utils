@@ -20,7 +20,7 @@ def populate_fill_in_values(
     match the trained date range/growing season (or vice versa).
 
     Args:
-        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton" function
+        df_skeleton (`DataFrame`): Output dataframe from "get_df_skeleton" function
         infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of
         interest for missing values in `df_skeleton`.
 
