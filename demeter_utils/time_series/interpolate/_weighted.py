@@ -1,12 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Dict
 
-from numpy import average
-from numpy import ceil as np_ceil
-from numpy import exp, power
+from numpy import average, exp, power
 from pandas import DataFrame, Series, Timedelta
 
 from demeter_utils.time import convert_dt_to_unix
+from demeter_utils.time_series.utils import get_datetime_skeleton_time_series
 
 
 def assign_group_weights(
@@ -15,20 +14,6 @@ def assign_group_weights(
 ) -> Series:
     """Creates a Series containing weights that correspond to the passed group weights."""
     return groups.map(group_weights)
-
-
-def _generate_datetime_skeleton(start: datetime, end: datetime, step_size: timedelta):
-    """Generates datetime time series skeleton (t_hat) based on starting point, end point, and step size.
-
-    Args:
-        start (datetime): First date of desired time series skeleton.
-        end (datetime): Last date of desired time series skeleton.
-        step_size (timedelta): Step size between each time point in the final time series.
-    """
-    timerange = end - start
-    num_steps = np_ceil(timerange / step_size)
-    bin_centers = [start + (step_size * idx) for idx in range(int(num_steps))]
-    return Series(bin_centers)
 
 
 def _gaussian(x, mu, sig):
@@ -90,7 +75,7 @@ def weighted_moving_average(
         weights = Series([1] * len(y))
 
     # get time points at which to estimate weighted mean
-    bins_dt = _generate_datetime_skeleton(
+    bins_dt = get_datetime_skeleton_time_series(
         start=t.min(), end=t.max(), step_size=step_size
     )
     bins_unix = convert_dt_to_unix(bins_dt, relative_epoch=t.min())

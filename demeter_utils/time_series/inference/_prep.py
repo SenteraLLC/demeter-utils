@@ -183,7 +183,7 @@ def _recalibrate_datetime_skeleton(df: DataFrame) -> DataFrame:
     return df_recal
 
 
-def get_datetime_skeleton(
+def get_df_skeleton(
     df_true: DataFrame,
     datetime_start: datetime,
     datetime_end: datetime,

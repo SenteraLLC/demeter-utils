@@ -1,6 +1,7 @@
 from typing import Callable
 
-from pandas import DataFrame, Series, to_numeric
+from pandas import DataFrame, to_numeric
+from pandas.api.types import is_numeric_dtype
 
 
 def populate_fill_in_values(
@@ -19,7 +20,7 @@ def populate_fill_in_values(
     match the trained date range/growing season (or vice versa).
 
     Args:
-        df_skeleton (`DataFrame`): Output dataframe from "get_datetime_skeleton" function
+        df_skeleton (`DataFrame`): Output dataframe from "get_df_skeleton" function
         infer_function (`Callable`): Function that takes a `datetime` value and returns an inferred value of
         interest for missing values in `df_skeleton`.
 
@@ -28,13 +29,20 @@ def populate_fill_in_values(
     """
     df_skeleton_in = df_skeleton.copy()
 
+    if not is_numeric_dtype(df_skeleton_in[col_datetime]):
+        df_skeleton_in["t"] = to_numeric(df_skeleton_in[col_datetime])
+    else:
+        df_skeleton_in["t"] = df_skeleton_in[col_datetime]
+
     # replace the NaN values in `sample_value` column with values in `inference_value` column
     df_skeleton_in[col_value] = df_skeleton_in.apply(
         lambda row: row[col_value]
         if row["within_tolerance"] is True
-        else infer_function(to_numeric(Series([row.datetime_skeleton])))[0],
+        else infer_function(row["t"]),
         axis=1,
     )
+
+    df_skeleton_in.drop(columns=["t"], inplace=True)
 
     # Rename "within_tolerance" and filter columns
     df_skeleton_out = df_skeleton_in.rename(columns={"within_tolerance": "true_data"})[
