@@ -25,8 +25,10 @@ def _estimate_inflection_rate(
     return abs(rate)
 
 
-def estimate_inflection(t: Series, y: Series, ymin: float, ymax: float) -> dict:
-    """Estimating initial values for inflection point and rate based on a one-sided curve."""
+def approximate_inflection_with_cubic_poly(
+    t: Series, y: Series, ymin: float, ymax: float
+) -> dict:
+    """Estimating initial values for inflection point and rate based on a one-sided cubic polynomial curve."""
 
     # fit a cubic polynomial f(t)
     coef = polyfit(x=t, y=y, deg=3)

@@ -9,7 +9,10 @@ from pandas import DataFrame, date_range, read_csv, to_datetime
 from scipy.optimize import minimize
 
 from demeter_utils.time import convert_dt_to_unix
-from scripts.double_logistic.functions import double_logistic, estimate_inflection
+from scripts.double_logistic.functions import (
+    approximate_inflection_with_cubic_poly,
+    double_logistic,
+)
 
 # %% Get data
 GIMMS_COLS = {
@@ -22,7 +25,7 @@ GIMMS_COLS = {
     "MAX VALUE": "max_hist_value",
 }
 req = requests.get(
-    "https://glam1.gsfc.nasa.gov/api/gettbl/v4?sat=MOD&version=v11&layer=NDVI&mask=NASS_2011-2016_corn&shape=ADM&ids=110955&ts_type=seasonal&years=2021&start_month=1&num_months=12&format=csv"
+    "https://glam1.gsfc.nasa.gov/api/gettbl/v4?sat=MOD&version=v11&layer=NDVI&mask=NASS_2011-2016_corn&shape=ADM&ids=110955&ts_type=seasonal&years=2022&start_month=1&num_months=12&format=csv"
 )
 text = StringIO(req.content.decode("utf-8"))
 df_gimms_ndvi = read_csv(text, skiprows=14).rename(columns=GIMMS_COLS)[
@@ -42,6 +45,11 @@ df.sort_values(by=[col_datetime], inplace=True)
 df.reset_index(drop=True, inplace=True)
 
 # %% Fit double logistic function
+## TODO: When making this into a function, we need the following additions:
+# - Optional argument that allows you to specify your initial estimates of parameters and bypass default estimation strategies
+# - Expose `max_threshold` as an argument
+# - Add an argument that, if True, will create plot of fitted curve with input data
+# - Add an assertion step that checks for appropriate data availability
 
 # Input parameters
 df_in = df.copy()
@@ -82,14 +90,14 @@ ind_max = df_in.loc[df_in[col_value] >= max_bound].index.values
 df_left = df_in.iloc[: min(ind_max) + 1, :]
 df_right = df_in.iloc[max(ind_max) :, :]
 
-left_params = estimate_inflection(
+left_params = approximate_inflection_with_cubic_poly(
     t=df_left[col_t],
     y=df_left[col_value],
     ymin=ymin,
     ymax=ymax,
 )
 
-right_params = estimate_inflection(
+right_params = approximate_inflection_with_cubic_poly(
     t=df_right[col_t],
     y=df_right[col_value],
     ymin=ymin,
