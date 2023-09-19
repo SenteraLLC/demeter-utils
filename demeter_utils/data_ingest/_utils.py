@@ -92,16 +92,22 @@ def _get_surveys_after_date_plant(
     return df_survey
 
 
-def _maybe_find_ndvi_plot_ratings_geojson(
-    client: Client, ds: DSLSchema, survey_sentera_id: str
+def _maybe_find_analytic_geojson(
+    client: Client, ds: DSLSchema, survey_sentera_id: str, analytic_name: str
 ) -> DataFrame:
-    """Look for "NDVI Plot Ratings" feature set in CloudVault survey and returns file info."""
+    """
+    Look for "NDVI Plot Ratings" feature set in CloudVault survey and returns file info.
+
+    Args:
+        analytic_name (str): Name of analytic to look for in feature sets (e.g., "NDVI Plot Ratings", "Plot
+            Multispectral Indices and Uniformity", etc.).
+    """
     # get all files for survey
     df_fs = get_fs_by_survey_df(client, ds, survey_sentera_id)
     if len(df_fs) == 0:
         return None
 
-    df_fs = df_fs.loc[df_fs["name"] == "NDVI Plot Ratings"]
+    df_fs = df_fs.loc[df_fs["name"] == analytic_name]
     if len(df_fs) > 0:
         fs_sentera_id = df_fs.iloc[0]["sentera_id"]
         df_temp = get_files_for_feature_set(client, ds, fs_sentera_id)
@@ -144,8 +150,11 @@ def get_plot_boundaries_for_asset(
     # get earliest plot ratings and pull plot boundaries from GeoJSON
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
-        df_temp = _maybe_find_ndvi_plot_ratings_geojson(
-            client, ds, survey_sentera_id=survey_sentera_id
+        df_temp = _maybe_find_analytic_geojson(
+            client,
+            ds,
+            survey_sentera_id=survey_sentera_id,
+            analytic_name="NDVI Plot Ratings",
         )
         if df_temp is not None:
             df_temp.insert(0, "survey", row["survey"].strftime("%m/%d/%Y"))
@@ -281,8 +290,11 @@ def get_ndvi_plot_ratings_for_asset(
     df_files = None
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
-        df_temp = _maybe_find_ndvi_plot_ratings_geojson(
-            client, ds, survey_sentera_id=survey_sentera_id
+        df_temp = _maybe_find_analytic_geojson(
+            client,
+            ds,
+            survey_sentera_id=survey_sentera_id,
+            analytic_name="NDVI Plot Ratings",
         )
         if df_temp is not None:
             datetime_flight = _get_image_date_for_survey(
