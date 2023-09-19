@@ -73,18 +73,18 @@ def get_cv_connection(env: str = "prod") -> Tuple[Client, DSLSchema]:
     return client, ds
 
 
-def _get_surveys_after_date_plant(
-    client: Client, ds: DSLSchema, asset_sentera_id: str, date_plant: datetime
+def _get_surveys_after_date(
+    client: Client, ds: DSLSchema, asset_sentera_id: str, date_on_or_after: datetime
 ) -> DataFrame:
     """Get all CloudVault surveys available for a given asset after a given planting date."""
-    # get all surveys for this asset after `date_plant`
+    # get all surveys for this asset after `date_on_or_after`
     df_survey = get_survey_by_field_df(client, ds, asset_sentera_id).rename(
         columns={"sentera_id": "survey_sentera_id", "name": "survey"}
     )
     df_survey["survey"] = df_survey["survey"].map(
         lambda d: datetime.strptime(d, "%m-%d-%Y")
     )
-    df_survey = df_survey.loc[df_survey["survey"] > date_plant]
+    df_survey = df_survey.loc[df_survey["survey"] > date_on_or_after]
 
     # get earliest plot ratings and pull plot boundaries from GeoJSON
     df_survey.sort_values("survey", inplace=True)
@@ -125,24 +125,31 @@ def _maybe_find_analytic_geojson(
 
 
 def get_plot_boundaries_for_asset(
-    client: Client, ds: DSLSchema, asset_sentera_id: str, date_plant: datetime
+    client: Client,
+    ds: DSLSchema,
+    asset_sentera_id: str,
+    date_on_or_after: datetime,
+    analytic_name: str,
 ) -> Tuple[GeoDataFrame, dict]:
     """Get GeoDataFrame of plot boundaries for given Sentera 'asset' based on NDVI Plot Ratings geojson .
 
-    Considering only those surveys that were created after `date_plant`, this function identifies
+    Considering only those surveys that were created after `date_on_or_after`, this function identifies
     the first available plot ratings file after planting and extracts the plot geometries.
 
     Args:
         client, ds: Connections to CloudVault as set up by `get_cv_connection()`
         asset_sentera_id (str): Sentera ID of the asset
-        date_plant (datetime): Earliest planting date for that asset
+        date_on_or_after (datetime): Earliest date for that asset
+
+        analytic_name (str): Name of analytic to look for in feature sets (e.g., "NDVI Plot Ratings", "Plot
+            Multispectral Indices and Uniformity", etc.).
 
     Returns:
         `gdf` (GeoDataFrame) contains "sentera_id", "range", "column", and geometry of plots from file
         `file_metadata` (dict) dictionary containing relevant metadata for source file
     """
-    df_survey = _get_surveys_after_date_plant(
-        client, ds, asset_sentera_id=asset_sentera_id, date_plant=date_plant
+    df_survey = _get_surveys_after_date(
+        client, ds, asset_sentera_id=asset_sentera_id, date_on_or_after=date_on_or_after
     )
 
     df_survey = df_survey.loc[df_survey["survey"] > datetime(2021, 7, 30)]
@@ -154,14 +161,14 @@ def get_plot_boundaries_for_asset(
             client,
             ds,
             survey_sentera_id=survey_sentera_id,
-            analytic_name="NDVI Plot Ratings",
+            analytic_name=analytic_name,
         )
         if df_temp is not None:
             df_temp.insert(0, "survey", row["survey"].strftime("%m/%d/%Y"))
             file_info = df_temp.iloc[0]
             break
 
-    msg = "No `NDVI Plot Ratings` found for this asset after `date_plant`."
+    msg = f'No "{analytic_name}"" found for this asset after `date_on_or_after`.'
     assert file_info is not None, msg
 
     gdf = read_file(file_info["url"])[["SenteraID", "range", "column", "geometry"]]
@@ -265,25 +272,25 @@ def get_ndvi_plot_ratings_for_asset(
     client: Client,
     ds: DSLSchema,
     asset_sentera_id: str,
-    date_plant: datetime,
+    date_on_or_after: datetime,
 ) -> DataFrame:
     """Get all plot-level mean NDVI values from CloudVault for a given `asset_sentera_id`.
 
-    Parses through all surveys dated after `date_plant` and, for all available "NDVI Plot
+    Parses through all surveys dated after `date_on_or_after` and, for all available "NDVI Plot
     Ratings" feature sets, loads the data and adds to `df_ndvi`.
 
     Args:
         client, ds: Connections to CloudVault as set up by `get_cv_connection()`
         asset_sentera_id (str): Sentera ID of the asset
-        date_plant (datetime): Earliest planting date for that asset
+        date_on_or_after (datetime): Earliest planting date for that asset
 
     Returns:
         `df_ndvi` (DataFrame) contains "date_observed", "sentera_id", "range", "column",
             and plot-level mean NDVI ("ndvi_mean").
     """
-    # get all surveys for this field after `date_plant`
-    df_survey = _get_surveys_after_date_plant(
-        client, ds, asset_sentera_id=asset_sentera_id, date_plant=date_plant
+    # get all surveys for this field after `date_on_or_after`
+    df_survey = _get_surveys_after_date(
+        client, ds, asset_sentera_id=asset_sentera_id, date_on_or_after=date_on_or_after
     )
 
     # get information for all NDVI plot ratings GeoJSON files
