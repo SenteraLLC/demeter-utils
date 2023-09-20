@@ -124,22 +124,22 @@ def _maybe_find_analytic_geojson(
         return None
 
 
-def get_plot_boundaries_for_asset(
+def get_asset_analytic_gdf(
     client: Client,
     ds: DSLSchema,
     asset_sentera_id: str,
     date_on_or_after: datetime,
     analytic_name: str,
 ) -> Tuple[GeoDataFrame, dict]:
-    """Get GeoDataFrame of plot boundaries for given Sentera 'asset' based on NDVI Plot Ratings geojson .
+    """Get GeoDataFrame for given Sentera `asset` and `analytic`.
 
     Considering only those surveys that were created after `date_on_or_after`, this function identifies
     the first available plot ratings file after planting and extracts the plot geometries.
 
     Args:
         client, ds: Connections to CloudVault as set up by `get_cv_connection()`
-        asset_sentera_id (str): Sentera ID of the asset
-        date_on_or_after (datetime): Earliest date for that asset
+        asset_sentera_id (str): Sentera ID of the asset to query.
+        date_on_or_after (datetime): Earliest date to query the asset's analytic.
 
         analytic_name (str): Name of analytic to look for in feature sets (e.g., "NDVI Plot Ratings", "Plot
             Multispectral Indices and Uniformity", etc.).
@@ -170,15 +170,11 @@ def get_plot_boundaries_for_asset(
 
     msg = f'No "{analytic_name}"" found for this asset after `date_on_or_after`.'
     assert file_info is not None, msg
-
-    gdf = read_file(file_info["url"])[["SenteraID", "range", "column", "geometry"]]
-    gdf.rename(columns={"SenteraID": "sentera_id"}, inplace=True)
-
+    gdf = read_file(file_info["url"])
     # organize file metadata for saving
     file_metadata = file_info[
         ["survey", "survey_sentera_id", "sentera_id", "filename"]
     ].to_dict()
-
     return gdf, file_metadata
 
 
