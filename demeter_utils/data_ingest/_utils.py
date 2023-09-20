@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from os import getenv
 from typing import Tuple
 
-from geopandas import GeoDataFrame, read_file
+from geopandas import read_file
 from gql.client import Client
 from gql.dsl import DSLSchema
 from gql_utils.api import (
@@ -117,6 +117,7 @@ def _maybe_find_analytic_geojson(
             len(df_temp) == 1
         ), f"More than one GeoJSON file available for this FS: {fs_sentera_id}"
 
+        df_temp.insert(0, "analytic_name", analytic_name)
         df_temp.insert(0, "fs_sentera_id", fs_sentera_id)
         df_temp.insert(0, "survey_sentera_id", survey_sentera_id)
         return df_temp
@@ -124,13 +125,13 @@ def _maybe_find_analytic_geojson(
         return None
 
 
-def get_asset_analytic_gdf(
+def get_asset_analytic_info(
     client: Client,
     ds: DSLSchema,
     asset_sentera_id: str,
     date_on_or_after: datetime,
     analytic_name: str,
-) -> Tuple[GeoDataFrame, dict]:
+) -> DataFrame:
     """Get GeoDataFrame for given Sentera `asset` and `analytic`.
 
     Considering only those surveys that were created after `date_on_or_after`, this function identifies
@@ -152,9 +153,8 @@ def get_asset_analytic_gdf(
         client, ds, asset_sentera_id=asset_sentera_id, date_on_or_after=date_on_or_after
     )
 
-    df_survey = df_survey.loc[df_survey["survey"] > datetime(2021, 7, 30)]
-
     # get earliest plot ratings and pull plot boundaries from GeoJSON
+    df_analytic_list = None
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
         df_temp = _maybe_find_analytic_geojson(
@@ -164,18 +164,17 @@ def get_asset_analytic_gdf(
             analytic_name=analytic_name,
         )
         if df_temp is not None:
-            df_temp.insert(0, "survey", row["survey"].strftime("%m/%d/%Y"))
-            file_info = df_temp.iloc[0]
-            break
+            df_temp.insert(0, "date", row["survey"].strftime("%Y-%m-%d"))
+            df_analytic_list = (
+                pd_concat([df_analytic_list, df_temp], axis=0, ignore_index=True)
+                if df_analytic_list is not None
+                else df_temp.copy()
+            )
 
     msg = f'No "{analytic_name}"" found for this asset after `date_on_or_after`.'
-    assert file_info is not None, msg
-    gdf = read_file(file_info["url"])
-    # organize file metadata for saving
-    file_metadata = file_info[
-        ["survey", "survey_sentera_id", "sentera_id", "filename"]
-    ].to_dict()
-    return gdf, file_metadata
+    if len(df_analytic_list) == 0:
+        raise RuntimeError(msg)
+    return df_analytic_list
 
 
 def get_date_planted_for_plot(
