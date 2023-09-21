@@ -123,6 +123,7 @@ def _maybe_find_survey_analytic_files(
         df_temp.insert(0, "analytic_name", row["name"])
         df_temp.insert(1, "survey_sentera_id", survey_sentera_id)
         df_temp.insert(2, "fs_sentera_id", row["sentera_id"])
+        df_temp.rename(columns={"sentera_id": "file_sentera_id"}, inplace=True)
         df_files = (
             pd_concat([df_files, df_temp], axis=0, ignore_index=True)
             if df_files is not None
