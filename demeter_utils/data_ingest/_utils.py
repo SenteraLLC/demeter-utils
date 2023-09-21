@@ -82,7 +82,7 @@ def _get_surveys_after_date(
         columns={"sentera_id": "survey_sentera_id", "name": "survey"}
     )
     df_survey["date"] = df_survey["survey"].map(
-        lambda d: datetime.strptime(d, "%Y-%m-%d")
+        lambda d: datetime.strptime(d, "%m-%d-%Y")
     )
     df_survey = df_survey.loc[df_survey["date"] >= date_on_or_after]
     df_survey.sort_values("survey", inplace=True)
