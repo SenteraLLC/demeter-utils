@@ -81,12 +81,10 @@ def _get_surveys_after_date(
     df_survey = get_survey_by_field_df(client, ds, asset_sentera_id).rename(
         columns={"sentera_id": "survey_sentera_id", "name": "survey"}
     )
-    df_survey["survey"] = df_survey["survey"].map(
-        lambda d: datetime.strptime(d, "%m-%d-%Y")
+    df_survey["date"] = df_survey["survey"].map(
+        lambda d: datetime.strptime(d, "%Y-%m-%d")
     )
-    df_survey = df_survey.loc[df_survey["survey"] > date_on_or_after]
-
-    # get earliest plot ratings and pull plot boundaries from GeoJSON
+    df_survey = df_survey.loc[df_survey["date"] >= date_on_or_after]
     df_survey.sort_values("survey", inplace=True)
 
     return df_survey
@@ -122,9 +120,9 @@ def _maybe_find_survey_analytic_files(
         if len(df_temp) == 0:
             logging.info("No files available for feature set %s", row["sentera_id"])
             continue
-        df_temp.insert(0, "survey_sentera_id", survey_sentera_id)
-        df_temp.insert(1, "fs_sentera_id", row["sentera_id"])
-        df_temp.insert(2, "analytic_name", row["name"])
+        df_temp.insert(0, "analytic_name", row["name"])
+        df_temp.insert(1, "survey_sentera_id", survey_sentera_id)
+        df_temp.insert(2, "fs_sentera_id", row["sentera_id"])
         df_files = (
             pd_concat([df_files, df_temp], axis=0, ignore_index=True)
             if df_files is not None
@@ -189,7 +187,8 @@ def get_asset_analytic_info(
             file_type=file_type,
         )
         if df_files is not None:
-            df_files.insert(0, "date", row["survey"].strftime("%Y-%m-%d"))
+            df_files.insert(1, "date", row["date"])
+            df_files.insert(2, "asset_sentera_id", asset_sentera_id)
             df_analytic_list = (
                 pd_concat([df_analytic_list, df_files], axis=0, ignore_index=True)
                 if df_analytic_list is not None
