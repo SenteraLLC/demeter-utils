@@ -1,5 +1,5 @@
 """Helper functions for getting data from CloudVault and inserting customer data into demeter."""
-
+import logging
 from datetime import datetime, timedelta
 from os import getenv
 from typing import Tuple
@@ -92,37 +92,60 @@ def _get_surveys_after_date(
     return df_survey
 
 
-def _maybe_find_analytic_geojson(
-    client: Client, ds: DSLSchema, survey_sentera_id: str, analytic_name: str
+def _maybe_find_survey_analytic_files(
+    client: Client,
+    ds: DSLSchema,
+    survey_sentera_id: str,
+    analytic_name: str = None,
+    file_type: str = "geo_json",
 ) -> DataFrame:
     """
-    Look for "NDVI Plot Ratings" feature set in CloudVault survey and returns file info.
+    Query for `analytic_name` FeatureSet in a CloudVault survey, returning the file info.
 
     Args:
-        analytic_name (str): Name of analytic to look for in feature sets (e.g., "NDVI Plot Ratings", "Plot
-            Multispectral Indices and Uniformity", etc.).
+        analytic_name (str, Optional): Filter on a particular analytic name (e.g., "NDVI Plot Ratings", "Plot
+            Multispectral Indices and Uniformity", etc.). If None, all available analytics are returned.
+
+        file_type (str, Optional): Filter on a particular file time (e.g., "geo_json", "document", etc.). Refer to
+            GraphQL API for valid file types. If None, all available files are returned.
     """
     # get all files for survey
     df_fs = get_fs_by_survey_df(client, ds, survey_sentera_id)
     if len(df_fs) == 0:
         return None
+    if analytic_name is not None:
+        df_fs = df_fs.loc[df_fs["name"] == analytic_name]
 
-    df_fs = df_fs.loc[df_fs["name"] == analytic_name]
-    if len(df_fs) > 0:
-        fs_sentera_id = df_fs.iloc[0]["sentera_id"]
-        df_temp = get_files_for_feature_set(client, ds, fs_sentera_id)
-        df_temp = df_temp.loc[df_temp["file_type"] == "geo_json"]
-
-        assert (
-            len(df_temp) == 1
-        ), f"More than one GeoJSON file available for this FS: {fs_sentera_id}"
-
-        df_temp.insert(0, "analytic_name", analytic_name)
-        df_temp.insert(0, "fs_sentera_id", fs_sentera_id)
+    df_files = None
+    for _, row in df_fs.iterrows():
+        df_temp = get_files_for_feature_set(client, ds, row["sentera_id"])
+        if len(df_temp) == 0:
+            logging.info("No files available for feature set %s", row["sentera_id"])
+            continue
         df_temp.insert(0, "survey_sentera_id", survey_sentera_id)
-        return df_temp
+        df_temp.insert(1, "fs_sentera_id", row["sentera_id"])
+        df_temp.insert(2, "analytic_name", row["name"])
+        df_files = (
+            pd_concat([df_files, df_temp], axis=0, ignore_index=True)
+            if df_files is not None
+            else df_temp.copy()
+        )
+    df_files = df_files.loc[df_files["file_type"] == file_type]
+
+    if len(df_files) == 0:
+        logging.warning(
+            "No %sfiles available for survey %s",
+            str(file_type + " " or ""),
+            survey_sentera_id,
+        )
     else:
-        return None
+        logging.info(
+            "%s %sfiles available for survey %s",
+            len(df_files),
+            str(file_type + " " or ""),
+            survey_sentera_id,
+        )
+    return df_files
 
 
 def get_asset_analytic_info(
@@ -130,9 +153,10 @@ def get_asset_analytic_info(
     ds: DSLSchema,
     asset_sentera_id: str,
     date_on_or_after: datetime,
-    analytic_name: str,
+    analytic_name: str = None,
+    file_type: str = "geo_json",
 ) -> DataFrame:
-    """Get GeoDataFrame for given Sentera `asset` and `analytic`.
+    """Get survey and analytic information for all analytics under a given Sentera `asset`.
 
     Considering only those surveys that were created after `date_on_or_after`, this function identifies
     the first available plot ratings file after planting and extracts the plot geometries.
@@ -140,10 +164,10 @@ def get_asset_analytic_info(
     Args:
         client, ds: Connections to CloudVault as set up by `get_cv_connection()`
         asset_sentera_id (str): Sentera ID of the asset to query.
-        date_on_or_after (datetime): Earliest date to query the asset's analytic.
+        date_on_or_after (datetime): Filter surveys/analytics so only those captured on or after this date are returned.
 
-        analytic_name (str): Name of analytic to look for in feature sets (e.g., "NDVI Plot Ratings", "Plot
-            Multispectral Indices and Uniformity", etc.).
+        analytic_name (str, Optional): Filter on a particular analytic name (e.g., "NDVI Plot Ratings", "Plot
+            Multispectral Indices and Uniformity", etc.). If None, all available analytics are returned.
 
     Returns:
         `gdf` (GeoDataFrame) contains "sentera_id", "range", "column", and geometry of plots from file
@@ -157,23 +181,34 @@ def get_asset_analytic_info(
     df_analytic_list = None
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
-        df_temp = _maybe_find_analytic_geojson(
+        df_files = _maybe_find_survey_analytic_files(
             client,
             ds,
             survey_sentera_id=survey_sentera_id,
             analytic_name=analytic_name,
+            file_type=file_type,
         )
-        if df_temp is not None:
-            df_temp.insert(0, "date", row["survey"].strftime("%Y-%m-%d"))
+        if df_files is not None:
+            df_files.insert(0, "date", row["survey"].strftime("%Y-%m-%d"))
             df_analytic_list = (
-                pd_concat([df_analytic_list, df_temp], axis=0, ignore_index=True)
+                pd_concat([df_analytic_list, df_files], axis=0, ignore_index=True)
                 if df_analytic_list is not None
-                else df_temp.copy()
+                else df_files.copy()
             )
 
-    msg = f'No "{analytic_name}"" found for this asset after `date_on_or_after`.'
     if len(df_analytic_list) == 0:
-        raise RuntimeError(msg)
+        logging.warning(
+            "No %sfiles available for survey %s",
+            str(file_type + " " or ""),
+            survey_sentera_id,
+        )
+    else:
+        logging.info(
+            "%s %sfiles available for survey %s",
+            len(df_analytic_list),
+            str(file_type + " " or ""),
+            survey_sentera_id,
+        )
     return df_analytic_list
 
 
@@ -292,7 +327,7 @@ def get_ndvi_plot_ratings_for_asset(
     df_files = None
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
-        df_temp = _maybe_find_analytic_geojson(
+        df_temp = _maybe_find_survey_analytic_files(
             client,
             ds,
             survey_sentera_id=survey_sentera_id,
