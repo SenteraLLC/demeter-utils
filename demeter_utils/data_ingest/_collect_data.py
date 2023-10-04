@@ -7,7 +7,7 @@ from geopandas import GeoDataFrame, read_file
 from pandas import DataFrame
 from pandas import concat as pd_concat
 from pandas import melt
-from retry import retry
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from demeter_utils.data_ingest._utils import get_asset_analytic_info, get_cv_connection
 
@@ -173,7 +173,11 @@ def load_field_insights_data(
     )
 
     # @retry(retry_on_exception=URLError, stop_max_attempt_number=3, wait_fixed=2)
-    @retry(URLError, tries=3, delay=2)
+    @retry(
+        retry_if_exception_type(URLError),
+        stop=stop_after_attempt(3),
+        wait=wait_fixed(2),
+    )
     def _read_file_retry(url: str) -> GeoDataFrame:
         return read_file(url)
 
