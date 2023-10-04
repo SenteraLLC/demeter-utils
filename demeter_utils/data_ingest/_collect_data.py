@@ -7,9 +7,11 @@ from geopandas import GeoDataFrame, read_file
 from pandas import DataFrame
 from pandas import concat as pd_concat
 from pandas import melt
-from retrying import retry
+from retry import retry
 
 from demeter_utils.data_ingest._utils import get_asset_analytic_info, get_cv_connection
+
+# from retrying import retry
 
 
 def _parse_stat_name(x: str) -> str:
@@ -170,7 +172,8 @@ def load_field_insights_data(
         len(df_analytic_list["survey_sentera_id"].unique()),
     )
 
-    @retry(retry_on_exception=URLError, stop_max_attempt_number=3, wait_fixed=2)
+    # @retry(retry_on_exception=URLError, stop_max_attempt_number=3, wait_fixed=2)
+    @retry(URLError, tries=3, delay=2)
     def _read_file_retry(url: str) -> GeoDataFrame:
         return read_file(url)
 
@@ -185,8 +188,15 @@ def load_field_insights_data(
             row["date"].date(),
             row["site_name"],
         )
-        gdf_temp = _read_file_retry(row["url"])
-
+        try:
+            gdf_temp = _read_file_retry(row["url"])
+        except URLError:
+            logging.warning(
+                "   Unable to load data from CloudVault. site_id: %s date: %s",
+                row["site_name"],
+                datetime.strftime(row["date"].date(), "%Y-%m-%d"),
+            )
+            continue
         # TODO: Is "site_name" always present?
         gdf_temp.insert(0, "site_name", row["site_name"])
         gdf_plots_temp = gdf_temp[["site_name", "plot_id", "geometry"]].copy()
