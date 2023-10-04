@@ -1377,7 +1377,7 @@ files = [
 
 [[package]]
 name = "demeter"
-version = "1.2.12"
+version = "1.2.13"
 description = "The database schema and API that supports agronomic modeling and data science activities."
 optional = false
 python-versions = "~3.10.4"
@@ -1397,7 +1397,7 @@ jsonschema = "^4.4.0"
 meteomatics = "^2.9.0"
 pg-diagram = "^0.1.2"
 psycopg2 = "^2.9.3"
-python-dotenv = "^0.21.0"
+python-dotenv = "^1.0.0"
 requests = "^2.27.1"
 Rtree = "^1.0.0"
 SQLAlchemy = "^1.4.45"
@@ -1415,8 +1415,8 @@ typing_inspect = "^0.8.0"
 [package.source]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
-reference = "main"
-resolved_reference = "e56a4aa6324036a7c4e9935a90a2d9f8ff9fa6b0"
+reference = "DEM-349-update-dotenv"
+resolved_reference = "2bd01f2f8aab9c0c743cf4048b16cc9d1a2201f2"
 
 [[package]]
 name = "dictdiffer"
@@ -4108,13 +4108,13 @@ six = ">=1.5"
 
 [[package]]
 name = "python-dotenv"
-version = "0.21.1"
+version = "1.0.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "python-dotenv-0.21.1.tar.gz", hash = "sha256:1c93de8f636cde3ce377292818d0e440b6e45a82f215c3744979151fa8151c49"},
-    {file = "python_dotenv-0.21.1-py3-none-any.whl", hash = "sha256:41e12e0318bebc859fcc4d97d4db8d20ad21721a6aa5047dd59f090391cb549a"},
+    {file = "python-dotenv-1.0.0.tar.gz", hash = "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"},
+    {file = "python_dotenv-1.0.0-py3-none-any.whl", hash = "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"},
 ]
 
 [package.extras]
@@ -5821,4 +5821,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "a6806dad771f520952c518756ce611b3a09f18005fd3c17249c6007584de51af"
+content-hash = "86a44b4efee9dfb3c2ff1d226560fba43c1173110359825ade488c8e6b5fff0c"
