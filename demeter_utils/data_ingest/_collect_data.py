@@ -174,7 +174,7 @@ def load_field_insights_data(
 
     # @retry(retry_on_exception=URLError, stop_max_attempt_number=3, wait_fixed=2)
     @retry(
-        retry_if_exception_type(URLError),
+        retry=retry_if_exception_type(URLError),
         stop=stop_after_attempt(3),
         wait=wait_fixed(2),
     )

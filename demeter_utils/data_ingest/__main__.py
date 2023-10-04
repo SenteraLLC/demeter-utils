@@ -1,7 +1,7 @@
 """
 Script to load and organize Customer data from Odyssey (customer data files) and CloudVault.
 
-To run: `poetry run python3 -m demeter_utils.data_ingest --date_on_or_after 2023-05-01 --analytic_name "Plot Multispectral Indices and Uniformity"`
+To run: `poetry run python3 -m mosaic_co_stats.data_ingest --date_on_or_after 2023-05-01 --analytic_name "Plot Multispectral Indices and Uniformity and Masking" --project_name "mosaic/phase3_stats"`
 """
 
 # TODO: This is currently picking up some `gql` INFO messaging with the logger. Might want to remove that.
@@ -15,18 +15,21 @@ from os.path import join
 
 from dotenv import load_dotenv
 from geopandas import GeoDataFrame
+from gql.transport.requests import log as requests_logger
+from pandas import DataFrame
 from pandas import merge as pd_merge
 from pandas import read_csv
 from utils.logging.tqdm import logging_init
 
 from demeter_utils.data_ingest._collect_data import load_field_insights_data
 
+requests_logger.setLevel(logging.WARNING)
 if __name__ == "__main__":
     """Main function."""
     c = load_dotenv()
     logging_init()
     parser = argparse.ArgumentParser(
-        description="Load and organize FIRST Seed Tests data from Odyssey and CloudVault."
+        description="Compiles data from Odyssey and CloudVault for all sites, surveys, and plots, converting from wide to long format."
     )
     parser.add_argument(
         "--date_on_or_after",
@@ -44,6 +47,13 @@ if __name__ == "__main__":
         "--filepath_exp_design",
         type=str,
         help="Filename containing the `df_exp_design` information.",
+        default="",
+    )
+    parser.add_argument(
+        "--project_name",
+        type=str,
+        help='Project name (Odyssey directory path between "projects" and "data").',
+        default="mosaic/phase3_stats",
     )
     # parser.add_argument(
     #     "--database_host",
@@ -58,19 +68,21 @@ if __name__ == "__main__":
     #     default="DEV",
     # )
 
-    date_on_or_after = datetime(2023, 5, 1)
-    # analytic_name = "Plot Multispectral Indices and Uniformity"
-    analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
-    filepath_exp_design = join(
-        str(getenv("DEMETER_DIR")),
-        "projects/first_seed_tests/data/seed_id - Cannon Falls.csv",
-    )
+    # date_on_or_after = datetime(2023, 5, 1)
+    # # analytic_name = "Plot Multispectral Indices and Uniformity"
+    # analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
+    # filepath_exp_design = join(
+    #     str(getenv("DEMETER_DIR")),
+    #     "projects/first_seed_tests/data/seed_id - Cannon Falls.csv",
+    # )
+    # project_name = "mosaic/phase3_stats"
 
     # set up args
     args = parser.parse_args()
     date_on_or_after = datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
     analytic_name = args.analytic_name
     filepath_exp_design = args.filepath_exp_design
+    project_name = args.project_name
     # database_host = args.database_host
     # database_env = args.database_env
 
@@ -89,7 +101,7 @@ if __name__ == "__main__":
         primary_keys=primary_keys,
     )
 
-    data_dir = join(str(getenv("DEMETER_DIR")), "projects/mosaic/phase3_stats/data")
+    data_dir = join(str(getenv("DEMETER_DIR")), "projects", project_name, "data")
 
     logging.info("Saving df_long.%s to Odyssey...", "parquet")
     df_long.to_parquet(
@@ -111,11 +123,13 @@ if __name__ == "__main__":
 
     except:  # noqa: E722
         # TODO: Beef this try/except up
+        df_exp_design = DataFrame()
         gdf_exp_design = gdf_plots.copy()
 
     # gdf_exp_design[pd.isnull(gdf_exp_design.geometry)]
     if (len(df_exp_design) != len(gdf_plots)) | (len(gdf_exp_design) != len(gdf_plots)):
-        raise RuntimeError(
+        # raise RuntimeError("Number of plots from experimental design CSVs and CloudVault GEOJSONs do not match.")
+        logging.warning(
             "Number of plots from experimental design CSVs and CloudVault GEOJSONs do not match."
         )
 
