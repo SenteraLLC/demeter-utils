@@ -58,10 +58,13 @@ if __name__ == "__main__":
     #     default="DEV",
     # )
 
-    # date_on_or_after = datetime(2023, 5, 1)
+    date_on_or_after = datetime(2023, 5, 1)
     # analytic_name = "Plot Multispectral Indices and Uniformity"
-    # database_host = "LOCAL"
-    # database_env = "DEV"
+    analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
+    filepath_exp_design = join(
+        str(getenv("DEMETER_DIR")),
+        "projects/first_seed_tests/data/seed_id - Cannon Falls.csv",
+    )
 
     # set up args
     args = parser.parse_args()
@@ -74,48 +77,53 @@ if __name__ == "__main__":
     # ssh_env_name = f"SSH_DEMETER_{database_host}" if database_host == "AWS" else None
     # database_env_name = f"DEMETER-{database_env}_{database_host}"
 
-    logging.info("Collecting field data from Odyssey")
     primary_keys = ["site_name", "plot_id"]
 
-    df_exp_design = read_csv(filepath_exp_design)
-
-    logging.info("Collecting multispectral data from CloudVault")
+    logging.info("Collecting data from CloudVault")
     # TODO: How to load in the asset_sentera_id_dict?
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))
     gdf_plots, df_long = load_field_insights_data(
         asset_sentera_id_dict=ASSET_SENTERA_ID,
         date_on_or_after=date_on_or_after,
         analytic_name=analytic_name,
+        primary_keys=primary_keys,
     )
 
-    gdf_exp_design = GeoDataFrame(
-        pd_merge(df_exp_design, gdf_plots, on=primary_keys, how="inner"),
-        geometry=gdf_plots.geometry.name,
-        crs=gdf_plots.crs,
+    data_dir = join(str(getenv("DEMETER_DIR")), "projects/mosaic/phase3_stats/data")
+
+    logging.info("Saving df_long.%s to Odyssey...", "parquet")
+    df_long.to_parquet(
+        join(data_dir, f"df_long-{analytic_name.replace(' ', '_').lower()}.parquet")
     )
+
+    logging.info("Collecting field data from Odyssey")
+    try:
+        df_exp_design = read_csv(filepath_exp_design)
+
+        logging.info(
+            "Merging Plot IDs from CloudVault with Experimental Design data from Odyssey"
+        )
+        gdf_exp_design = GeoDataFrame(
+            pd_merge(df_exp_design, gdf_plots, on=primary_keys, how="inner"),
+            geometry=gdf_plots.geometry.name,
+            crs=gdf_plots.crs,
+        )
+
+    except:  # noqa: E722
+        # TODO: Beef this try/except up
+        gdf_exp_design = gdf_plots.copy()
+
     # gdf_exp_design[pd.isnull(gdf_exp_design.geometry)]
     if (len(df_exp_design) != len(gdf_plots)) | (len(gdf_exp_design) != len(gdf_plots)):
         raise RuntimeError(
             "Number of plots from experimental design CSVs and CloudVault GEOJSONs do not match."
         )
 
-    # df_long_meta = pd_merge(
-    #     gdf_exp_design.loc[:, gdf_exp_design.columns != gdf_exp_design.geometry.name],
-    #     df_long,
-    #     on=primary_keys,
-    #     how="inner",
-    # )
-
-    data_dir = join(str(getenv("DEMETER_DIR")), "projects/mosaic_co_stats/data")
-
     logging.info("Saving gdf_exp_design.%s to Odyssey...", "parquet")
     gdf_exp_design.to_parquet(join(data_dir, "gdf_exp_design.parquet"))
 
     logging.info("Saving gdf_exp_design.%s to Odyssey...", "geojson")
     gdf_exp_design.to_file(join(data_dir, "gdf_exp_design.geojson"), driver="GeoJSON")
-
-    logging.info("Saving df_long.%s to Odyssey...", "parquet")
-    df_long.to_parquet(join(data_dir, "df_long.parquet"))
 
     # TODO: Load into database
     # logging.info("Connecting to database.")

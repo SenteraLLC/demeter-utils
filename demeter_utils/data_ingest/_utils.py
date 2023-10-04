@@ -110,11 +110,11 @@ def _maybe_find_survey_analytic_files(
     # get all files for survey
     df_fs = get_fs_by_survey_df(client, ds, survey_sentera_id)
     if len(df_fs) == 0:
-        return None
+        return DataFrame()
     if analytic_name is not None:
         df_fs = df_fs.loc[df_fs["name"] == analytic_name]
 
-    df_files = None
+    df_files = DataFrame()
     for _, row in df_fs.iterrows():
         df_temp = get_files_for_feature_set(client, ds, row["sentera_id"])
         if len(df_temp) == 0:
@@ -126,12 +126,16 @@ def _maybe_find_survey_analytic_files(
         df_temp.rename(columns={"sentera_id": "file_sentera_id"}, inplace=True)
         df_files = (
             pd_concat([df_files, df_temp], axis=0, ignore_index=True)
-            if df_files is not None
+            if len(df_files.columns) != 0
             else df_temp.copy()
         )
-    df_files = df_files.loc[df_files["file_type"] == file_type]
+    df_files = (
+        df_files.loc[df_files["file_type"] == file_type]
+        if (len(df_files.columns) != 0 and "file_type" in df_files.columns)
+        else df_files
+    )
 
-    if len(df_files) == 0:
+    if len(df_files.columns) == 0:  # Most efficient
         logging.warning(
             "No %sfiles available for survey %s",
             str(file_type + " " or ""),
@@ -177,7 +181,7 @@ def get_asset_analytic_info(
     )
 
     # get earliest plot ratings and pull plot boundaries from GeoJSON
-    df_analytic_list = None
+    df_analytic_list = DataFrame()
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
         df_files = _maybe_find_survey_analytic_files(
@@ -187,16 +191,16 @@ def get_asset_analytic_info(
             analytic_name=analytic_name,
             file_type=file_type,
         )
-        if df_files is not None:
+        if len(df_files.columns) != 0:  # Most efficient
             df_files.insert(1, "date", row["date"])
             df_files.insert(2, "asset_sentera_id", asset_sentera_id)
             df_analytic_list = (
                 pd_concat([df_analytic_list, df_files], axis=0, ignore_index=True)
-                if df_analytic_list is not None
+                if len(df_analytic_list.columns) != 0
                 else df_files.copy()
             )
 
-    if len(df_analytic_list) == 0:
+    if len(df_analytic_list.columns) == 0:  # Most efficient
         logging.warning(
             "No %sfiles available for survey %s",
             str(file_type + " " or ""),
