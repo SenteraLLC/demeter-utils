@@ -123,7 +123,9 @@ if __name__ == "__main__":
         primary_keys=PRIMARY_KEYS,
     )
 
-    logging.info("Saving df_long.%s to Local File Directory...", "parquet")
+    logging.info(
+        "Saving %s to Local File Directory...", f"df_long-{analytic_fname}.parquet"
+    )
     df_long.to_parquet(join(data_dir, f"df_long-{analytic_fname}.parquet"))
 
     logging.info("Collecting field data from Local File Directory")
@@ -150,12 +152,18 @@ if __name__ == "__main__":
             "Number of plots from experimental design CSVs and CloudVault GEOJSONs do not match."
         )
 
-    logging.info("Saving gdf_exp_design.%s to Local File Directory...", "parquet")
+    logging.info(
+        "Saving %s to Local File Directory...",
+        f"gdf_exp_design-{analytic_fname}.parquet",
+    )
     gdf_exp_design.to_parquet(
         join(data_dir, f"gdf_exp_design-{analytic_fname}.parquet")
     )
 
-    logging.info("Saving gdf_exp_design.%s to Local File Directory...", "geojson")
+    logging.info(
+        "Saving %s to Local File Directory...",
+        f"gdf_exp_design-{analytic_fname}.geojson",
+    )
     gdf_exp_design.to_file(
         join(data_dir, f"gdf_exp_design-{analytic_fname}.geojson"), driver="GeoJSON"
     )
