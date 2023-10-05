@@ -11,8 +11,6 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fi
 
 from demeter_utils.data_ingest._utils import get_asset_analytic_info, get_cv_connection
 
-# from retrying import retry
-
 
 def _parse_stat_name(x: str) -> str:
     """Parse statistic name from variable name string and return statistic name."""
@@ -187,18 +185,19 @@ def load_field_insights_data(
     # Wide to long format for all sites, surveys, and plots
     for i, row in df_analytic_list.iterrows():
         logging.info(
-            '   %s: Loading data from CloudVault: %s "%s"',
+            '   %s: Loading data from CloudVault. site_id: "%s" date: %s',
             i,
-            row["date"].date(),
             row["site_name"],
+            row["date"].date(),
         )
         try:
             gdf_temp = _read_file_retry(row["url"])
         except URLError:
             logging.warning(
-                "   Unable to load data from CloudVault. site_id: %s date: %s",
+                '   %s: Unable to load data from CloudVault. site_id: "%s" date: %s',
+                i,
                 row["site_name"],
-                datetime.strftime(row["date"].date(), "%Y-%m-%d"),
+                row["date"].date(),
             )
             continue
         # TODO: Is "site_name" always present?

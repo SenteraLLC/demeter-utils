@@ -142,6 +142,7 @@ def _maybe_find_survey_analytic_files(
             survey_sentera_id,
         )
     else:
+        # TODO: It would be nice to improve the information in this log, but this query only returns sentera_ids and urls
         logging.info(
             "%s %sfiles available for survey %s",
             len(df_files),
@@ -202,16 +203,16 @@ def get_asset_analytic_info(
 
     if len(df_analytic_list.columns) == 0:  # Most efficient
         logging.warning(
-            "No %sfiles available for survey %s",
+            "No %sfiles available for asset %s",
             str(file_type + " " or ""),
-            survey_sentera_id,
+            asset_sentera_id,
         )
     else:
         logging.info(
-            "%s %sfiles available for survey %s",
+            "%s %sfiles available for asset %s",
             len(df_analytic_list),
             str(file_type + " " or ""),
-            survey_sentera_id,
+            asset_sentera_id,
         )
     return df_analytic_list
 
