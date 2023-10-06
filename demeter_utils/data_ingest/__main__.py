@@ -8,7 +8,7 @@ SENTERA_PROD_PW="my_s3cret_passw0rd"
 SENTERA_API_PROD_URL="https://api.sentera.com"
 
 # Store to local directory
-DEMETER_DIR="/mnt/d/"
+DEMETER_DIR="//172.25.0.20/Sentera/Departments/GIS/demeter"
 
 # Choose the CloudVault Organization and Assets to query
 ORG_SENTERA_ID="zuhhzlj_OR_b2muTheMosaic_CV_prod_faffd93_210608_225434"
