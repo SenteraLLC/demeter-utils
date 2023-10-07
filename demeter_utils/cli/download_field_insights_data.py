@@ -128,29 +128,27 @@ if __name__ == "__main__":
     logging.info("Field Insights retrieval complete.")
     logging.info("    %s record(s) retrieved", format(len(df_long), ","))
     logging.info(
-        "    %s unique observation type(s)",
+        "  %s unique observation type(s)",
         format(len(df_long.drop_duplicates(subset=["observation_type"])), ","),
     )
     logging.info(
-        "    %s unique descriptive statistic(s)",
+        "  %s unique descriptive statistic(s)",
         format(len(df_long.drop_duplicates(subset=["statistic_type"])), ","),
     )
     logging.info(
-        "    %s unique observation x statistics combination(s)",
+        "  %s unique observation x statistics combination(s)",
         format(
             len(df_long.drop_duplicates(subset=["observation_type", "statistic_type"])),
             ",",
         ),
     )
+    logging.info("  %s unique site(s)", format(len(df_long["site_name"].unique()), ","))
     logging.info(
-        "    %s unique site(s)", format(len(df_long["site_name"].unique()), ",")
-    )
-    logging.info(
-        "    %s unique collection(s)",
+        "  %s unique collection(s)",
         format(len(df_long.drop_duplicates(subset=["site_name", "date"])), ","),
     )
     logging.info(
-        "    %s unique plot(s)",
+        "  %s unique plot(s)",
         format(len(df_long.drop_duplicates(subset=["site_name", "plot_id"])), ","),
     )
 
