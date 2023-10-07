@@ -11,9 +11,9 @@ from shapely import Polygon
 from timezonefinder import TimezoneFinder
 
 from demeter_utils.data_ingest._gql import (
-    _get_image_date_for_survey,
-    _get_surveys_after_date,
-    _maybe_find_survey_analytic_files,
+    get_image_date_for_survey,
+    get_surveys_after_date,
+    maybe_find_survey_analytic_files,
 )
 
 tzf = TimezoneFinder()
@@ -68,7 +68,7 @@ def get_ndvi_plot_ratings_for_asset(
             and plot-level mean NDVI ("ndvi_mean").
     """
     # get all surveys for this field after `date_on_or_after`
-    df_survey = _get_surveys_after_date(
+    df_survey = get_surveys_after_date(
         client, ds, asset_sentera_id=asset_sentera_id, date_on_or_after=date_on_or_after
     )
 
@@ -76,14 +76,14 @@ def get_ndvi_plot_ratings_for_asset(
     df_files = None
     for _, row in df_survey.iterrows():
         survey_sentera_id = row["survey_sentera_id"]
-        df_temp = _maybe_find_survey_analytic_files(
+        df_temp = maybe_find_survey_analytic_files(
             client,
             ds,
             survey_sentera_id=survey_sentera_id,
             analytic_name="NDVI Plot Ratings",
         )
         if df_temp is not None:
-            datetime_flight = _get_image_date_for_survey(
+            datetime_flight = get_image_date_for_survey(
                 client, ds, survey_sentera_id=survey_sentera_id
             )
             df_temp.insert(0, "survey", row["survey"].strftime("%m/%d/%Y"))
@@ -135,3 +135,34 @@ def get_date_planted_for_plot(
     date_planted_utc = date_planted_local.astimezone(UTC)
 
     return date_planted_utc
+
+
+# def load_trial_info() -> DataFrame:
+#     """Load and organize treatment information.
+
+#     Gathered data and data sources:
+#     1. Field trial information for each site/location (CSV)
+
+#     Returns:
+#         df_exp_design (DataFrame): Trial information for all sites, including `plot_id` and `seed_id`. Does not include
+#             plot geometry.
+#     """
+#     logging.info("   Collecting and cleaning field notes data from CSV files")
+
+#     demeter_dir = str(getenv("DEMETER_DIR"))
+#     data_dir = join(demeter_dir, "projects/mosaic_co_stats/data")
+
+#     df_exp_design = None
+#     for asset_name in ASSET_SENTERA_ID.keys():
+#         # Load plot data
+#         fname_seed_id = join(data_dir, f"seed_id - {asset_name}.csv")
+#         df_temp = read_csv(fname_seed_id).rename(columns={"ms": "plot_id"})
+
+#         # clean up and standardize
+#         df_temp.insert(0, "site_name", asset_name)
+#         df_exp_design = (
+#             pd_concat([df_exp_design, df_temp], axis=0, ignore_index=True)
+#             if df_exp_design is not None
+#             else df_temp.copy()
+#         )
+#     return df_exp_design
