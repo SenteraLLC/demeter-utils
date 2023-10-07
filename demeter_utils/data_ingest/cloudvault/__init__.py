@@ -7,6 +7,7 @@ from demeter_utils.data_ingest.cloudvault._gql import (
     get_survey_by_field_df,
     get_surveys_after_date,
 )
+from demeter_utils.data_ingest.cloudvault._long import load_field_insights_data
 
 __all__ = [
     "get_cv_connection",
@@ -16,4 +17,5 @@ __all__ = [
     "get_fs_by_survey_df",
     "get_images_by_survey_df",
     "get_survey_by_field_df",
+    "load_field_insights_data",
 ]
