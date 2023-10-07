@@ -247,7 +247,12 @@ def load_field_insights_data(
         df_long (DataFrame): long-format dataframe containing plot-level FieldInsights data for all sites, plots, and
             observations.
     """
-    logging.info('   Checking for valid "%s" layers from CloudVault', analytic_name)
+    logging.info(
+        'Checking asset "%s" for valid "%s" layers from CloudVault; sentera_id: %s',
+        asset_name,
+        analytic_name,
+        asset_sentera_id,
+    )
     client, ds = get_cv_connection()
 
     df_asset_analytics = get_asset_analytics(
@@ -265,11 +270,6 @@ def load_field_insights_data(
     df_asset_analytics.insert(0, "site_name", asset_name)
 
     df_asset_analytics.drop_duplicates(inplace=True)
-    logging.info(
-        "   Found %s analytics from %s surveys",
-        len(df_asset_analytics),
-        len(df_asset_analytics["survey_sentera_id"].unique()),
-    )
 
     @retry(
         retry=retry_if_exception_type(URLError),
@@ -285,7 +285,7 @@ def load_field_insights_data(
     # Wide to long format for all sites, surveys, and plots
     for i, row in df_asset_analytics.iterrows():
         logging.info(
-            '   %s: Loading data from CloudVault. site_id: "%s" date: %s',
+            '  %s: Loading data from CloudVault. site_id: "%s" date: %s',
             i,
             row["site_name"],
             row["date"].date(),
@@ -294,7 +294,7 @@ def load_field_insights_data(
             gdf_temp = _read_file_retry(row["url"])
         except URLError:
             logging.warning(
-                '   %s: Unable to load data from CloudVault. site_id: "%s" date: %s',
+                '  %s: Unable to load data from CloudVault. site_id: "%s" date: %s',
                 i,
                 row["site_name"],
                 row["date"].date(),

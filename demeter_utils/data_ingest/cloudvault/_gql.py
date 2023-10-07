@@ -43,6 +43,12 @@ def get_asset_analytics(
     df_survey = get_surveys_after_date(
         client, ds, asset_sentera_id=asset_sentera_id, date_on_or_after=date_on_or_after
     )
+    logging.info(
+        '  Found %s surveys... checking each for "%s" %sfiles',
+        len(df_survey),
+        analytic_name,
+        str(file_type + " " or ""),
+    )
 
     # get earliest plot ratings and pull plot boundaries from GeoJSON
     df_analytic_list = DataFrame()
@@ -66,16 +72,17 @@ def get_asset_analytics(
 
     if len(df_analytic_list.columns) == 0:  # Most efficient
         logging.warning(
-            "No %sfiles available for asset %s",
-            str(file_type + " " or ""),
+            '     Asset %s: No valid "%s" layers available',
             asset_sentera_id,
+            analytic_name,
         )
     else:
         logging.info(
-            "%s %sfiles available for asset %s",
-            len(df_analytic_list),
-            str(file_type + " " or ""),
+            '     Asset %s: Found %s valid "%s" layers across %s surveys',
             asset_sentera_id,
+            len(df_analytic_list),
+            str(analytic_name),
+            len(df_analytic_list["survey_sentera_id"].unique()),
         )
     return df_analytic_list
 
@@ -203,18 +210,21 @@ def maybe_find_survey_analytic_files(
     datetime_survey = maybe_find_image_date_for_survey(client, ds, survey_sentera_id)
     if len(df_files.columns) == 0:  # Most efficient
         logging.warning(
-            "No %sfiles available for %s survey: %s",
+            "  Survey %s: No %sfiles available; sentera_id: %s",
+            str(datetime_survey.date())
+            if datetime_survey is not None
+            else survey_sentera_id,
             str(file_type + " " or ""),
-            str(datetime_survey.date()) if datetime_survey is not None else "",
             survey_sentera_id,
         )
     else:
-        # TODO: It would be nice to improve the information in this log, but this query only returns sentera_ids and urls
         logging.info(
-            "%s %sfiles available for %s survey: %s",
+            "  Survey %s: %s %sfiles available; sentera_id: %s",
+            str(datetime_survey.date())
+            if datetime_survey is not None
+            else survey_sentera_id,
             len(df_files),
             str(file_type + " " or ""),
-            str(datetime_survey.date()) if datetime_survey is not None else "",
             survey_sentera_id,
         )
     return df_files
