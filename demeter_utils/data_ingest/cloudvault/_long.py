@@ -200,14 +200,6 @@ def load_field_insights_data(
     date_on_or_after: datetime = datetime(2023, 5, 1),
     analytic_name: str = "Plot Multispectral Indices and Uniformity",
     primary_keys: list[str] = ["site_name", "plot_id"],
-    cols_ignore: list[str] = [
-        "num_rows",
-        "stroke",
-        "stroke-opa",
-        "fill",
-        "fill-opaci",
-        "geometry",
-    ],
     col_starts_with_allowable: list[str] = ["Band", "Index", "Canopy Cover"],
 ) -> Tuple[GeoDataFrame, dict]:
     """
@@ -223,8 +215,6 @@ def load_field_insights_data(
 
         primary_keys (list[str]): List of column names to use as primary keys for merging dataframes. Defaults to
             ["site_name", "plot_id"].
-
-        cols_ignore (list[str]): List of column names to ignore when converting from wide to long.
 
         col_starts_with_allowable (list[str]): Column names that start with these strings will be included in the
             `value_vars` list of the `pandas.melt` function.
@@ -293,14 +283,24 @@ def load_field_insights_data(
             continue
         # TODO: Is "site_name" always present?
         gdf_temp.insert(0, "site_name", row["site_name"])
-        gdf_plots_temp = gdf_temp[["site_name", "plot_id", "geometry"]].copy()
 
-        # Filters columns; only those that start with `cols_starts_with_allowable` and are not `primary_keys` are kept.
+        # Filters columns; any columns that do not start with `col_starts_with_allowable` are kept.
+        plots_subset = list(
+            filter(
+                lambda x: (
+                    not any([x.startswith(s) for s in col_starts_with_allowable])
+                    and x not in primary_keys
+                ),
+                list(gdf_temp.columns),
+            )
+        )
+
+        # Filters columns; only those that start with `col_starts_with_allowable` and are not `primary_keys` are kept.
         value_subset = list(
             filter(
                 lambda x: (
                     any([x.startswith(s) for s in col_starts_with_allowable])
-                    and x not in primary_keys + cols_ignore
+                    and x not in primary_keys
                 ),
                 list(gdf_temp.columns),
             )
@@ -313,7 +313,11 @@ def load_field_insights_data(
             crop_season_year=row["date"].year,
         )
 
-        gdf_plots = pd_concat([gdf_plots, gdf_plots_temp], axis=0, ignore_index=True)
+        gdf_plots = pd_concat(
+            [gdf_plots, gdf_temp[primary_keys + plots_subset]],
+            axis=0,
+            ignore_index=True,
+        )
         df_long = pd_concat([df_long, df_long_temp], axis=0, ignore_index=True)
     gdf_plots.drop_duplicates(subset=primary_keys, inplace=True)
     return gdf_plots, df_long
