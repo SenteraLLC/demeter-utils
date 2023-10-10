@@ -56,6 +56,12 @@ if __name__ == "__main__":
         default="Plot Multispectral Indices and Uniformity",
     )
     parser.add_argument(
+        "--cols_ignore",
+        type=str,
+        help="List of column names to ignore when converting from wide to long. See `demeter_utils.data_ingest.cloudvault.load_field_insights_data() for more information.",
+        default="['num_rows','stroke','stroke-opacity','fill','fill-opacicity',]",
+    )
+    parser.add_argument(
         "--project_name",
         type=str,
         help='Project name (Local File Directory path between "projects" and "data").',
