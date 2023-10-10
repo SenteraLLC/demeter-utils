@@ -67,9 +67,9 @@ if __name__ == "__main__":
     analytic_name = args.analytic_name
     project_name = args.project_name
 
-    date_on_or_after = datetime(2023, 5, 1)
-    analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
-    project_name = "mosaic/phase3_stats"
+    # date_on_or_after = datetime(2023, 5, 1)
+    # analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
+    # project_name = "mosaic/phase3_stats"
 
     PRIMARY_KEYS = ["site_name", "plot_id"]
 
