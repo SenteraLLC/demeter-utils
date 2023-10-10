@@ -66,10 +66,27 @@ if __name__ == "__main__":
     date_on_or_after = datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
     analytic_name = args.analytic_name
     project_name = args.project_name
+    cols_ignore = literal_eval(args.cols_ignore)
 
     # date_on_or_after = datetime(2023, 5, 1)
     # analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
     # project_name = "mosaic/phase3_stats"
+    # cols_ignore = [
+    #     "num_rows",
+    #     "stroke",
+    #     "stroke-opacity",
+    #     "fill",
+    #     "fill-opacity",
+    #     "Trial Name",
+    #     "mean_x",
+    #     "mean_y",
+    #     "Treatment",
+    #     "id",
+    #     "left",
+    #     "top",
+    #     "right",
+    #     "bottom",
+    # ]
 
     PRIMARY_KEYS = ["site_name", "plot_id"]
 
@@ -110,6 +127,7 @@ if __name__ == "__main__":
             date_on_or_after=date_on_or_after,
             analytic_name=analytic_name,
             primary_keys=PRIMARY_KEYS,
+            cols_ignore=cols_ignore,
         )
 
         gdf_plots = (
@@ -124,6 +142,14 @@ if __name__ == "__main__":
         )
     gdf_plots.drop_duplicates(subset=PRIMARY_KEYS, inplace=True)
     df_long.drop_duplicates(inplace=True)
+
+    # TODO: Check if any gdf_plots columns are empty. If so, issue a warning suggesting that user adds to `cols_ignore`
+    cols_sparse = gdf_plots.columns[gdf_plots.isna().any()].tolist()
+    if len(cols_sparse) > 0:
+        logging.warning(
+            '  `gdf_plots` contains columns with sparse data - consider passing "%s" to the `cols_ignore` arg.',
+            ",".join(cols_sparse),
+        )
 
     logging.info("Field Insights retrieval complete.")
     logging.info("    %s record(s) retrieved", format(len(df_long), ","))
@@ -162,7 +188,6 @@ if __name__ == "__main__":
         f"gdf_exp_design-{analytic_fname}.parquet",
     )
     gdf_plots.to_parquet(join(data_dir, f"gdf_exp_design-{analytic_fname}.parquet"))
-
     logging.info(
         "Saving %s to Local File Directory...",
         f"gdf_exp_design-{analytic_fname}.geojson",
