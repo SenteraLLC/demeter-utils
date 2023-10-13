@@ -22,6 +22,31 @@ def _parse_stat_name(x: str) -> str:
     return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
 
 
+OBSERVATION_TYPES = {
+    "Band: Blue",
+    "Band: Green",
+    "Band: Red",
+    "Band: Red Edge",
+    "Band: NIR",
+    "Index: NDVI",
+    "Index: NDRE",
+    "Index: GNDVI",
+    "Index: GLI",
+    "Index: CIRE",
+    "Index: CIG",
+    "Index: NDWI",
+    "Index: TCARI/OSAVI",
+    "Canopy Cover",
+    "Canopy Cover Area",
+    "Plant Density",
+    "Emergence",
+    "Seed Spacing",
+    "Singulation",
+    "Skips",
+    "Multiples",
+}
+
+
 def _wide_to_long(
     df: DataFrame, primary_keys: list, value_subset: list, crop_season_year: int
 ) -> DataFrame:
@@ -46,13 +71,19 @@ def _wide_to_long(
         "observation_type",
         df_long["variable"].apply(lambda x: " ".join(x.split(" ")[:2])),
     )
+    # If a variable is masked, it will in fact have "Masked" in the variable name
     df_long.insert(
         idx_initial_insert + 2,
+        "masked",
+        df_long["variable"].apply(lambda x: True if "masked" in x.lower() else False),
+    )
+    df_long.insert(
+        idx_initial_insert + 3,
         "statistic_type",
         df_long["variable"].apply(lambda x: _parse_stat_name(x)),
     )
     df_long.insert(
-        idx_initial_insert + 3,
+        idx_initial_insert + 4,
         "subplot",
         df_long["variable"].apply(lambda x: True if "subplot" in x.lower() else False),
     )
