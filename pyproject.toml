@@ -12,7 +12,7 @@ psycopg2 = "^2.9.3"
 pyarrow = "^13.0.0"
 scipy = "^1.10.0"
 seaborn = "^0.12.2"
-demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="DEM-445-ndvi-curve"}
 gql_utils = { git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch = "DEM-412-prod-catalog"}
 
 [tool.poetry.scripts]
