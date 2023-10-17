@@ -48,6 +48,7 @@ def weighted_moving_average(
     step_size: timedelta,
     window_size: timedelta,
     weights: Series = None,
+    include_bounds: bool = False,
 ) -> Series:
     """
     Calculates a weighted moving average of the passed values for a given step size and window size.
@@ -76,7 +77,7 @@ def weighted_moving_average(
 
     # get time points at which to estimate weighted mean
     bins_dt = get_datetime_skeleton_time_series(
-        start=t.min(), end=t.max(), step_size=step_size
+        start=t.min(), end=t.max(), step_size=step_size, include_bounds=include_bounds
     )
     bins_unix = convert_dt_to_unix(bins_dt, relative_epoch=t.min())
 
