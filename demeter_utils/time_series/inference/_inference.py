@@ -1,9 +1,8 @@
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from functools import cached_property
 from typing import Callable
 
-from marshmallow import ValidationError, fields, validates
-from marshmallow_dataclass import dataclass
 from pandas import DataFrame
 from scipy.interpolate import UnivariateSpline
 
@@ -12,9 +11,19 @@ from demeter_utils.time_series.interpolate import weighted_moving_average
 
 
 @dataclass
-class TimeSeriesParams:
+class TimeSeriesFitter:
     """
-    Parameters needed for the `TimeSeriesFitter` class.
+    Class to faciilitate fitting of generic time-series data using different fitting methods.
+
+    Initialization steps:
+        1. Uses `params.wt_mapping` to weight each grouping of `params.col_mapping_group` column in `params.df`.
+        2. Perform weighted moving average using Gaussian kernel with `params.step_size` and `params.window_size`.
+
+    Fitting steps:
+        1. Choose your desired fitting function (one of the methods of the `TimeSeriesFitter` class).
+        2. Fit the desired fitting function to weighted moving average time series (created in __init__) to generate a
+            Callable based on unix input.
+        3. [Optional] Convert that Callable to take `datetime` input, converting to unix under the hood.
 
     Args:
         df (DataFrame): Dataframe containing `col_mapping_group`, `col_datetime`, and `col_value` columns.
@@ -32,82 +41,18 @@ class TimeSeriesParams:
         col_datetime (str): Name of column in `df` containing datetime values.
         col_mapping_group (str): Name of column in `df` containing values to be mapped to weights in `wt_mapping`.
         col_value (str): Name of column in `df` containing values to be smoothed.
+
     """
 
     df: DataFrame
     step_size: timedelta
     window_size: timedelta
-    wt_mapping: dict[str, float] = fields.Dict(
-        dump_default={"drone": 10, "satellite": 1}
+    wt_mapping: dict[str, float] = field(
+        default_factory=lambda: {"drone": 10, "satellite": 1}
     )
-    col_datetime: str = fields.Str(dump_default="date")
-    col_mapping_group: str = fields.Str(dump_default="source")
-    col_value: str = fields.Str(dump_default="ndvi")
-
-    @validates(field_name="df")
-    def validate_dataframe_columns(
-        self, df, col_datetime, col_mapping_group, col_value
-    ):
-        for col in [col_datetime, col_mapping_group, col_value]:
-            try:
-                _ = df[col]
-            except KeyError as e:
-                raise ValidationError(e)
-
-    @validates(field_name="step_size")
-    def validate_step_size(self, step_size):
-        if not isinstance(step_size, timedelta):
-            raise ValidationError("`step_size` must be `timedelta` type.")
-
-    @validates(field_name="window_size")
-    def validate_window_size(self, window_size):
-        if not isinstance(window_size, timedelta):
-            raise ValidationError("`window_size` must be `timedelta` type.")
-
-    # TODO: Validate wt_mapping for keys in col_mapping_group
-    # TODO: Validate that dtype(df[col_datetime]) == datetime
-
-
-class TimeSeriesFitter:
-    """
-    Class to faciilitate fitting of generic time-series data using different fitting methods.
-
-    Initialization steps:
-        1. Uses `params.wt_mapping` to weight each grouping of `params.col_mapping_group` column in `params.df`.
-        2. Perform weighted moving average using Gaussian kernel with `params.step_size` and `params.window_size`.
-
-    Fitting steps:
-        1. Choose your desired fitting function (one of the methods of the `TimeSeriesFitter` class).
-        2. Fit the desired fitting function to weighted moving average time series (created in __init__) to generate a
-            Callable based on unix input.
-        3. [Optional] Convert that Callable to take `datetime` input, converting to unix under the hood.
-
-    Args:
-        fitter_params (TimeSeriesParams): Validated TimeSeriesParams needed to fit time-series data.
-
-    """
-
-    def __init__(
-        self,
-        params: TimeSeriesParams,
-    ):
-        serialized_params = TimeSeriesParams.Schema().dump(
-            params
-        )  # Use Schema(only=["df", "step_size", "window_size"]) to filter
-
-        errors = TimeSeriesParams.Schema().validate(serialized_params)
-        if errors:
-            raise ValidationError(errors)
-
-        self.df = serialized_params["df"]
-        self.step_size = serialized_params["step_size"]
-        self.window_size = serialized_params["window_size"]
-        self.wt_mapping = serialized_params["wt_mapping"]
-        self.col_datetime = serialized_params["col_datetime"]
-        self.col_mapping_group = serialized_params["col_mapping_group"]
-        self.col_value = serialized_params["col_value"]
-
-        self.df_daily_weighted_moving_avg
+    col_datetime: str = field(default="date")
+    col_mapping_group: str = field(default="source")
+    col_value: str = field(default="ndvi")
 
     @cached_property
     def df_daily_weighted_moving_avg(
@@ -170,7 +115,7 @@ class TimeSeriesFitter:
                 )
                 return get_value_from_relative_epoch_fx(t)
 
-            return get_value_from_datetime(get_value_from_relative_epoch_fx)
+            return get_value_from_datetime
         else:
             return get_value_from_relative_epoch_fx
 
