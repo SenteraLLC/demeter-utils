@@ -49,6 +49,8 @@ def weighted_moving_average(
     window_size: timedelta,
     weights: Series = None,
     include_bounds: bool = False,
+    col_datetime: str = "date",
+    col_value: str = "ndvi",
 ) -> Series:
     """
     Calculates a weighted moving average of the passed values for a given step size and window size.
@@ -100,4 +102,4 @@ def weighted_moving_average(
         )
     )
 
-    return DataFrame(data={"t": bins_dt, "y": weighted_mean})
+    return DataFrame(data={col_datetime: bins_dt, col_value: weighted_mean})

@@ -18,7 +18,7 @@ from demeter_utils.time_series.interpolate import weighted_moving_average
 @dataclass
 class TimeSeriesFitter:
     """
-    Class to faciilitate fitting of generic time-series data using different fitting methods.
+    Class to facilitate fitting of generic time-series data using different fitting methods.
 
     Initialization steps:
         1. Uses `params.wt_mapping` to weight each grouping of `params.col_mapping_group` column in `params.df`.
@@ -78,6 +78,8 @@ class TimeSeriesFitter:
             window_size=self.window_size,
             weights=wts,
             include_bounds=True,
+            col_datetime=self.col_datetime,
+            col_value=self.col_value,
         )
 
     def cubic_spline(
@@ -102,13 +104,13 @@ class TimeSeriesFitter:
 
         # UnivariateSpline must take `int`` dtype (i.e., unix) for `x`
         xt = convert_dt_to_unix(
-            self.df_daily_weighted_moving_avg["t"],
-            relative_epoch=self.df_daily_weighted_moving_avg["t"].min(),
+            self.df_daily_weighted_moving_avg[self.col_datetime],
+            relative_epoch=self.df_daily_weighted_moving_avg[self.col_datetime].min(),
         )
 
         # Fit cubic spline to smoothed weighted mean curve data
         get_value_from_relative_epoch_fx = UnivariateSpline(
-            x=xt, y=self.df_daily_weighted_moving_avg["y"], k=3, s=s
+            x=xt, y=self.df_daily_weighted_moving_avg[self.col_value], k=3, s=s
         )
 
         # Return the callable
@@ -116,7 +118,10 @@ class TimeSeriesFitter:
 
             def get_value_from_datetime(dt: datetime) -> float:
                 t = convert_dt_to_unix(
-                    dt, relative_epoch=self.df_daily_weighted_moving_avg["t"].min()
+                    dt,
+                    relative_epoch=self.df_daily_weighted_moving_avg[
+                        self.col_datetime
+                    ].min(),
                 )
                 return get_value_from_relative_epoch_fx(t)
 
@@ -134,32 +139,54 @@ class TimeSeriesFitter:
             Callable: Takes a `datetime` value as an argument and returns the estimated data value based on the fitted
                 smoothing spline.
         """
-        # UnivariateSpline must take `int`` dtype (i.e., unix) for `x`
-        xt = convert_dt_to_unix(
-            self.df_daily_weighted_moving_avg["t"],
-            relative_epoch=self.df_daily_weighted_moving_avg["t"].min(),
-        ).astype(float)
-        y = self.df_daily_weighted_moving_avg["y"].astype(float)
+        # from typing import Callable, Iterable, Union
 
-        ymax = self.df[self.col_value].max()
-        ymin = self.df[self.col_value].min()
+        # from numpy import arange, array, exp, polyfit
+        # from pandas import DataFrame, Series
+
+        # from demeter_utils.time_series.inference._double_logistic import _cubic_poly_predict
+        # t=df_left[fitter.col_datetime].apply(lambda dt: convert_dt_to_unix(dt))
+        # t = convert_dt_to_unix(
+        #     fitter.df_daily_weighted_moving_avg["t"],
+        #     relative_epoch=fitter.df_daily_weighted_moving_avg["t"].min(),
+        # ).astype(float)
+        # y = fitter.df_daily_weighted_moving_avg["y"].astype(float)
+
+        # midpoint = (ymax + ymin) / 2
+
+        # coef = polyfit(x=t, y=y, deg=3)
+        # t_fit = arange(start=min(t), stop=max(t), step=0.05)
+        # df_fit = DataFrame(data={"t": t_fit, "value": _cubic_poly_predict(coef, t_fit)})
+        # intersect_diff_value = abs(df_fit["value"] - midpoint)
+
+        # Partial double logistic function must take `int` dtype (i.e., unix) for `x`
+        xt = convert_dt_to_unix(
+            self.df_daily_weighted_moving_avg[self.col_datetime],
+            relative_epoch=self.df_daily_weighted_moving_avg[self.col_datetime].min(),
+        ).astype(float)
+        y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
+
+        ymax = y.max()
+        ymin = y.min()
 
         # Determine left and right side of curve
         max_threshold = 0.1
         max_bound = ymax * (1 - max_threshold)
-        ind_max = self.df.loc[self.df[self.col_value] >= max_bound].index.values
+        ind_max = self.df_daily_weighted_moving_avg.loc[
+            self.df_daily_weighted_moving_avg["y"] >= max_bound
+        ].index.values
 
         # Approximate inflection points
-        df_left = self.df.iloc[: min(ind_max) + 1, :]
+        df_left = self.df_daily_weighted_moving_avg.iloc[: min(ind_max) + 1, :]
         left_params = approximate_inflection_with_cubic_poly(
-            t=df_left[self.col_datetime],
+            t=df_left[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
             y=df_left[self.col_value],
             ymin=ymin,
             ymax=ymax,
         )
-        df_right = self.df.iloc[max(ind_max) :, :]
+        df_right = self.df_daily_weighted_moving_avg.iloc[max(ind_max) :, :]
         right_params = approximate_inflection_with_cubic_poly(
-            t=df_right[self.col_datetime],
+            t=df_right[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
             y=df_right[self.col_value],
             ymin=ymin,
             ymax=ymax,
