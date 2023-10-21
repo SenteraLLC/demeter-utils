@@ -93,6 +93,9 @@ class TimeSeriesFitter:
         Args:
             s (float, optional): The smooting factor. Defaults to 5% of the mean data value if not specified.
 
+            callable_unit_datetime (bool, optional): If True, the returned function takes a `datetime` value as an arg;
+                if false, it takes a relative epoch value (i.e., `int` dtype). Defaults to True.
+
         Returns:
             Callable: Takes a `datetime` value as an argument and returns the estimated data value based on the fitted
                 smoothing spline.
@@ -129,11 +132,13 @@ class TimeSeriesFitter:
         else:
             return get_value_from_relative_epoch_fx
 
-    def double_logistic(
-        self,
-    ) -> Callable:
+    def double_logistic(self, callable_unit_datetime: bool = True) -> Callable:
         """
         Fits double logistic function to the smoothed and weighted data values.
+
+        Args:
+            callable_unit_datetime (bool, optional): If True, the returned function takes a `datetime` value as an arg;
+                if false, it takes a relative epoch value (i.e., `int` dtype). Defaults to True.
 
         Returns:
             Callable: Takes a `datetime` value as an argument and returns the estimated data value based on the fitted
@@ -173,7 +178,7 @@ class TimeSeriesFitter:
         max_threshold = 0.1
         max_bound = ymax * (1 - max_threshold)
         ind_max = self.df_daily_weighted_moving_avg.loc[
-            self.df_daily_weighted_moving_avg["y"] >= max_bound
+            self.df_daily_weighted_moving_avg[self.col_value] >= max_bound
         ].index.values
 
         # Approximate inflection points
@@ -237,24 +242,41 @@ class TimeSeriesFitter:
         t_mean = s_unix.mean()
         t_sd = s_unix.std()
 
-        # Define the datetime to unix conversion to embed into get_value_from_datetime()
-        def dt_transformation(dt: datetime) -> float:
-            unix = convert_dt_to_unix(
-                dt, relative_epoch=self.df_daily_weighted_moving_avg["t"].min()
-            )  # convert to psuedo-unix
-            return (unix - t_mean) / t_sd  # scale
+        get_value_from_relative_epoch_fx = partial(
+            double_logistic,
+            ymin=pars["ymin"],
+            ymax=pars["ymax"],
+            t_incr=pars["t_incr"],
+            t_decr=pars["t_decr"],
+            rate_incr=pars["rate_incr"],
+            rate_decr=pars["rate_decr"],
+        )
 
-        # Create partial function that takes `datetime`, transforms it appropriately, and estimates value
-        def get_value_from_datetime(dt: datetime) -> float:
-            get_value_from_relative_epoch_fx = partial(
-                double_logistic,
-                ymin=pars["ymin"],
-                ymax=pars["ymax"],
-                t_incr=pars["t_incr"],
-                t_decr=pars["t_decr"],
-                rate_incr=pars["rate_incr"],
-                rate_decr=pars["rate_decr"],
-            )
-            return get_value_from_relative_epoch_fx(dt_transformation(dt))
+        # Return the callable
+        if callable_unit_datetime:
+            # Define the datetime to unix conversion to embed into get_value_from_datetime()
+            def dt_transformation(dt: datetime) -> float:
+                unix = convert_dt_to_unix(
+                    dt,
+                    relative_epoch=self.df_daily_weighted_moving_avg[
+                        self.col_datetime
+                    ].min(),
+                )  # convert to psuedo-unix
+                return (unix - t_mean) / t_sd  # scale
 
-        return get_value_from_datetime
+            # Create partial function that takes `datetime`, transforms it appropriately, and estimates value
+            def get_value_from_datetime(dt: datetime) -> float:
+                get_value_from_relative_epoch_fx = partial(
+                    double_logistic,
+                    ymin=pars["ymin"],
+                    ymax=pars["ymax"],
+                    t_incr=pars["t_incr"],
+                    t_decr=pars["t_decr"],
+                    rate_incr=pars["rate_incr"],
+                    rate_decr=pars["rate_decr"],
+                )
+                return get_value_from_relative_epoch_fx(dt_transformation(dt))
+
+            return get_value_from_datetime
+        else:
+            return get_value_from_relative_epoch_fx
