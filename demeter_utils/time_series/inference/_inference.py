@@ -224,6 +224,7 @@ class TimeSeriesFitter:
         t_mean = s_unix.mean()
         t_sd = s_unix.std()
 
+        # TODO: Figure out how to attach the `pars` dict to the returned function (e.g., as a class object)
         get_value_from_relative_epoch_fx = partial(
             double_logistic,
             ymin=pars["ymin"],
