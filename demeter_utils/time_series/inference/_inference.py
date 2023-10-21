@@ -144,68 +144,41 @@ class TimeSeriesFitter:
             Callable: Takes a `datetime` value as an argument and returns the estimated data value based on the fitted
                 smoothing spline.
         """
-        # from typing import Callable, Iterable, Union
 
-        # from numpy import arange, array, exp, polyfit
-        # from pandas import DataFrame, Series
+        # TODO: Refactor this function outside of double_logistic(), and have users pass their own guess based on their data
+        def _guess_starting_params():
+            # Determine left and right side of curve
+            max_threshold = 0.1
+            max_bound = y.max() * (1 - max_threshold)
+            ind_max = self.df_daily_weighted_moving_avg.loc[
+                self.df_daily_weighted_moving_avg[self.col_value] >= max_bound
+            ].index.values
 
-        # from demeter_utils.time_series.inference._double_logistic import _cubic_poly_predict
-        # t=df_left[fitter.col_datetime].apply(lambda dt: convert_dt_to_unix(dt))
-        # t = convert_dt_to_unix(
-        #     fitter.df_daily_weighted_moving_avg["t"],
-        #     relative_epoch=fitter.df_daily_weighted_moving_avg["t"].min(),
-        # ).astype(float)
-        # y = fitter.df_daily_weighted_moving_avg["y"].astype(float)
+            # Approximate inflection points
+            df_left = self.df_daily_weighted_moving_avg.iloc[: min(ind_max) + 1, :]
+            left_params = approximate_inflection_with_cubic_poly(
+                t=df_left[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
+                y=df_left[self.col_value],
+                ymin=y.min(),
+                ymax=y.max(),
+            )
+            df_right = self.df_daily_weighted_moving_avg.iloc[max(ind_max) :, :]
+            right_params = approximate_inflection_with_cubic_poly(
+                t=df_right[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
+                y=df_right[self.col_value],
+                ymin=y.min(),
+                ymax=y.max(),
+            )
 
-        # midpoint = (ymax + ymin) / 2
-
-        # coef = polyfit(x=t, y=y, deg=3)
-        # t_fit = arange(start=min(t), stop=max(t), step=0.05)
-        # df_fit = DataFrame(data={"t": t_fit, "value": _cubic_poly_predict(coef, t_fit)})
-        # intersect_diff_value = abs(df_fit["value"] - midpoint)
-
-        # Partial double logistic function must take `int` dtype (i.e., unix) for `x`
-        xt = convert_dt_to_unix(
-            self.df_daily_weighted_moving_avg[self.col_datetime],
-            relative_epoch=self.df_daily_weighted_moving_avg[self.col_datetime].min(),
-        ).astype(float)
-        y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
-
-        ymax = y.max()
-        ymin = y.min()
-
-        # Determine left and right side of curve
-        max_threshold = 0.1
-        max_bound = ymax * (1 - max_threshold)
-        ind_max = self.df_daily_weighted_moving_avg.loc[
-            self.df_daily_weighted_moving_avg[self.col_value] >= max_bound
-        ].index.values
-
-        # Approximate inflection points
-        df_left = self.df_daily_weighted_moving_avg.iloc[: min(ind_max) + 1, :]
-        left_params = approximate_inflection_with_cubic_poly(
-            t=df_left[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
-            y=df_left[self.col_value],
-            ymin=ymin,
-            ymax=ymax,
-        )
-        df_right = self.df_daily_weighted_moving_avg.iloc[max(ind_max) :, :]
-        right_params = approximate_inflection_with_cubic_poly(
-            t=df_right[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
-            y=df_right[self.col_value],
-            ymin=ymin,
-            ymax=ymax,
-        )
-
-        guess = {
-            "ymin": ymin,
-            "ymax": ymax,
-            "t_incr": left_params["t"],
-            "t_decr": right_params["t"],
-            "rate_incr": left_params["rate"],
-            "rate_decr": right_params["rate"],
-        }
-        guess_values = [*guess.values()]
+            guess = {
+                "ymin": y.min(),
+                "ymax": y.max(),
+                "t_incr": left_params["t"],
+                "t_decr": right_params["t"],
+                "rate_incr": left_params["rate"],
+                "rate_decr": right_params["rate"],
+            }
+            return guess
 
         # Define cost function
         def _cost_function(p, xt, y):
@@ -221,6 +194,15 @@ class TimeSeriesFitter:
             y_pred = partial_fx(xt)
             se = (y_pred - y) ** 2
             return se.sum()
+
+        # Partial double logistic function must take `int` dtype (i.e., unix) for `x`
+        xt = convert_dt_to_unix(
+            self.df_daily_weighted_moving_avg[self.col_datetime],
+            relative_epoch=self.df_daily_weighted_moving_avg[self.col_datetime].min(),
+        ).astype(float)
+        y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
+
+        guess_values = [*_guess_starting_params.values()]
 
         # Minimize cost function with initial values
         opt = minimize(_cost_function, guess_values, args=(xt, y))
