@@ -145,10 +145,21 @@ class TimeSeriesFitter:
                 smoothing spline.
         """
 
+        # Define the datetime to unix conversion to embed into get_value_from_datetime()
+        def dt_transformation(dt: datetime) -> float:
+            """Transform and standardize temporal dimension to improve convergence."""
+            unix = convert_dt_to_unix(
+                dt,
+                relative_epoch=self.df_daily_weighted_moving_avg[
+                    self.col_datetime
+                ].min(),
+            )  # convert to psuedo-unix
+            return (unix - t_mean) / t_sd  # scale
+
         # TODO: Refactor this function outside of double_logistic(), and have users pass their own guess based on their data
         def _guess_starting_params():
             # Determine left and right side of curve
-            max_threshold = 0.1
+            max_threshold = 0.2
             max_bound = y.max() * (1 - max_threshold)
             ind_max = self.df_daily_weighted_moving_avg.loc[
                 self.df_daily_weighted_moving_avg[self.col_value] >= max_bound
@@ -157,19 +168,18 @@ class TimeSeriesFitter:
             # Approximate inflection points
             df_left = self.df_daily_weighted_moving_avg.iloc[: min(ind_max) + 1, :]
             left_params = approximate_inflection_with_cubic_poly(
-                t=df_left[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
+                t=df_left[self.col_datetime].apply(lambda dt: dt_transformation(dt)),
                 y=df_left[self.col_value],
                 ymin=y.min(),
                 ymax=y.max(),
             )
             df_right = self.df_daily_weighted_moving_avg.iloc[max(ind_max) :, :]
             right_params = approximate_inflection_with_cubic_poly(
-                t=df_right[self.col_datetime].apply(lambda dt: convert_dt_to_unix(dt)),
+                t=df_right[self.col_datetime].apply(lambda dt: dt_transformation(dt)),
                 y=df_right[self.col_value],
                 ymin=y.min(),
                 ymax=y.max(),
             )
-
             guess = {
                 "ymin": y.min(),
                 "ymax": y.max(),
@@ -181,7 +191,7 @@ class TimeSeriesFitter:
             return guess
 
         # Define cost function
-        def _cost_function(p, xt, y):
+        def _cost_function(p, t, y):
             partial_fx = partial(
                 double_logistic,
                 ymin=p[0],
@@ -191,21 +201,28 @@ class TimeSeriesFitter:
                 rate_incr=p[4],
                 rate_decr=p[5],
             )
-            y_pred = partial_fx(xt)
+            y_pred = partial_fx(t)
             se = (y_pred - y) ** 2
             return se.sum()
 
-        # Partial double logistic function must take `int` dtype (i.e., unix) for `x`
-        xt = convert_dt_to_unix(
-            self.df_daily_weighted_moving_avg[self.col_datetime],
-            relative_epoch=self.df_daily_weighted_moving_avg[self.col_datetime].min(),
-        ).astype(float)
+        # Partial double logistic function must take scaled `float` dtype for `t`
+        t = self.df_daily_weighted_moving_avg[self.col_datetime].apply(
+            lambda dt: dt_transformation(dt)
+        )
         y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
+
+        # Standardize to reduce scale (mean = 0, sd = 1)
+        date_min = self.df[self.col_datetime].min()
+        s_unix = self.df[self.col_datetime].map(
+            lambda dt: convert_dt_to_unix(dt, relative_epoch=date_min)
+        )
+        t_mean = s_unix.mean()
+        t_sd = s_unix.std()
 
         guess_values = [*_guess_starting_params().values()]
 
         # Minimize cost function with initial values
-        opt = minimize(_cost_function, guess_values, args=(xt, y))
+        opt = minimize(_cost_function, guess_values, args=(t, y))
         popt = opt.x
         pars = {
             "ymin": popt[0],
@@ -215,14 +232,6 @@ class TimeSeriesFitter:
             "rate_incr": popt[4],
             "rate_decr": popt[5],
         }
-
-        # Standardize to reduce scale (mean = 0, sd = 1)
-        date_min = self.df[self.col_datetime].min()
-        s_unix = self.df[self.col_datetime].map(
-            lambda dt: convert_dt_to_unix(dt, relative_epoch=date_min)
-        )
-        t_mean = s_unix.mean()
-        t_sd = s_unix.std()
 
         # TODO: Figure out how to attach the `pars` dict to the returned function (e.g., as a class object)
         get_value_from_relative_epoch_fx = partial(
@@ -237,16 +246,6 @@ class TimeSeriesFitter:
 
         # Return the callable
         if callable_unit_datetime:
-            # Define the datetime to unix conversion to embed into get_value_from_datetime()
-            def dt_transformation(dt: datetime) -> float:
-                unix = convert_dt_to_unix(
-                    dt,
-                    relative_epoch=self.df_daily_weighted_moving_avg[
-                        self.col_datetime
-                    ].min(),
-                )  # convert to psuedo-unix
-                return (unix - t_mean) / t_sd  # scale
-
             # Create partial function that takes `datetime`, transforms it appropriately, and estimates value
             def get_value_from_datetime(dt: datetime) -> float:
                 get_value_from_relative_epoch_fx = partial(
