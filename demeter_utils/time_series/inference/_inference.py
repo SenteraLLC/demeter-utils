@@ -205,12 +205,6 @@ class TimeSeriesFitter:
             se = (y_pred - y) ** 2
             return se.sum()
 
-        # Partial double logistic function must take scaled `float` dtype for `t`
-        t = self.df_daily_weighted_moving_avg[self.col_datetime].apply(
-            lambda dt: dt_transformation(dt)
-        )
-        y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
-
         # Standardize to reduce scale (mean = 0, sd = 1)
         date_min = self.df[self.col_datetime].min()
         s_unix = self.df[self.col_datetime].map(
@@ -218,6 +212,12 @@ class TimeSeriesFitter:
         )
         t_mean = s_unix.mean()
         t_sd = s_unix.std()
+
+        # Partial double logistic function must take scaled `float` dtype for `t`
+        t = self.df_daily_weighted_moving_avg[self.col_datetime].apply(
+            lambda dt: dt_transformation(dt)
+        )
+        y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
 
         guess_values = [*_guess_starting_params().values()]
 
