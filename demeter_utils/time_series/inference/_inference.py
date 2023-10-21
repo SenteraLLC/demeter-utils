@@ -202,7 +202,7 @@ class TimeSeriesFitter:
         ).astype(float)
         y = self.df_daily_weighted_moving_avg[self.col_value].astype(float)
 
-        guess_values = [*_guess_starting_params.values()]
+        guess_values = [*_guess_starting_params().values()]
 
         # Minimize cost function with initial values
         opt = minimize(_cost_function, guess_values, args=(xt, y))
