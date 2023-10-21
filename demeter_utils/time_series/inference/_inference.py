@@ -159,7 +159,7 @@ class TimeSeriesFitter:
         # TODO: Refactor this function outside of double_logistic(), and have users pass their own guess based on their data
         def _guess_starting_params():
             # Determine left and right side of curve
-            max_threshold = 0.2
+            max_threshold = 0.1
             max_bound = y.max() * (1 - max_threshold)
             ind_max = self.df_daily_weighted_moving_avg.loc[
                 self.df_daily_weighted_moving_avg[self.col_value] >= max_bound
