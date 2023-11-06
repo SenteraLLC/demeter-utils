@@ -83,26 +83,6 @@ if __name__ == "__main__":
     project_name = args.project_name
     cols_ignore = literal_eval(args.cols_ignore)
 
-    # date_on_or_after = datetime(2023, 5, 1)
-    # analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
-    # project_name = "mosaic/phase3_stats"
-    # cols_ignore = [
-    #     "num_rows",
-    #     "stroke",
-    #     "stroke-opacity",
-    #     "fill",
-    #     "fill-opacity",
-    #     "Trial Name",
-    #     "mean_x",
-    #     "mean_y",
-    #     "Treatment",
-    #     "id",
-    #     "left",
-    #     "top",
-    #     "right",
-    #     "bottom",
-    # ]
-
     PRIMARY_KEYS = ["site_name", "plot_id"]
 
     logging.info("Reading Environment variables from .env")
