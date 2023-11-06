@@ -14,7 +14,13 @@ DEMETER_DIR="//172.25.0.20/Sentera/Departments/GIS/demeter"
 ORG_SENTERA_ID="zuhhzlj_OR_b2muTheMosaic_CV_prod_faffd93_210608_225434"
 ASSET_SENTERA_ID="{'01ABG-IN-INUS':'3tbdeyl_AS_b2muTheMosaic_CV_prod_8864cee1_230524_213525','02ABG-SD-SDUS':'t0xm2ob_AS_b2muTheMosaic_CV_prod_3b36d337_230509_200217','03ATC-WIUS':'v7vbcx4_AS_b2muTheMosaic_AD_45r99qc0_73d05f3b0_20230529_195111','04ALR-IAUS':'zhgliiv_AS_b2muTheMosaic_CV_prod_8864cee1_230524_204238','05CSM-ILUS':'tfi5mh3_AS_b2muTheMosaic_AD_45r99qc0_73d05f3b0_20230530_220619','06NEA-NEUS':'vhv4tyg_AS_b2muTheMosaic_CV_prod_3b36d337_230509_201119','07SRC-KSUS':'1hlnmpz_AS_b2muTheMosaic_CV_prod_7f0de7fa_230425_185154','08TRE-ARUS':'2xs6862_AS_b2muTheMosaic_CV_prod_7f0de7fa_230426_035714','09VET-MNUS':'g9xrnvl_AS_b2muTheMosaic_CV_prod_3b36d337_230509_201946','10NEL-MOUS':'e9733ki_AS_b2muTheMosaic_AD_qzr1p013_f1789ac10_20230413_165619',}"
 
-To run: `poetry run python3 -m demeter_utils.cli.download_field_insights_data --date_on_or_after 2023-05-01 --analytic_name "Plot Multispectral Indices and Uniformity and Masking" --project_name "mosaic/phase3_stats"`
+To run:
+```
+poetry run python3 -m demeter_utils.cli.download_field_insights_data \
+    --analytic_name "Plot Multispectral Indices and Uniformity and Masking" \
+    --project_name "mosaic/phase3_stats2"
+```
+
 """
 import argparse
 import logging
@@ -46,8 +52,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--date_on_or_after",
         type=str,
-        help="Earliest date to load data from.",
-        default="2023-05-01",
+        help='Earliest date to load data from (e.g., "2023-05-01"). If None, data from all available surveys are returned.',
+        default=None,
     )
     parser.add_argument(
         "--analytic_name",
@@ -69,7 +75,11 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    date_on_or_after = datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
+    date_on_or_after = (
+        datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
+        if args.date_on_or_after
+        else None
+    )
     analytic_name = args.analytic_name
     project_name = args.project_name
     cols_ignore = literal_eval(args.cols_ignore)

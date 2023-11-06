@@ -18,7 +18,7 @@ def get_asset_analytics(
     client: Client,
     ds: DSLSchema,
     asset_sentera_id: str,
-    date_on_or_after: datetime,
+    date_on_or_after: datetime = None,
     analytic_name: str = None,
     file_type: str = "geo_json",
 ) -> DataFrame:
@@ -30,7 +30,9 @@ def get_asset_analytics(
     Args:
         client, ds: Connections to CloudVault as set up by `get_cv_connection()`
         asset_sentera_id (str): Sentera ID of the asset to query.
-        date_on_or_after (datetime): Filter surveys/analytics so only those captured on or after this date are returned.
+
+        date_on_or_after (datetime, Optional): Filter surveys/analytics so only those captured on or after this date are
+            returned. If None, all available surveys are returned. Defaults to None.
 
         analytic_name (str, Optional): Filter on a particular analytic name (e.g., "NDVI Plot Ratings", "Plot
             Multispectral Indices and Uniformity", etc.). If None, all available analytics are returned.
@@ -125,7 +127,10 @@ def get_image_date_for_survey(
 
 
 def get_surveys_after_date(
-    client: Client, ds: DSLSchema, asset_sentera_id: str, date_on_or_after: datetime
+    client: Client,
+    ds: DSLSchema,
+    asset_sentera_id: str,
+    date_on_or_after: datetime = None,
 ) -> DataFrame:
     """Get all CloudVault surveys available for a given asset after a given planting date."""
     # get all surveys for this asset after `date_on_or_after`
@@ -135,7 +140,11 @@ def get_surveys_after_date(
     df_survey["date"] = df_survey["survey"].map(
         lambda d: datetime.strptime(d, "%m-%d-%Y")
     )
-    df_survey = df_survey.loc[df_survey["date"] >= date_on_or_after]
+    df_survey = (
+        df_survey.loc[df_survey["date"] >= date_on_or_after]
+        if date_on_or_after
+        else df_survey
+    )
     df_survey.sort_values("survey", inplace=True)
 
     return df_survey
