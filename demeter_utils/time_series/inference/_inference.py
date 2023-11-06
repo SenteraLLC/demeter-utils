@@ -144,6 +144,11 @@ class TimeSeriesFitter:
             Callable: Takes a `datetime` value as an argument and returns the estimated data value based on the fitted
                 smoothing spline.
         """
+        # TODO: Allow user to choose whether to apply a weighted moving average
+        # if self.apply_weighting is True:
+        #     df_timeseries = self.df_daily_weighted_moving_avg.copy()
+        # else:
+        #     df_timeseries = self.df.copy()
 
         # Define the datetime to unix conversion to embed into get_value_from_datetime()
         def dt_transformation(dt: datetime) -> float:
