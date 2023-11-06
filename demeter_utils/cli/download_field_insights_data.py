@@ -18,7 +18,8 @@ To run:
 ```
 poetry run python3 -m demeter_utils.cli.download_field_insights_data \
     --analytic_name "Plot Multispectral Indices and Uniformity and Masking" \
-    --project_name "mosaic/phase3_stats2"
+    --project_name "mosaic/phase3_stats2" \
+    --date_on_or_after "None"
 ```
 
 """
@@ -50,16 +51,20 @@ if __name__ == "__main__":
         description="Compiles data from Local File Directory and CloudVault for all sites, surveys, and plots, converting from wide to long format."
     )
     parser.add_argument(
+        "--analytic_name",
+        type=str,
+        help='Name of analytic to load from CloudVault (e.g., "Plot Multispectral Indices and Uniformity").',
+    )
+    parser.add_argument(
+        "--project_name",
+        type=str,
+        help='Project name, which assigns the local file directory path (e.g., "mosaic/phase3_stats" creates the Odyssey directory: `//172.25.0.20/Sentera/Departments/demeter/projects/mosaic/phase3_stats/data`).',
+    )
+    parser.add_argument(
         "--date_on_or_after",
         type=str,
         help='Earliest date to load data from (e.g., "2023-05-01"). If None, data from all available surveys are returned.',
-        default=None,
-    )
-    parser.add_argument(
-        "--analytic_name",
-        type=str,
-        help="Name of analytic to load from CloudVault.",
-        default="Plot Multispectral Indices and Uniformity",
+        default="None",
     )
     parser.add_argument(
         "--cols_ignore",
@@ -67,17 +72,11 @@ if __name__ == "__main__":
         help="List of column names to ignore when converting from wide to long. See `demeter_utils.data_ingest.cloudvault.load_field_insights_data() for more information.",
         default="['num_rows','stroke','stroke-opacity','fill','fill-opacicity',]",
     )
-    parser.add_argument(
-        "--project_name",
-        type=str,
-        help='Project name (Local File Directory path between "projects" and "data").',
-        default="mosaic/phase3_stats",
-    )
 
     args = parser.parse_args()
     date_on_or_after = (
         datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
-        if args.date_on_or_after
+        if literal_eval(args.date_on_or_after)
         else None
     )
     analytic_name = args.analytic_name
