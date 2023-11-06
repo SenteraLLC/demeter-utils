@@ -90,25 +90,21 @@ if __name__ == "__main__":
     data_dir = join(
         str(getenv("DEMETER_DIR")), "projects", project_name, "data", analytic_fname
     )
-    ORG_SENTERA_ID = getenv("ASSET_SENTERA_ID")
+    ORG_SENTERA_ID = getenv("ORG_SENTERA_ID")
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))
     SENTERA_EMAIL = getenv("SENTERA_EMAIL")
     SENTERA_PROD_PW = getenv("SENTERA_PROD_PW")
     SENTERA_API_PROD_URL = getenv("SENTERA_API_PROD_URL")
-    if (
-        any(
-            [
-                data_dir,
-                ORG_SENTERA_ID,
-                ASSET_SENTERA_ID,
-                SENTERA_EMAIL,
-                SENTERA_PROD_PW,
-                SENTERA_API_PROD_URL,
-            ]
-        )
-        is None
+    for env_var in (
+        "DEMETER_DIR",
+        "ORG_SENTERA_ID",
+        "ASSET_SENTERA_ID",
+        "SENTERA_EMAIL",
+        "SENTERA_PROD_PW",
+        "SENTERA_API_PROD_URL",
     ):
-        raise RuntimeError("Environment variables not set.")
+        if getenv(env_var) is None:
+            raise RuntimeError(f'"{env_var}" environment variable is not properly set.')
 
     Path(data_dir).mkdir(parents=True, exist_ok=True)
 
