@@ -134,7 +134,7 @@ if __name__ == "__main__":
     gdf_plots.drop_duplicates(subset=PRIMARY_KEYS, inplace=True)
     df_long.drop_duplicates(inplace=True)
 
-    # TODO: Check if any gdf_plots columns are empty. If so, issue a warning suggesting that user adds to `cols_ignore`
+    # Check if any gdf_plots columns are empty. If so, issue a warning suggesting that user adds to `cols_ignore`
     cols_sparse = gdf_plots.columns[gdf_plots.isna().any()].tolist()
     if len(cols_sparse) > 0:
         logging.warning(
