@@ -126,7 +126,7 @@ def load_field_insights_data(
         cols_ignore (list[str], Optional): List of column names to ignore when converting from wide to long. This
             argument is necessary as long as column names vary across files of the same Field Insights
             analtyics/deliverables. For example, the "Plot Multispectral Indices and Uniformity" analytic generated for
-            one date or location of an experment may includee a column (e.g., "id") whereas another date or location
+            one date or location of an experiment may include a column (e.g., "id") whereas another date or location
             might be missing that column. Without explicitly ignoring inconsistencies in column names at this step, the
             inner join results in a sparse `gdf_plots` DataFrame.
 
