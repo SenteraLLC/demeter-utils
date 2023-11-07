@@ -18,9 +18,9 @@ gql_utils = { git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch = "D
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dev-dependencies]
 pytest = "*"
-pre-commit = "*"
+pre_commit = "*"
 sure = "^2.0.1"
 flake8 = "^5.0.4"
 black = "^23.1.0"
@@ -31,8 +31,6 @@ jupyterlab = "^3.6.1"
 pyparsing = "^3.0.9"
 types-jsonschema = "^4.4.1"
 pandas-stubs = "^1.2.0"
-mypy = "^0.950"
-mypy-extensions = "^0.4.3"
 
 [tool.isort]
 line_length = 88

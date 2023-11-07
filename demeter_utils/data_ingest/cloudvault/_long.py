@@ -93,7 +93,7 @@ def _wide_to_long(
 def load_field_insights_data(
     asset_name: str,
     asset_sentera_id: str,
-    date_on_or_after: datetime = datetime(2023, 5, 1),
+    date_on_or_after: datetime = None,
     analytic_name: str = "Plot Multispectral Indices and Uniformity",
     primary_keys: list[str] = ["site_name", "plot_id"],
     cols_ignore: list[str] = [
@@ -111,23 +111,27 @@ def load_field_insights_data(
     Args:
         asset_name (str): Sentera asset name.
         asset_sentera_id (str): Sentera asset id to query.
-        date_on_or_after (datetime): Earliest date to load data from; defaults to May 1, 2023.
 
-        analytic_name (str): Name of analytic to load from CloudVault; could be `None` (?), in which case all available
-            geojson analytics will be loaded. Defaults to "Plot Multispectral Indices and Uniformity".
+        date_on_or_after (datetime, Optional): Filter surveys/analytics so only those captured on or after this date are
+            returned. If None, all available surveys are returned. Defaults to None.
 
-        primary_keys (list[str]): List of column names to use as primary keys for merging dataframes. Defaults to
-            ["site_name", "plot_id"].
+        analytic_name (str, Optional): Name of analytic to load from CloudVault; could be `None` (?), in which case all
+            available geojson analytics will be loaded. Defaults to "Plot Multispectral Indices and Uniformity".
+            Defaults to "Plot Multispectral Indices and Uniformity".
 
-        cols_ignore (list[str]): List of column names to ignore when converting from wide to long. This argument is
-            necessary as long as column names vary across files of the same Field Insights analtyics/deliverables. For
-            example, the "Plot Multispectral Indices and Uniformity" analytic generated for one date or location of an
-            experment may includee a column (e.g., "id") whereas another date or location might be missing that column.
-            Without explicitly ignoring inconsistencies in column names at this step, the inner join results in a sparse
-            `gdf_plots` DataFrame.
 
-        col_starts_with_allowable (list[str]): Column names that start with these strings will be included in the
-            `value_vars` list of the `pandas.melt` function.
+        primary_keys (list[str], Optional): List of column names to use as primary keys for merging dataframes. Defaults
+            to ["site_name", "plot_id"].
+
+        cols_ignore (list[str], Optional): List of column names to ignore when converting from wide to long. This
+            argument is necessary as long as column names vary across files of the same Field Insights
+            analtyics/deliverables. For example, the "Plot Multispectral Indices and Uniformity" analytic generated for
+            one date or location of an experiment may include a column (e.g., "id") whereas another date or location
+            might be missing that column. Without explicitly ignoring inconsistencies in column names at this step, the
+            inner join results in a sparse `gdf_plots` DataFrame.
+
+        col_starts_with_allowable (list[str], Optional): Column names that start with these strings will be included in
+            the `value_vars` list of the `pandas.melt` function.
 
     From CloudVault, all available "Plot Multispectral Indices and Uniformity" GeoJSONs for an asset are used.
 

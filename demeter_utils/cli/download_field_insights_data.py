@@ -14,7 +14,14 @@ DEMETER_DIR="//172.25.0.20/Sentera/Departments/GIS/demeter"
 ORG_SENTERA_ID="zuhhzlj_OR_b2muTheMosaic_CV_prod_faffd93_210608_225434"
 ASSET_SENTERA_ID="{'01ABG-IN-INUS':'3tbdeyl_AS_b2muTheMosaic_CV_prod_8864cee1_230524_213525','02ABG-SD-SDUS':'t0xm2ob_AS_b2muTheMosaic_CV_prod_3b36d337_230509_200217','03ATC-WIUS':'v7vbcx4_AS_b2muTheMosaic_AD_45r99qc0_73d05f3b0_20230529_195111','04ALR-IAUS':'zhgliiv_AS_b2muTheMosaic_CV_prod_8864cee1_230524_204238','05CSM-ILUS':'tfi5mh3_AS_b2muTheMosaic_AD_45r99qc0_73d05f3b0_20230530_220619','06NEA-NEUS':'vhv4tyg_AS_b2muTheMosaic_CV_prod_3b36d337_230509_201119','07SRC-KSUS':'1hlnmpz_AS_b2muTheMosaic_CV_prod_7f0de7fa_230425_185154','08TRE-ARUS':'2xs6862_AS_b2muTheMosaic_CV_prod_7f0de7fa_230426_035714','09VET-MNUS':'g9xrnvl_AS_b2muTheMosaic_CV_prod_3b36d337_230509_201946','10NEL-MOUS':'e9733ki_AS_b2muTheMosaic_AD_qzr1p013_f1789ac10_20230413_165619',}"
 
-To run: `poetry run python3 -m demeter_utils.cli.download_field_insights_data --date_on_or_after 2023-05-01 --analytic_name "Plot Multispectral Indices and Uniformity and Masking" --project_name "mosaic/phase3_stats"`
+To run:
+```
+poetry run python3 -m demeter_utils.cli.download_field_insights_data \
+    --analytic_name "Plot Multispectral Indices and Uniformity and Masking" \
+    --project_name "mosaic/phase3_stats2" \
+    --date_on_or_after "None"
+```
+
 """
 import argparse
 import logging
@@ -44,16 +51,20 @@ if __name__ == "__main__":
         description="Compiles data from Local File Directory and CloudVault for all sites, surveys, and plots, converting from wide to long format."
     )
     parser.add_argument(
-        "--date_on_or_after",
-        type=str,
-        help="Earliest date to load data from.",
-        default="2023-05-01",
-    )
-    parser.add_argument(
         "--analytic_name",
         type=str,
-        help="Name of analytic to load from CloudVault.",
-        default="Plot Multispectral Indices and Uniformity",
+        help='Name of analytic to load from CloudVault (e.g., "Plot Multispectral Indices and Uniformity").',
+    )
+    parser.add_argument(
+        "--project_name",
+        type=str,
+        help='Project name, which assigns the local file directory path (e.g., "mosaic/phase3_stats" creates the Odyssey directory: `//172.25.0.20/Sentera/Departments/demeter/projects/mosaic/phase3_stats/data`).',
+    )
+    parser.add_argument(
+        "--date_on_or_after",
+        type=str,
+        help='Earliest date to load data from (e.g., "2023-05-01"). If None, data from all available surveys are returned.',
+        default="None",
     )
     parser.add_argument(
         "--cols_ignore",
@@ -61,38 +72,16 @@ if __name__ == "__main__":
         help="List of column names to ignore when converting from wide to long. See `demeter_utils.data_ingest.cloudvault.load_field_insights_data() for more information.",
         default="['num_rows','stroke','stroke-opacity','fill','fill-opacicity',]",
     )
-    parser.add_argument(
-        "--project_name",
-        type=str,
-        help='Project name (Local File Directory path between "projects" and "data").',
-        default="mosaic/phase3_stats",
-    )
 
     args = parser.parse_args()
-    date_on_or_after = datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
+    date_on_or_after = (
+        datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
+        if literal_eval(args.date_on_or_after)
+        else None
+    )
     analytic_name = args.analytic_name
     project_name = args.project_name
     cols_ignore = literal_eval(args.cols_ignore)
-
-    # date_on_or_after = datetime(2023, 5, 1)
-    # analytic_name = "Plot Multispectral Indices and Uniformity and Masking"
-    # project_name = "mosaic/phase3_stats"
-    # cols_ignore = [
-    #     "num_rows",
-    #     "stroke",
-    #     "stroke-opacity",
-    #     "fill",
-    #     "fill-opacity",
-    #     "Trial Name",
-    #     "mean_x",
-    #     "mean_y",
-    #     "Treatment",
-    #     "id",
-    #     "left",
-    #     "top",
-    #     "right",
-    #     "bottom",
-    # ]
 
     PRIMARY_KEYS = ["site_name", "plot_id"]
 
@@ -101,25 +90,21 @@ if __name__ == "__main__":
     data_dir = join(
         str(getenv("DEMETER_DIR")), "projects", project_name, "data", analytic_fname
     )
-    ORG_SENTERA_ID = getenv("ASSET_SENTERA_ID")
+    ORG_SENTERA_ID = getenv("ORG_SENTERA_ID")
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))
     SENTERA_EMAIL = getenv("SENTERA_EMAIL")
     SENTERA_PROD_PW = getenv("SENTERA_PROD_PW")
     SENTERA_API_PROD_URL = getenv("SENTERA_API_PROD_URL")
-    if (
-        any(
-            [
-                data_dir,
-                ORG_SENTERA_ID,
-                ASSET_SENTERA_ID,
-                SENTERA_EMAIL,
-                SENTERA_PROD_PW,
-                SENTERA_API_PROD_URL,
-            ]
-        )
-        is None
+    for env_var in (
+        "DEMETER_DIR",
+        "ORG_SENTERA_ID",
+        "ASSET_SENTERA_ID",
+        "SENTERA_EMAIL",
+        "SENTERA_PROD_PW",
+        "SENTERA_API_PROD_URL",
     ):
-        raise RuntimeError("Environment variables not set.")
+        if getenv(env_var) is None:
+            raise RuntimeError(f'"{env_var}" environment variable is not properly set.')
 
     Path(data_dir).mkdir(parents=True, exist_ok=True)
 
@@ -149,7 +134,7 @@ if __name__ == "__main__":
     gdf_plots.drop_duplicates(subset=PRIMARY_KEYS, inplace=True)
     df_long.drop_duplicates(inplace=True)
 
-    # TODO: Check if any gdf_plots columns are empty. If so, issue a warning suggesting that user adds to `cols_ignore`
+    # Check if any gdf_plots columns are empty. If so, issue a warning suggesting that user adds to `cols_ignore`
     cols_sparse = gdf_plots.columns[gdf_plots.isna().any()].tolist()
     if len(cols_sparse) > 0:
         logging.warning(
