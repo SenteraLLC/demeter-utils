@@ -7,7 +7,7 @@ from typing import Union
 from pandas import DataFrame, read_csv
 
 PLOT_ID_COL = "plot_id"
-TREATMENT_ID_COL = "treatment_id"
+TREATMENT_COL = "treatment"
 
 
 def load_exp_design(
@@ -50,9 +50,9 @@ def load_exp_design(
         columns={col_name_plot_id: PLOT_ID_COL}
     ) if col_name_plot_id else df_trt_info
     df_trt_info.rename(
-        columns={col_name_treatment_id: TREATMENT_ID_COL}
+        columns={col_name_treatment_id: TREATMENT_COL}
     ) if col_name_treatment_id else df_trt_info
-    for col in [PLOT_ID_COL, TREATMENT_ID_COL]:
+    for col in [PLOT_ID_COL, TREATMENT_COL]:
         if col not in df_trt_info.columns:
             raise RuntimeError(
                 f'Column "{col}" is required, but is not present in "{fname_trt_info}".'
