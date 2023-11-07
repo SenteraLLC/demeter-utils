@@ -14,7 +14,7 @@ def load_exp_design(
     project_name: str,
     fname_trt_info: Union[str, Path],
     col_name_plot_id: str = None,
-    col_name_treatment_id: str = None,
+    col_name_treatment: str = None,
 ) -> DataFrame:
     """
     Load experimental design/treatment information from local CSV.
@@ -28,7 +28,7 @@ def load_exp_design(
         col_name_plot_id (str, Optional): Name of column containing plot IDs. If not provided, assumes the "plot_id"
             column already exists in `fname_trt_info`.
 
-        col_name_treatment_id (str, Optional): Name of column containing treatment IDs. If not provided, assumes the
+        col_name_treatment (str, Optional): Name of column containing treatment IDs. If not provided, assumes the
             "treatment_id" column already exists in `fname_trt_info`.
 
     Returns:
@@ -50,8 +50,8 @@ def load_exp_design(
         columns={col_name_plot_id: PLOT_ID_COL}
     ) if col_name_plot_id else df_trt_info
     df_trt_info.rename(
-        columns={col_name_treatment_id: TREATMENT_COL}
-    ) if col_name_treatment_id else df_trt_info
+        columns={col_name_treatment: TREATMENT_COL}
+    ) if col_name_treatment else df_trt_info
     for col in [PLOT_ID_COL, TREATMENT_COL]:
         if col not in df_trt_info.columns:
             raise RuntimeError(
