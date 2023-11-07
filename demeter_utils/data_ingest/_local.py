@@ -34,7 +34,6 @@ def load_exp_design(
     Returns:
         DataFrame: Experimental trial information with "plot_id" and "treatment_id" columns present.
     """
-    logging.info('    Loading experimental design data for "%s"', fname_trt_info)
     demeter_dir = str(getenv("DEMETER_DIR"))
     if not demeter_dir:
         raise RuntimeError('"DEMETER_DIR" environment variable is not properly set.')
@@ -44,6 +43,7 @@ def load_exp_design(
     if filepath_trt_info.is_file() is False:
         raise RuntimeError(f'File "{filepath_trt_info}" does not exist.')
     df_trt_info = read_csv(filepath_trt_info)
+    logging.info('  Loading "%s": %s records found', fname_trt_info, len(df_trt_info))
 
     # Ensure "plot_id" and "treatment_id" are present
     df_trt_info.rename(
