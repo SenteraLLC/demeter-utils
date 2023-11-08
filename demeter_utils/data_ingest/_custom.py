@@ -10,7 +10,7 @@ from pytz import timezone as pytz_timezone
 from shapely import Polygon
 from timezonefinder import TimezoneFinder
 
-from demeter_utils.data_ingest._gql import (
+from demeter_utils.data_ingest.cloudvault._gql import (
     get_image_date_for_survey,
     get_surveys_after_date,
     maybe_find_survey_analytic_files,
