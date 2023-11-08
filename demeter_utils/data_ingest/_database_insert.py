@@ -32,7 +32,9 @@ def _assign_field_group_ids(
     """
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))  # noqa: N806
 
-    field_group = FieldGroup(name=org_name)
+    field_group = FieldGroup(
+        name=org_name, details={"sentera_id": getenv("ORG_SENTERA_ID")}
+    )
     field_group_id = insertOrGetFieldGroup(cursor, field_group)
 
     field_group_db_ids = []
@@ -119,6 +121,7 @@ def insert_field_and_field_group(
     Args:
         conn (Connection): Connection to demeter schema
         gdf_exp_design (GeoDataFrame): See `demeter_utils.cli.download_field_insights_data`
+        org_name (str): Name of organization (top level Field Group).
         year (int, optional): Year of experiment.
 
     Returns:
