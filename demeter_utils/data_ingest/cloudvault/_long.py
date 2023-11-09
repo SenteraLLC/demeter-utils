@@ -226,6 +226,7 @@ def load_field_insights_data(
             value_subset,
             crop_season_year=row["date"].year,
         )
+        df_long_temp.insert(2, "product", analytic_name)
 
         gdf_plots = pd_concat(
             [gdf_plots, gdf_temp[primary_keys + plots_subset]],

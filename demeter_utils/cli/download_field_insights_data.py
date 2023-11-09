@@ -145,6 +145,10 @@ if __name__ == "__main__":
     logging.info("Field Insights retrieval complete.")
     logging.info("  %s record(s) retrieved", format(len(df_long), ","))
     logging.info(
+        "  %s unique Field Insights product(s)",
+        format(len(df_long["product"].unique()), ","),
+    )
+    logging.info(
         "  %s unique observation type(s)",
         format(len(df_long.drop_duplicates(subset=["observation_type"])), ","),
     )
@@ -170,11 +174,11 @@ if __name__ == "__main__":
     )
     logging.info(
         "  %s masked observations",
-        format(len(df_long[df_long["masked"] is True]), ","),
+        format(len(df_long[df_long["masked"]]), ","),
     )
     logging.info(
         "  %s unmasked observations",
-        format(len(df_long[df_long["masked"] is False]), ","),
+        format(len(df_long[~df_long["masked"]]), ","),
     )
 
     logging.info(
