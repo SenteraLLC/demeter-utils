@@ -54,13 +54,7 @@ def _parse_observation_type_bands_and_indices(variable: str) -> str:
     option_set = sorted(OBSERVATION_SET, key=len, reverse=True)
     # p = regex.compile(r"\L<options>", options=option_set)
     p = re.compile(r"(?:{})".format("|".join(map(re.escape, option_set))))
-    try:
-        return p.search(variable).group()
-        # return p.search(variable).group()
-    except AttributeError:
-        raise AttributeError(
-            f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_SET`.'
-        )
+    return p.search(variable).group()
 
 
 def _parse_observation_type_fuzzy(variable: str) -> str:
@@ -70,16 +64,7 @@ def _parse_observation_type_fuzzy(variable: str) -> str:
         variable = re.sub(f" {stat}", "", variable)
         variable = re.sub(" Subplot", "", variable)
         variable = re.sub(" -", "", variable)
-    try:
-        # get_close_matches() orders best matches first
-        return get_close_matches(variable, OBSERVATION_SET, cutoff=0.6)[0]
-    except IndexError:
-        raise IndexError(
-            f'Unable to determine a valid `observation_type` from variable "{variable}".\n'
-            "First check that the desired `observation_type` is included in `OBSERVATION_SET`.\n"
-            "Second check that `difflib.get_close_matches()` is works for your variable:\n"
-            f'get_close_matches("{variable}", OBSERVATION_SET, cutoff=0.6)'
-        )
+    return get_close_matches(variable, OBSERVATION_SET, cutoff=0.6)[0]
 
 
 def _parse_observation_type(variable: str) -> str:
@@ -95,9 +80,24 @@ def _parse_observation_type(variable: str) -> str:
     # variable = "Band: Red Masked 02-Jun"
     # print(_parse_observation_type(variable))
     if "Band" in variable or "Index" in variable:
-        return _parse_observation_type_bands_and_indices(variable)
+        try:
+            return _parse_observation_type_bands_and_indices(variable)
+            # return p.search(variable).group()
+        except AttributeError:
+            raise AttributeError(
+                f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_SET`.'
+            )
     else:
-        return _parse_observation_type_fuzzy(variable)
+        try:
+            # get_close_matches() orders best matches first
+            return _parse_observation_type_fuzzy(variable)
+        except IndexError:
+            raise IndexError(
+                f'Unable to determine a valid `observation_type` from variable "{variable}".\n'
+                "First check that the desired `observation_type` is included in `OBSERVATION_SET`.\n"
+                f'Second check that `difflib.get_close_matches()` works for variable "{variable}":\n'
+                f'get_close_matches("{variable}", OBSERVATION_SET, cutoff=0.6)'
+            )
 
 
 def _wide_to_long(
