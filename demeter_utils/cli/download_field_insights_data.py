@@ -19,7 +19,8 @@ To run:
 poetry run python3 -m demeter_utils.cli.download_field_insights_data \
     --analytic_name "Plot Multispectral Indices and Uniformity and Masking" \
     --project_name "mosaic/phase3_stats2" \
-    --date_on_or_after "None"
+    --date_on_or_after "2023-05-01" \
+    --cols_ignore "['num_rows','stroke','stroke-opacity','fill','fill-opacity','split_idx','split_idx_','Trial Name','mean_x','mean_y','Treatment','id','left','top','right','bottom',]"
 ```
 
 """
@@ -75,9 +76,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     date_on_or_after = (
-        datetime.strptime(args.date_on_or_after, "%Y-%m-%d")
-        if literal_eval(args.date_on_or_after)
-        else None
+        None if args.date_on_or_after == "None" else args.date_on_or_after
+    )
+    date_on_or_after = (
+        datetime.strptime(date_on_or_after, "%Y-%m-%d") if date_on_or_after else None
     )
     analytic_name = args.analytic_name
     project_name = args.project_name
@@ -87,9 +89,8 @@ if __name__ == "__main__":
 
     logging.info("Reading Environment variables from .env")
     analytic_fname = analytic_name.replace(" ", "_").lower()
-    data_dir = join(
-        str(getenv("DEMETER_DIR")), "projects", project_name, "data", analytic_fname
-    )
+    DATA_DIR = join(str(getenv("DEMETER_DIR")), "projects", project_name, "data")
+    ANALYTIC_DIR = join(DATA_DIR, analytic_fname)
     ORG_SENTERA_ID = getenv("ORG_SENTERA_ID")
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))
     SENTERA_EMAIL = getenv("SENTERA_EMAIL")
@@ -106,7 +107,7 @@ if __name__ == "__main__":
         if getenv(env_var) is None:
             raise RuntimeError(f'"{env_var}" environment variable is not properly set.')
 
-    Path(data_dir).mkdir(parents=True, exist_ok=True)
+    Path(ANALYTIC_DIR).mkdir(parents=True, exist_ok=True)
 
     logging.info("Collecting data from CloudVault")
     gdf_plots = GeoDataFrame()
@@ -120,7 +121,6 @@ if __name__ == "__main__":
             primary_keys=PRIMARY_KEYS,
             cols_ignore=cols_ignore,
         )
-
         gdf_plots = (
             pd_concat([gdf_plots, gdf_plots_temp], axis=0, ignore_index=True)
             if len(gdf_plots_temp.columns) != 0
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         )
 
     logging.info("Field Insights retrieval complete.")
-    logging.info("    %s record(s) retrieved", format(len(df_long), ","))
+    logging.info("  %s record(s) retrieved", format(len(df_long), ","))
     logging.info(
         "  %s unique observation type(s)",
         format(len(df_long.drop_duplicates(subset=["observation_type"])), ","),
@@ -168,21 +168,29 @@ if __name__ == "__main__":
         "  %s unique plot(s)",
         format(len(df_long.drop_duplicates(subset=["site_name", "plot_id"])), ","),
     )
+    logging.info(
+        "  %s masked observations",
+        format(len(df_long[df_long["masked"] is True]), ","),
+    )
+    logging.info(
+        "  %s unmasked observations",
+        format(len(df_long[df_long["masked"] is False]), ","),
+    )
 
     logging.info(
         "Saving %s to Local File Directory...", f"df_long-{analytic_fname}.parquet"
     )
-    df_long.to_parquet(join(data_dir, f"df_long-{analytic_fname}.parquet"))
+    df_long.to_parquet(join(ANALYTIC_DIR, f"df_long-{analytic_fname}.parquet"))
 
     logging.info(
         "Saving %s to Local File Directory...",
         f"gdf_exp_design-{analytic_fname}.parquet",
     )
-    gdf_plots.to_parquet(join(data_dir, f"gdf_exp_design-{analytic_fname}.parquet"))
+    gdf_plots.to_parquet(join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.parquet"))
     logging.info(
         "Saving %s to Local File Directory...",
         f"gdf_exp_design-{analytic_fname}.geojson",
     )
     gdf_plots.to_file(
-        join(data_dir, f"gdf_exp_design-{analytic_fname}.geojson"), driver="GeoJSON"
+        join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.geojson"), driver="GeoJSON"
     )
