@@ -49,7 +49,7 @@ def _parse_stat_name(x: str) -> str:
     return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
 
 
-def _parse_observation_type1(variable: str) -> str:
+def _parse_observation_type_bands_and_indices(variable: str) -> str:
     """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
     option_set = sorted(OBSERVATION_SET, key=len, reverse=True)
     # p = regex.compile(r"\L<options>", options=option_set)
@@ -63,13 +63,8 @@ def _parse_observation_type1(variable: str) -> str:
         )
 
 
-def _parse_observation_type(variable: str) -> str:
+def _parse_observation_type_fuzzy(variable: str) -> str:
     """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
-    # TODO: Test this function
-    # TODO: Use reasonable column heading on FieldInsights products so this function isn't necessary...
-    # variable = "Canopy Cover (%) 02-Jun"
-    # variable = "Canopy Cover Area (m^2) 02-Jun"
-    # variable = "Canopy Cover - Median Subplot (%) 02-Jun"
     # Clean up variable name so it can be matched more closely...
     for stat in STAT_SET:
         variable = re.sub(f" {stat}", "", variable)
@@ -85,6 +80,24 @@ def _parse_observation_type(variable: str) -> str:
             "Second check that `difflib.get_close_matches()` is works for your variable:\n"
             f'get_close_matches("{variable}", OBSERVATION_SET, cutoff=0.6)'
         )
+
+
+def _parse_observation_type(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    # TODO: Test this function
+    # TODO: Use reasonable column heading on FieldInsights products so this function isn't necessary...
+    # variable = "Canopy Cover (%) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Canopy Cover Area (m^2) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Canopy Cover - Median Subplot (%) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Band: Red Masked 02-Jun"
+    # print(_parse_observation_type(variable))
+    if "Band" in variable or "Index" in variable:
+        return _parse_observation_type_bands_and_indices(variable)
+    else:
+        return _parse_observation_type_fuzzy(variable)
 
 
 def _wide_to_long(
