@@ -1,6 +1,7 @@
 import logging
 import re
 from datetime import datetime
+from difflib import get_close_matches
 from typing import Tuple
 from urllib.error import URLError
 
@@ -13,7 +14,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fi
 from demeter_utils.data_ingest.cloudvault._connect import get_cv_connection
 from demeter_utils.data_ingest.cloudvault._gql import get_asset_analytics
 
-OBSERVATION_TYPES = {
+OBSERVATION_SET = {
     "Band: Blue",
     "Band: Green",
     "Band: Red",
@@ -36,6 +37,7 @@ OBSERVATION_TYPES = {
     "Skips",
     "Multiples",
 }
+STAT_SET = {"Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"}
 
 
 def _parse_stat_name(x: str) -> str:
@@ -47,16 +49,40 @@ def _parse_stat_name(x: str) -> str:
     return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
 
 
-def _parse_observation_type(variable: str) -> str:
-    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_TYPES."""
-    # TODO: Test this function
-    longest_first = sorted(OBSERVATION_TYPES, key=len, reverse=True)
-    p = re.compile(r"(?:{})".format("|".join(map(re.escape, longest_first))))
+def _parse_observation_type1(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    option_set = sorted(OBSERVATION_SET, key=len, reverse=True)
+    # p = regex.compile(r"\L<options>", options=option_set)
+    p = re.compile(r"(?:{})".format("|".join(map(re.escape, option_set))))
     try:
         return p.search(variable).group()
+        # return p.search(variable).group()
     except AttributeError:
         raise AttributeError(
-            f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_TYPES`.'
+            f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_SET`.'
+        )
+
+
+def _parse_observation_type(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    # TODO: Test this function
+    # TODO: Use reasonable column heading on FieldInsights products so this function isn't necessary...
+
+    variable = "Canopy Cover - Median Subplot (%) 02-Jun"
+    # Clean up variable name so it can be matched more closely...
+    for stat in STAT_SET:
+        variable = re.sub(f" {stat}", "", variable)
+        variable = re.sub(" Subplot", "", variable)
+        variable = re.sub(" -", "", variable)
+    try:
+        # get_close_matches orders best matches first
+        return get_close_matches(variable, OBSERVATION_SET, cutoff=0.6)[0]
+    except IndexError:
+        raise IndexError(
+            f'Unable to determine a valid `observation_type` from variable "{variable}".\n'
+            "First check that the desired `observation_type` is included in `OBSERVATION_SET`.\n"
+            "Second check that `difflib.get_close_matches()` is works for your variable:\n"
+            f'get_close_matches("{variable}", OBSERVATION_SET, cutoff=0.6)'
         )
 
 
