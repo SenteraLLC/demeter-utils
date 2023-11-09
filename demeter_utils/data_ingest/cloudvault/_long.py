@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 from typing import Tuple
 from urllib.error import URLError
@@ -11,16 +12,6 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fi
 
 from demeter_utils.data_ingest.cloudvault._connect import get_cv_connection
 from demeter_utils.data_ingest.cloudvault._gql import get_asset_analytics
-
-
-def _parse_stat_name(x: str) -> str:
-    """Parse statistic name from variable name string and return statistic name."""
-    stat_list = ["Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"]
-    for stat in stat_list:
-        if stat.casefold() in x.casefold():
-            return stat
-    return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
-
 
 OBSERVATION_TYPES = {
     "Band: Blue",
@@ -36,8 +27,8 @@ OBSERVATION_TYPES = {
     "Index: CIG",
     "Index: NDWI",
     "Index: TCARI/OSAVI",
-    "Canopy Cover",
-    "Canopy Cover Area",
+    "Canopy Cover (%)",
+    "Canopy Cover Area (m^2)",
     "Plant Density",
     "Emergence",
     "Seed Spacing",
@@ -45,6 +36,28 @@ OBSERVATION_TYPES = {
     "Skips",
     "Multiples",
 }
+
+
+def _parse_stat_name(x: str) -> str:
+    """Parse statistic name from variable name string and return statistic name."""
+    stat_list = ["Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"]
+    for stat in stat_list:
+        if stat.casefold() in x.casefold():
+            return stat
+    return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
+
+
+def _parse_observation_type(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_TYPES."""
+    # TODO: Test this function
+    longest_first = sorted(OBSERVATION_TYPES, key=len, reverse=True)
+    p = re.compile(r"(?:{})".format("|".join(map(re.escape, longest_first))))
+    try:
+        return p.search(variable).group()
+    except AttributeError:
+        raise AttributeError(
+            f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_TYPES`.'
+        )
 
 
 def _wide_to_long(
@@ -69,7 +82,7 @@ def _wide_to_long(
     df_long.insert(
         idx_initial_insert + 1,
         "observation_type",
-        df_long["variable"].apply(lambda x: " ".join(x.split(" ")[:2])),
+        df_long["variable"].apply(lambda variable: _parse_observation_type(variable)),
     )
     # If a variable is masked, it will in fact have "Masked" in the variable name
     df_long.insert(
