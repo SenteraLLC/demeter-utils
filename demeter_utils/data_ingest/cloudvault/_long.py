@@ -67,15 +67,16 @@ def _parse_observation_type(variable: str) -> str:
     """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
     # TODO: Test this function
     # TODO: Use reasonable column heading on FieldInsights products so this function isn't necessary...
-
-    variable = "Canopy Cover - Median Subplot (%) 02-Jun"
+    # variable = "Canopy Cover (%) 02-Jun"
+    # variable = "Canopy Cover Area (m^2) 02-Jun"
+    # variable = "Canopy Cover - Median Subplot (%) 02-Jun"
     # Clean up variable name so it can be matched more closely...
     for stat in STAT_SET:
         variable = re.sub(f" {stat}", "", variable)
         variable = re.sub(" Subplot", "", variable)
         variable = re.sub(" -", "", variable)
     try:
-        # get_close_matches orders best matches first
+        # get_close_matches() orders best matches first
         return get_close_matches(variable, OBSERVATION_SET, cutoff=0.6)[0]
     except IndexError:
         raise IndexError(
