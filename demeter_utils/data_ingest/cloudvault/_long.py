@@ -159,7 +159,7 @@ def load_field_insights_data(
         file_type="geo_json",
     )
 
-    if df_asset_analytics is None:
+    if len(df_asset_analytics.columns) == 0:
         return GeoDataFrame(), DataFrame()
 
     df_asset_analytics.insert(0, "site_name", asset_name)
