@@ -18,7 +18,7 @@ To run:
 ```
 poetry run python3 -m demeter_utils.cli.download_field_insights_data \
     --analytic_name "Plot Multispectral Indices and Uniformity and Masking" \
-    --project_name "mosaic/phase3_stats2" \
+    --project_name "mosaic/phase3_stats" \
     --date_on_or_after "2023-05-01" \
     --cols_ignore "['num_rows','stroke','stroke-opacity','fill','fill-opacity','split_idx','split_idx_','Trial Name','mean_x','mean_y','Treatment','id','left','top','right','bottom',]"
 ```
@@ -113,6 +113,8 @@ if __name__ == "__main__":
     gdf_plots = GeoDataFrame()
     df_long = DataFrame()
     for asset_name, asset_sentera_id in ASSET_SENTERA_ID.items():
+        # if asset_name == "02ABG-SD-SDUS":
+        #     break
         gdf_plots_temp, df_long_temp = load_field_insights_data(
             asset_name=asset_name,
             asset_sentera_id=asset_sentera_id,
@@ -144,57 +146,67 @@ if __name__ == "__main__":
 
     logging.info("Field Insights retrieval complete.")
     logging.info("  %s record(s) retrieved", format(len(df_long), ","))
-    logging.info(
-        "  %s unique Field Insights product(s)",
-        format(len(df_long["product"].unique()), ","),
-    )
-    logging.info(
-        "  %s unique observation type(s)",
-        format(len(df_long.drop_duplicates(subset=["observation_type"])), ","),
-    )
-    logging.info(
-        "  %s unique descriptive statistic(s)",
-        format(len(df_long.drop_duplicates(subset=["statistic_type"])), ","),
-    )
-    logging.info(
-        "  %s unique observation x statistics combination(s)",
-        format(
-            len(df_long.drop_duplicates(subset=["observation_type", "statistic_type"])),
-            ",",
-        ),
-    )
-    logging.info("  %s unique site(s)", format(len(df_long["site_name"].unique()), ","))
-    logging.info(
-        "  %s unique collection(s)",
-        format(len(df_long.drop_duplicates(subset=["site_name", "date"])), ","),
-    )
-    logging.info(
-        "  %s unique plot(s)",
-        format(len(df_long.drop_duplicates(subset=["site_name", "plot_id"])), ","),
-    )
-    logging.info(
-        "  %s masked observations",
-        format(len(df_long[df_long["masked"]]), ","),
-    )
-    logging.info(
-        "  %s unmasked observations",
-        format(len(df_long[~df_long["masked"]]), ","),
-    )
+    if len(df_long) > 0:
+        logging.info(
+            "  %s unique Field Insights product(s)",
+            format(len(df_long["product"].unique()), ","),
+        )
+        logging.info(
+            "  %s unique observation type(s)",
+            format(len(df_long.drop_duplicates(subset=["observation_type"])), ","),
+        )
+        logging.info(
+            "  %s unique descriptive statistic(s)",
+            format(len(df_long.drop_duplicates(subset=["statistic_type"])), ","),
+        )
+        logging.info(
+            "  %s unique observation x statistics combination(s)",
+            format(
+                len(
+                    df_long.drop_duplicates(
+                        subset=["observation_type", "statistic_type"]
+                    )
+                ),
+                ",",
+            ),
+        )
+        logging.info(
+            "  %s unique site(s)", format(len(df_long["site_name"].unique()), ",")
+        )
+        logging.info(
+            "  %s unique collection(s)",
+            format(len(df_long.drop_duplicates(subset=["site_name", "date"])), ","),
+        )
+        logging.info(
+            "  %s unique plot(s)",
+            format(len(df_long.drop_duplicates(subset=["site_name", "plot_id"])), ","),
+        )
+        logging.info(
+            "  %s masked observations",
+            format(len(df_long[df_long["masked"]]), ","),
+        )
+        logging.info(
+            "  %s unmasked observations",
+            format(len(df_long[~df_long["masked"]]), ","),
+        )
 
-    logging.info(
-        "Saving %s to Local File Directory...", f"df_long-{analytic_fname}.parquet"
-    )
-    df_long.to_parquet(join(ANALYTIC_DIR, f"df_long-{analytic_fname}.parquet"))
+        logging.info(
+            "Saving %s to Local File Directory...", f"df_long-{analytic_fname}.parquet"
+        )
+        df_long.to_parquet(join(ANALYTIC_DIR, f"df_long-{analytic_fname}.parquet"))
 
-    logging.info(
-        "Saving %s to Local File Directory...",
-        f"gdf_exp_design-{analytic_fname}.parquet",
-    )
-    gdf_plots.to_parquet(join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.parquet"))
-    logging.info(
-        "Saving %s to Local File Directory...",
-        f"gdf_exp_design-{analytic_fname}.geojson",
-    )
-    gdf_plots.to_file(
-        join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.geojson"), driver="GeoJSON"
-    )
+        logging.info(
+            "Saving %s to Local File Directory...",
+            f"gdf_exp_design-{analytic_fname}.parquet",
+        )
+        gdf_plots.to_parquet(
+            join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.parquet")
+        )
+        logging.info(
+            "Saving %s to Local File Directory...",
+            f"gdf_exp_design-{analytic_fname}.geojson",
+        )
+        gdf_plots.to_file(
+            join(ANALYTIC_DIR, f"gdf_exp_design-{analytic_fname}.geojson"),
+            driver="GeoJSON",
+        )
