@@ -193,6 +193,7 @@ def maybe_find_survey_analytic_files(
     if len(df_fs) == 0:
         return DataFrame()
     if analytic_name is not None:
+        # df_fs = df_fs.loc[df_fs["analytic.name"] == analytic_name]
         df_fs = df_fs.loc[df_fs["name"] == analytic_name]
 
     df_files = DataFrame()
