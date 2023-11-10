@@ -123,16 +123,8 @@ if __name__ == "__main__":
             primary_keys=PRIMARY_KEYS,
             cols_ignore=cols_ignore,
         )
-        gdf_plots = (
-            pd_concat([gdf_plots, gdf_plots_temp], axis=0, ignore_index=True)
-            if len(gdf_plots_temp.columns) != 0
-            else gdf_plots_temp.copy()
-        )
-        df_long = (
-            pd_concat([df_long, df_long_temp], axis=0, ignore_index=True)
-            if len(df_long_temp.columns) != 0
-            else df_long_temp.copy()
-        )
+        gdf_plots = pd_concat([gdf_plots, gdf_plots_temp], axis=0, ignore_index=True)
+        df_long = pd_concat([df_long, df_long_temp], axis=0, ignore_index=True)
     gdf_plots.drop_duplicates(subset=PRIMARY_KEYS, inplace=True)
     df_long.drop_duplicates(inplace=True)
 
