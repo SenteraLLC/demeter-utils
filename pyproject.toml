@@ -13,7 +13,7 @@ pyarrow = "^13.0.0"
 scipy = "^1.10.0"
 seaborn = "^0.12.2"
 demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
-gql_utils = { git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch = "DEM-412-prod-catalog"}
+gql_utils = { git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch = "main"}
 
 [tool.poetry.scripts]
 demeter_utils = "demeter_utils.cli:cli"
