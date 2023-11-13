@@ -113,8 +113,6 @@ if __name__ == "__main__":
     gdf_plots = GeoDataFrame()
     df_long = DataFrame()
     for asset_name, asset_sentera_id in ASSET_SENTERA_ID.items():
-        # if asset_name == "02ABG-SD-SDUS":
-        #     break
         gdf_plots_temp, df_long_temp = load_field_insights_data(
             asset_name=asset_name,
             asset_sentera_id=asset_sentera_id,
