@@ -1,5 +1,5 @@
 # %% Imports
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from io import StringIO
 
@@ -9,6 +9,7 @@ from pandas import DataFrame, date_range, read_csv, to_datetime
 from scipy.optimize import minimize
 
 from demeter_utils.time import convert_dt_to_unix
+from demeter_utils.time_series.inference import TimeSeriesFitter
 from demeter_utils.time_series.inference._double_logistic import (
     approximate_inflection_with_cubic_poly,
     double_logistic,
@@ -242,7 +243,6 @@ plt.show()
 # plt.xticks(rotation=60)
 # plt.show()
 # %% Use TimeSeriesFitter
-from demeter_utils.time_series.inference import TimeSeriesFitter
 
 df = df_gimms_ndvi.loc[df_gimms_ndvi[col_value].notna()]
 step_size = timedelta(days=14)
@@ -250,12 +250,14 @@ window_size = timedelta(days=5)
 wt_mapping = {"drone": 100, "satellite": 1}
 col_datetime = "date_start"
 col_value = "sample_value"
+field_id = "my_field_id"
+df_ndvi = df_in.copy()
 
 fitter = TimeSeriesFitter(
-    df=self.df_ndvi.loc[self.df_ndvi["field_id"] == field_id],
+    df=df_ndvi.loc[df_ndvi["field_id"] == field_id],
     step_size=timedelta(days=14),
     window_size=timedelta(days=5),
-    wt_mapping=self.wt_mapping,
+    wt_mapping=wt_mapping,
     col_datetime="date",
     col_mapping_group="source",
     col_value="ndvi",
