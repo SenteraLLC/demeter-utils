@@ -1,5 +1,7 @@
 import logging
+import re
 from datetime import datetime
+from difflib import get_close_matches
 from typing import Tuple
 from urllib.error import URLError
 
@@ -12,17 +14,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fi
 from demeter_utils.data_ingest.cloudvault._connect import get_cv_connection
 from demeter_utils.data_ingest.cloudvault._gql import get_asset_analytics
 
-
-def _parse_stat_name(x: str) -> str:
-    """Parse statistic name from variable name string and return statistic name."""
-    stat_list = ["Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"]
-    for stat in stat_list:
-        if stat.casefold() in x.casefold():
-            return stat
-    return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
-
-
-OBSERVATION_TYPES = {
+OBSERVATION_SET = {
     "Band: Blue",
     "Band: Green",
     "Band: Red",
@@ -36,8 +28,8 @@ OBSERVATION_TYPES = {
     "Index: CIG",
     "Index: NDWI",
     "Index: TCARI/OSAVI",
-    "Canopy Cover",
-    "Canopy Cover Area",
+    "Canopy Cover (%)",
+    "Canopy Cover Area (m^2)",
     "Plant Density",
     "Emergence",
     "Seed Spacing",
@@ -45,6 +37,67 @@ OBSERVATION_TYPES = {
     "Skips",
     "Multiples",
 }
+STAT_SET = {"Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"}
+
+
+def _parse_stat_name(x: str) -> str:
+    """Parse statistic name from variable name string and return statistic name."""
+    stat_list = ["Mean", "Median", "Mode", "Std. Dev.", "Min", "Max", "Range"]
+    for stat in stat_list:
+        if stat.casefold() in x.casefold():
+            return stat
+    return "Mean"  # https://catalog.sentera.com/products/plot_crop_health_multispectral_uniformity doesn't specify "Mean"
+
+
+def _parse_observation_type_bands_and_indices(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    option_set = sorted(OBSERVATION_SET, key=len, reverse=True)
+    # p = regex.compile(r"\L<options>", options=option_set)
+    p = re.compile(r"(?:{})".format("|".join(map(re.escape, option_set))))
+    return p.search(variable).group()
+
+
+def _parse_observation_type_fuzzy(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    # Clean up variable name so it can be matched more closely...
+    for stat in STAT_SET:
+        variable = re.sub(f" {stat}", "", variable)
+        variable = re.sub(" Subplot", "", variable)
+        variable = re.sub(" -", "", variable)
+    return get_close_matches(variable, OBSERVATION_SET, cutoff=0.6)[0]
+
+
+def _parse_observation_type(variable: str) -> str:
+    """Parse observation_type from variable name based on list of allowed values in OBSERVATION_SET."""
+    # TODO: Test this function
+    # TODO: Use reasonable column heading on FieldInsights products so this function isn't necessary...
+    # variable = "Canopy Cover (%) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Canopy Cover Area (m^2) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Canopy Cover - Median Subplot (%) 02-Jun"
+    # print(_parse_observation_type(variable))
+    # variable = "Band: Red Masked 02-Jun"
+    # print(_parse_observation_type(variable))
+    if "Band" in variable or "Index" in variable:
+        try:
+            return _parse_observation_type_bands_and_indices(variable)
+            # return p.search(variable).group()
+        except AttributeError:
+            raise AttributeError(
+                f'Unable to determine a valid `observation_type` from variable "{variable}".\nPlease add a new entry to `OBSERVATION_SET`.'
+            )
+    else:
+        try:
+            # get_close_matches() orders best matches first
+            return _parse_observation_type_fuzzy(variable)
+        except IndexError:
+            raise IndexError(
+                f'Unable to determine a valid `observation_type` from variable "{variable}".\n'
+                "First check that the desired `observation_type` is included in `OBSERVATION_SET`.\n"
+                f'Second check that `difflib.get_close_matches()` works for variable "{variable}":\n'
+                f'get_close_matches("{variable}", OBSERVATION_SET, cutoff=0.6)'
+            )
 
 
 def _wide_to_long(
@@ -69,7 +122,7 @@ def _wide_to_long(
     df_long.insert(
         idx_initial_insert + 1,
         "observation_type",
-        df_long["variable"].apply(lambda x: " ".join(x.split(" ")[:2])),
+        df_long["variable"].apply(lambda variable: _parse_observation_type(variable)),
     )
     # If a variable is masked, it will in fact have "Masked" in the variable name
     df_long.insert(
@@ -159,7 +212,7 @@ def load_field_insights_data(
         file_type="geo_json",
     )
 
-    if df_asset_analytics is None:
+    if len(df_asset_analytics.columns) == 0:
         return GeoDataFrame(), DataFrame()
 
     df_asset_analytics.insert(0, "site_name", asset_name)
@@ -226,6 +279,7 @@ def load_field_insights_data(
             value_subset,
             crop_season_year=row["date"].year,
         )
+        df_long_temp.insert(2, "product", analytic_name)
 
         gdf_plots = pd_concat(
             [gdf_plots, gdf_temp[primary_keys + plots_subset]],
