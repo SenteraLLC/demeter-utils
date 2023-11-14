@@ -9,7 +9,7 @@ python = "~3.10.4"
 click = "*"
 matplotlib = "^3.7.1"
 psycopg2 = "^2.9.3"
-pyarrow = "^13.0.0"
+pyarrow = "^14.0.1"
 scipy = "^1.10.0"
 seaborn = "^0.12.2"
 demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch="main"}
