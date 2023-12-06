@@ -1,7 +1,7 @@
 """Util functions for querying and translating Demeter data."""
 from typing import Any, List, Union
 
-from demeter.data import getFieldGroupFields  # type: ignore
+from demeter.data import getGrouperFields  # type: ignore
 from demeter.db._postgres.tools import doPgFormat, doPgJoin  # type: ignore
 from pandas import DataFrame, json_normalize
 from psycopg2.sql import Identifier
@@ -122,7 +122,7 @@ def get_df_fields_for_field_group(
         cols (list[str]): Names of Demeter.field columns to return. If None,
             all columns are returned.
     """
-    df_field_summaries = getFieldGroupFields(cursor, field_group_id)
+    df_field_summaries = getGrouperFields(cursor, field_group_id)
 
     df_fields = basic_demeter_query(
         cursor,
