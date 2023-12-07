@@ -10,28 +10,6 @@ from psycopg2.sql import Identifier
 from demeter_utils.query import basic_demeter_query
 
 
-def _grouper_query_to_df(
-    df_results: DataFrame, demeter_table: db.TableId, pop_keys: list[str] = []
-) -> DataFrame:
-    df_demeter_objects = DataFrame()
-    for _, row in df_results.iterrows():
-        pkey_id = demeter_table.__name__.lower() + "_id"
-        pop_data = {k: row.pop(item=k) for k in pop_keys}
-        demeter_object_ = demeter_table(**row.drop(labels=pkey_id).to_dict())
-        data = dict(
-            {
-                "table": demeter_table.__name__.lower(),
-                "table_id": [row[pkey_id]],
-                "demeter_object": [demeter_object_],
-            },
-            **pop_data,
-        )
-        df_demeter_objects = pd_concat(
-            [df_demeter_objects, DataFrame(data)], ignore_index=True, axis=0
-        )
-    return df_demeter_objects
-
-
 def get_grouper_ancestors(
     cursor: Any,
     grouper_id: db.TableId,
@@ -170,6 +148,28 @@ def get_grouper_id_by_name(cursor: Any, grouper_name: str) -> int:
     if len(df_grouper) == 0:
         raise ValueError(f"No grouper names found for {grouper_name}")
     return int(df_grouper.iloc[0]["grouper_id"])
+
+
+def _grouper_query_to_df(
+    df_results: DataFrame, demeter_table: db.TableId, pop_keys: list[str] = []
+) -> DataFrame:
+    df_demeter_objects = DataFrame()
+    for _, row in df_results.iterrows():
+        pkey_id = demeter_table.__name__.lower() + "_id"
+        pop_data = {k: row.pop(item=k) for k in pop_keys}
+        demeter_object_ = demeter_table(**row.drop(labels=pkey_id).to_dict())
+        data = dict(
+            {
+                "table": demeter_table.__name__.lower(),
+                "table_id": [row[pkey_id]],
+                "demeter_object": [demeter_object_],
+            },
+            **pop_data,
+        )
+        df_demeter_objects = pd_concat(
+            [df_demeter_objects, DataFrame(data)], ignore_index=True, axis=0
+        )
+    return df_demeter_objects
 
 
 # def searchGrouper(
