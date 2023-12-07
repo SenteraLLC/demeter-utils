@@ -60,7 +60,9 @@ def get_grouper_ancestors(
     if len(results) < 1:
         raise Exception(f"Failed to get grouper ancestors for: {grouper_id}")
 
-    return _grouper_query_to_df(DataFrame(results), demeter_table=Grouper)
+    return _grouper_query_to_df(
+        DataFrame(results), demeter_table=Grouper, pop_keys=["distance"]
+    )
 
 
 def get_grouper_descendants(
@@ -91,7 +93,9 @@ def get_grouper_descendants(
     if len(results) < 1:
         raise Exception(f"Failed to get grouper descendants for: {grouper_id}")
 
-    return _grouper_query_to_df(DataFrame(results), demeter_table=Grouper)
+    return _grouper_query_to_df(
+        DataFrame(results), demeter_table=Grouper, pop_keys=["distance"]
+    )
 
 
 def get_grouper_object_by_id(
