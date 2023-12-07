@@ -11,7 +11,7 @@ from demeter_utils.query._demeter._grouper import get_grouper_object_by_id
 
 def get_fields_by_grouper(
     cursor: Any,
-    table: TableId,
+    demeter_table: TableId,
     grouper_id: int,
     cols: Union[None, List[str]] = None,
 ) -> DataFrame:
@@ -23,20 +23,17 @@ def get_fields_by_grouper(
         table (str): Name of database table to query (should be one of ["field", "field_trial", "plot"]).
         cols (list[str]): Names of Demeter.field columns to return. If None, all columns are returned.
     """
-    table_name = table.__name__.lower()
-    if table not in [Field, FieldTrial, Plot]:
+    table_name = demeter_table.__name__.lower()
+    if demeter_table not in [Field, FieldTrial, Plot]:
         raise ValueError(f'Groupers are not supported by table "{table_name}".')
 
     df_field_summaries = get_grouper_object_by_id(
-        cursor, table, grouper_id, include_descendants=True
+        cursor, demeter_table, grouper_id, include_descendants=True
     )
-    # df_field_summaries = getGrouperFields(cursor, grouper_id)
-
     df_fields = basic_demeter_query(
         cursor,
-        table="field",
+        table=table_name,
         cols=cols,
-        conditions={"field_id": df_field_summaries["field_id"].to_list()},
+        conditions={table_name + "_id": df_field_summaries["table_id"].to_list()},
     )
-
     return df_fields
