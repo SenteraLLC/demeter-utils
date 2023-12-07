@@ -27,9 +27,6 @@ def get_fields_by_grouper(
     if table not in [Field, FieldTrial, Plot]:
         raise ValueError(f'Groupers are not supported by table "{table_name}".')
 
-    if table not in ["field", "field_trial", "plot"]:
-        raise ValueError(f'Groupers are not supported by table "{table}".')
-
     df_field_summaries = get_grouper_object_by_id(
         cursor, table, grouper_id, include_descendants=True
     )
