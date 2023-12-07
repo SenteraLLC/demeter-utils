@@ -7,6 +7,7 @@ from pandas import DataFrame
 
 from demeter_utils.query._demeter._core import basic_demeter_query
 from demeter_utils.query._demeter._grouper import get_grouper_object_by_id
+from demeter_utils.query._translate import camel_to_snake
 
 
 def get_fields_by_grouper(
@@ -23,7 +24,7 @@ def get_fields_by_grouper(
         table (str): Name of database table to query (should be one of ["field", "field_trial", "plot"]).
         cols (list[str]): Names of Demeter.field columns to return. If None, all columns are returned.
     """
-    table_name = demeter_table.__name__.lower()
+    table_name = camel_to_snake(demeter_table.__name__)
     if demeter_table not in [Field, FieldTrial, Plot]:
         raise ValueError(f'Groupers are not supported by table "{table_name}".')
 

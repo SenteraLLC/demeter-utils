@@ -8,6 +8,7 @@ from psycopg2.extensions import AsIs
 from psycopg2.sql import Identifier
 
 from demeter_utils.query import basic_demeter_query
+from demeter_utils.query._translate import camel_to_snake
 
 
 def get_grouper_ancestors(
@@ -78,7 +79,7 @@ def get_grouper_descendants(
 
 def get_grouper_object_by_id(
     cursor: Any,
-    table: db.TableId,
+    demeter_table: db.TableId,
     grouper_id: db.TableId,
     include_descendants: bool = True,
 ) -> DataFrame:
@@ -97,8 +98,8 @@ def get_grouper_object_by_id(
         DataFrame: A DataFrame of the Fields/FieldTrials/Plots objects that belong to `grouper_id`.
     """
     # if table not in ["field", "field_trial", "plot"]:
-    table_name = table.__name__.lower()
-    if table not in [Field, FieldTrial, Plot]:
+    table_name = camel_to_snake(demeter_table.__name__)
+    if demeter_table not in [Field, FieldTrial, Plot]:
         raise ValueError(f'Groupers are not supported by table "{table_name}".')
 
     stmt_descendants_true = """
@@ -133,7 +134,7 @@ def get_grouper_object_by_id(
         raise Exception(
             f"Failed to get {table_name}s that belong to `grouper_id`: {grouper_id}"
         )
-    return _grouper_query_to_df(DataFrame(results), demeter_table=table)
+    return _grouper_query_to_df(DataFrame(results), demeter_table=demeter_table)
 
 
 def get_grouper_id_by_name(cursor: Any, grouper_name: str) -> int:
@@ -153,15 +154,15 @@ def get_grouper_id_by_name(cursor: Any, grouper_name: str) -> int:
 def _grouper_query_to_df(
     df_results: DataFrame, demeter_table: db.TableId, pop_keys: list[str] = []
 ) -> DataFrame:
+    table_name = camel_to_snake(demeter_table.__name__)
     df_demeter_objects = DataFrame()
     for _, row in df_results.iterrows():
-        pkey_id = demeter_table.__name__.lower() + "_id"
         pop_data = {k: row.pop(item=k) for k in pop_keys}
-        demeter_object_ = demeter_table(**row.drop(labels=pkey_id).to_dict())
+        demeter_object_ = demeter_table(**row.drop(labels=table_name + "_id").to_dict())
         data = dict(
             {
-                "table": demeter_table.__name__.lower(),
-                "table_id": [row[pkey_id]],
+                "table": table_name,
+                "table_id": [row[table_name + "_id"]],
                 "demeter_object": [demeter_object_],
             },
             **pop_data,
