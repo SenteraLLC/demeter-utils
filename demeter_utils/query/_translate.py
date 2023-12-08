@@ -30,7 +30,8 @@ def explode_details(df: DataFrame, col_details: str = "details") -> DataFrame:
     """Explodes the "details" column (`dict` type) as separate columns and concats them to end of `df`."""
     # TODO: What if `df` already has a column name that is in `df[col_details]`?
     df.reset_index(drop=True, inplace=True)
+    df_details = DataFrame(df[col_details].values.tolist())
     return concat(
-        [df.drop(columns=[col_details]), DataFrame(df[col_details].values.tolist())],
+        [df.drop(columns=[col_details]), df_details],
         axis=1,
     )
