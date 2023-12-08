@@ -55,6 +55,6 @@ def reorder_dataframe_columns(
         if col not in df.columns:
             raise ValueError(f"Column {col} is not present in DataFrame.")
     crop_type_idx = df.columns.tolist().index(col_to_insert_after)
-    for col in reversed(cols_to_reorder):
+    for col in reversed(list(cols_to_reorder)):
         df.insert(crop_type_idx + 1, col, df.pop(col))
     return df
