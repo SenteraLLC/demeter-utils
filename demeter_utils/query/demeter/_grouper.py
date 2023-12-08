@@ -7,8 +7,8 @@ from pandas import concat as pd_concat
 from psycopg2.extensions import AsIs
 from psycopg2.sql import Identifier
 
-from demeter_utils.query import basic_demeter_query
 from demeter_utils.query._translate import camel_to_snake
+from demeter_utils.query.demeter._core import basic_demeter_query
 
 
 def get_grouper_ancestors(
