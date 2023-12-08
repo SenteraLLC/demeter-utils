@@ -21,7 +21,7 @@ def join_crop_type(cursor: Any, df: DataFrame) -> DataFrame:
     ).drop(columns=["created", "last_updated"])
     df_out = df.merge(df_crop, how="left", on="crop_type_id")
 
-    cols_to_reorder = reversed(df_crop.drop(columns="crop_type_id").columns)
+    cols_to_reorder = df_crop.drop(columns="crop_type_id").columns.tolist()
     return reorder_dataframe_columns(
         df_out, col_to_insert_after="crop_type_id", cols_to_reorder=cols_to_reorder
     )
