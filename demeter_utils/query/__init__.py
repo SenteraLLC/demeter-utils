@@ -1,7 +1,11 @@
 from ._translate import camel_to_snake, explode_details, field_to_dataframe
 from .demeter._act import get_as_applied, get_harvest, get_planting
 from .demeter._core import basic_demeter_query
-from .demeter._field import get_fields_by_grouper
+from .demeter._field import (
+    get_field_trials_by_grouper,
+    get_fields_by_grouper,
+    get_plots_by_grouper,
+)
 from .demeter._grouper import (
     get_grouper_ancestors,
     get_grouper_descendants,
@@ -19,6 +23,9 @@ __all__ = [
     "get_planting",
     # Field
     "get_fields_by_grouper",
+    "get_field_trials_by_grouper",
+    "get_plots_by_grouper",
+    # Grouper
     # Grouper
     "get_grouper_ancestors",
     "get_grouper_descendants",
