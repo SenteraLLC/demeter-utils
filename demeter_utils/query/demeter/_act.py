@@ -160,14 +160,16 @@ def get_planting(
         .reset_index(drop=True)
         .rename(columns={"date_performed": date_performed_rename})
     )
+    return df_planted_out
 
-    crop_type_ids = df_planted_out.unique("crop_type_id")
-    df_crop = basic_demeter_query(
-        cursor,
-        table="crop_type",
-        conditions={"crop_type_id": crop_type_ids},
-    )
-    df_planted_out.merge(df_crop, how="left", on="crop_type_id")
+    # crop_type_ids = df_planted_out["crop_type_id"].unique()
+    # df_crop = basic_demeter_query(
+    #     cursor,
+    #     table="crop_type",
+    #     conditions={"crop_type_id": crop_type_ids.tolist()},
+    #     explode_details=True,
+    # )
+    # df_planted_out.merge(df_crop, how="left", on="crop_type_id")
 
 
 def get_harvest(
