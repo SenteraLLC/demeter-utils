@@ -18,4 +18,9 @@ def join_crop_type(cursor: Any, df: DataFrame) -> DataFrame:
         conditions={"crop_type_id": crop_type_ids},
         explode_details=True,
     ).drop(columns=["created", "last_updated"])
-    return df.merge(df_crop, how="left", on="crop_type_id")
+    df_out = df.merge(df_crop, how="left", on="crop_type_id")
+
+    crop_type_idx = df_out.columns.tolist().index("crop_type_id")
+    for col in reversed(df_crop.drop(columns="crop_type_id").columns):
+        df_out.insert(crop_type_idx + 1, col, df_out.pop(col))
+    return df_out

@@ -57,11 +57,9 @@ def basic_demeter_query(
 
     cursor.execute(stmt, conditions)
     result = cursor.fetchall()
+    df_result = DataFrame(result)
 
-    df_result = (
-        demeter_utils_explode_details(DataFrame(result), col_details="details")
-        if explode_details
-        else DataFrame(result)
-    )
-
-    return df_result
+    if explode_details and len(df_result.columns) > 0:
+        return demeter_utils_explode_details(df_result, col_details="details")
+    else:
+        return df_result
