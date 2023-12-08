@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     Path(ANALYTIC_DIR).mkdir(parents=True, exist_ok=True)
 
-    logging.info("Collecting data from CloudVault")
+    logging.info("Collecting data frogetm CloudVault")
     gdf_plots = GeoDataFrame()
     df_long = DataFrame()
     for asset_name, asset_sentera_id in ASSET_SENTERA_ID.items():
