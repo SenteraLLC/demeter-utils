@@ -148,7 +148,7 @@ def get_planting(
             break
 
     # Ensure all `table_ids` are present by concatenating `df_table_ids` to `df_planted` and dropping duplicates
-    return (
+    df_planted_out = (
         concat(
             [df_table_ids, df_planted],
             ignore_index=True,
@@ -157,8 +157,17 @@ def get_planting(
             subset=["field_id", "field_trial_id", "plot_id", "geom_id_plant"],
             keep="last",
         )
+        .reset_index(drop=True)
         .rename(columns={"date_performed": date_performed_rename})
     )
+
+    crop_type_ids = df_planted_out.unique("crop_type_id")
+    df_crop = basic_demeter_query(
+        cursor,
+        table="crop_type",
+        conditions={"crop_type_id": crop_type_ids},
+    )
+    df_planted_out.merge(df_crop, how="left", on="crop_type_id")
 
 
 def get_harvest(

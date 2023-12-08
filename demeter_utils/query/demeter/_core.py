@@ -5,6 +5,10 @@ from demeter.db._postgres.tools import doPgFormat, doPgJoin  # type: ignore
 from pandas import DataFrame
 from psycopg2.sql import Identifier
 
+from demeter_utils.query._translate import (
+    explode_details as demeter_utils_explode_details,
+)
+
 from ._format import format_conditions_dict, format_select_cols
 
 
@@ -13,6 +17,7 @@ def basic_demeter_query(
     table: str,
     cols: Union[None, str, List[str]] = None,
     conditions: Union[None, dict[str, Any]] = None,
+    explode_details: bool = False,
 ) -> DataFrame:
     """Generalized SQL query to pandas DataFrame which searches within one table (`table`) based on `conditions` and selects `cols`.
 
@@ -53,6 +58,10 @@ def basic_demeter_query(
     cursor.execute(stmt, conditions)
     result = cursor.fetchall()
 
-    df_result = DataFrame(result)
+    df_result = (
+        demeter_utils_explode_details(DataFrame(result), cols_details="details")
+        if explode_details
+        else DataFrame(result)
+    )
 
     return df_result

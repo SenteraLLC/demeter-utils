@@ -3,7 +3,7 @@
 from re import sub
 
 from demeter.data import Field
-from pandas import DataFrame, Series, concat
+from pandas import DataFrame, concat
 
 
 def field_to_dataframe(field: Field) -> DataFrame:
@@ -29,6 +29,8 @@ def camel_to_snake(string: str) -> str:
 def explode_details(df: DataFrame, col_details: str = "details") -> DataFrame:
     """Explodes the "details" column (`dict` type) as separate columns and concats them to end of `df`."""
     # TODO: What if `df` already has a column name that is in `df[col_details]`?
+    df.reset_index(drop=True, inplace=True)
     return concat(
-        [df.drop([col_details], axis=1), df[col_details].apply(Series)], axis=1
+        [df.drop(columns=[col_details]), DataFrame(df[col_details].values.tolist())],
+        axis=1,
     )
