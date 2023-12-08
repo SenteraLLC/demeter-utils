@@ -55,17 +55,19 @@ def _get_field_fieldtrial_plot_by_grouper(
         df_descendants = get_grouper_object_by_id(
             cursor, demeter_table, grouper_id, include_descendants=include_descendants
         )
+        table_id = table_name + "_id"
     if demeter_table == Plot:
-        # Get all Field Trials first
+        # Get all Field Trials
         df_descendants = get_grouper_object_by_id(
             cursor, FieldTrial, grouper_id, include_descendants=include_descendants
         )
+        table_id = "field_trial_id"
 
     # Step 2: Get all plots for field trials
     df_result = basic_demeter_query(
         cursor,
         table=table_name,
         cols=None,
-        conditions={table_name + "_id": df_descendants["table_id"].to_list()},
+        conditions={table_id: df_descendants["table_id"].to_list()},
     )
     return df_result
