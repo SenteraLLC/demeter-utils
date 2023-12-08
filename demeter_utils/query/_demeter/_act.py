@@ -121,6 +121,8 @@ def get_planting(
             table="act",
             conditions={"act_type": "PLANT", table_level_id: table_level_ids},
         )
+        if len(df_plant_acts_.columns) == 0:
+            continue
         cols_drop = list(
             set(["field_id", "field_trial_id", "plot_id"]) - set([table_level_id])
         )
