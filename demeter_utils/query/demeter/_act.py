@@ -120,6 +120,7 @@ def get_planting(
             cursor,
             table="act",
             conditions={"act_type": "PLANT", table_level_id: table_level_ids},
+            # explode_details=True,
         )
         if len(df_plant_acts_.columns) == 0:
             continue

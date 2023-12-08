@@ -59,7 +59,7 @@ def basic_demeter_query(
     result = cursor.fetchall()
 
     df_result = (
-        demeter_utils_explode_details(DataFrame(result), cols_details="details")
+        demeter_utils_explode_details(DataFrame(result), col_details="details")
         if explode_details
         else DataFrame(result)
     )
