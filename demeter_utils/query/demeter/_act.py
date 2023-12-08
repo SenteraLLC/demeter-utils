@@ -7,6 +7,7 @@ from pandas import DataFrame, concat, json_normalize, notnull
 
 from demeter_utils.query._translate import camel_to_snake
 from demeter_utils.query.demeter._core import basic_demeter_query
+from demeter_utils.query.demeter._crop_type import join_crop_type
 
 
 def get_as_applied(
@@ -89,14 +90,14 @@ def get_planting(
     field_trial_ids: list[int],
     plot_ids: list[int],
     date_performed_rename: str = "date_planted",
+    explode_details: bool = False,
 ) -> DataFrame:
     """Get planting information for a field ID or a list of field IDs.
 
     Args:
         cursor: Connection to demeter
         field_id (int or list[int]): Field id[s] to extract planting data for.
-        cols (None or list[str]): List of column names to extract from act table for planting info. If None, returns all columns.
-        colname_date (str): Column name to change "date_performed"; defaults to "date_planted".
+        date_performed_rename (str): Column name to change "date_performed"; defaults to "date_planted".
     """
     table_name = camel_to_snake(demeter_table.__name__)
     if demeter_table not in [Field, FieldTrial, Plot]:
@@ -120,7 +121,7 @@ def get_planting(
             cursor,
             table="act",
             conditions={"act_type": "PLANT", table_level_id: table_level_ids},
-            # explode_details=True,
+            explode_details=explode_details,
         )
         if len(df_plant_acts_.columns) == 0:
             continue
@@ -149,7 +150,7 @@ def get_planting(
             break
 
     # Ensure all `table_ids` are present by concatenating `df_table_ids` to `df_planted` and dropping duplicates
-    df_planted_out = (
+    df_planted_out_ = (
         concat(
             [df_table_ids, df_planted],
             ignore_index=True,
@@ -161,16 +162,10 @@ def get_planting(
         .reset_index(drop=True)
         .rename(columns={"date_performed": date_performed_rename})
     )
-    return df_planted_out
 
-    # crop_type_ids = df_planted_out["crop_type_id"].unique()
-    # df_crop = basic_demeter_query(
-    #     cursor,
-    #     table="crop_type",
-    #     conditions={"crop_type_id": crop_type_ids.tolist()},
-    #     explode_details=True,
-    # )
-    # df_planted_out.merge(df_crop, how="left", on="crop_type_id")
+    # Join crop type information
+    df_planted_out = join_crop_type(cursor, df_planted_out_)
+    return df_planted_out
 
 
 def get_harvest(

@@ -1,5 +1,6 @@
 from ._act import get_as_applied, get_harvest, get_planting
 from ._core import basic_demeter_query
+from ._crop_type import join_crop_type
 from ._field import (
     get_field_trials_by_grouper,
     get_fields_by_grouper,
@@ -19,6 +20,8 @@ __all__ = [
     "get_planting",
     # Core
     "basic_demeter_query",
+    # CropType
+    "join_crop_type",
     # Field
     "get_fields_by_grouper",
     "get_field_trials_by_grouper",
