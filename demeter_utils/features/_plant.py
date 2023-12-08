@@ -5,7 +5,7 @@ from numpy import nan, trapz
 from pandas import NA, DataFrame, Series
 from scipy.interpolate import interp1d
 
-from ..query import basic_demeter_query
+from ..query.demeter._core import basic_demeter_query
 from ._utils import add_feature, interpolate_time_series
 
 
