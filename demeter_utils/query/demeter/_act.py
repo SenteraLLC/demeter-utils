@@ -5,8 +5,8 @@ from demeter.data import Field, FieldTrial, Plot
 from demeter.db import TableId
 from pandas import DataFrame, concat, json_normalize, notnull
 
-from demeter_utils.query._demeter._core import basic_demeter_query
 from demeter_utils.query._translate import camel_to_snake
+from demeter_utils.query.demeter._core import basic_demeter_query
 
 
 def get_as_applied(

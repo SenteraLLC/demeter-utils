@@ -1,7 +1,7 @@
 """Util functions for querying and translating Demeter data."""
 from typing import Any
 
-from demeter_utils.query._demeter._core import basic_demeter_query
+from demeter_utils.query.demeter._core import basic_demeter_query
 
 
 def get_obs_type_and_unit_colname(

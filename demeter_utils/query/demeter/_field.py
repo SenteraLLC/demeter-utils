@@ -4,9 +4,9 @@ from typing import Any
 from demeter.data import Field, FieldTrial, Plot
 from demeter.db import TableId
 
-from demeter_utils.query._demeter._core import basic_demeter_query
-from demeter_utils.query._demeter._grouper import get_grouper_object_by_id
 from demeter_utils.query._translate import camel_to_snake
+from demeter_utils.query.demeter._core import basic_demeter_query
+from demeter_utils.query.demeter._grouper import get_grouper_object_by_id
 
 
 def get_fields_by_grouper(
