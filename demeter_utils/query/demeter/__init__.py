@@ -1,4 +1,4 @@
-from ._act import get_as_applied, get_harvest, get_planting
+from ._act import get_act, get_as_applied, get_harvest, get_planting
 from ._core import basic_demeter_query
 from ._crop_type import join_crop_type
 from ._field import (
@@ -15,6 +15,7 @@ from ._grouper import (
 
 __all__ = [
     # Act
+    "get_act",
     "get_as_applied",
     "get_harvest",
     "get_planting",

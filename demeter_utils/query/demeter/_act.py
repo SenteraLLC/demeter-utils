@@ -10,7 +10,7 @@ from demeter_utils.query.demeter._core import basic_demeter_query
 from demeter_utils.query.demeter._crop_type import join_crop_type
 
 
-def get_as_applied1(
+def get_as_applied(
     cursor: Any,
     field_id: Union[int, List[int]],
     colname_date: str = "date_applied",
