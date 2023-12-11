@@ -13,10 +13,10 @@ def join_crop_type(cursor: Any, df: DataFrame) -> DataFrame:
         raise ValueError("Column 'crop_type_id' is required.")
     # Join crop type information
     crop_type_ids = df["crop_type_id"].unique().tolist()
+    crop_type_ids.remove(None)
+    # crop_type_ids = [x for x in df["crop_type_id"].unique().tolist() if x is not None]
     if len(crop_type_ids) == 0:
         return df
-    print(len(crop_type_ids))
-    print(crop_type_ids)
     df_crop = basic_demeter_query(
         cursor,
         table="crop_type",
