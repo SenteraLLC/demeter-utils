@@ -48,7 +48,7 @@ def get_as_applied1(
     return df_apps
 
 
-def get_as_applied(
+def get_act(
     cursor: Any,
     act_type: str,
     demeter_table: TableId,
@@ -58,7 +58,7 @@ def get_as_applied(
     date_performed_rename: str = "date_applied",
     explode_details: bool = False,
 ) -> DataFrame:
-    """Get planting information for a field ID or a list of field IDs.
+    """Get data from the Act table based on Field, FieldTrial, and Plot IDs.
 
     Args:
         cursor: Connection to demeter

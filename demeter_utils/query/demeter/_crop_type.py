@@ -15,6 +15,8 @@ def join_crop_type(cursor: Any, df: DataFrame) -> DataFrame:
     crop_type_ids = df["crop_type_id"].unique().tolist()
     if len(crop_type_ids) == 0:
         return df
+    print(len(crop_type_ids))
+    print(crop_type_ids)
     df_crop = basic_demeter_query(
         cursor,
         table="crop_type",
