@@ -135,8 +135,8 @@ def _get_field_fieldtrial_plot_by_grouper(
 
 def _get_field_fieldtrial_plot_by_organization(
     cursor: Any,
-    organization_id: int,
     demeter_table: TableId,
+    organization_id: int,
 ):
     # TODO: support date_start and date_end
     table_name = camel_to_snake(demeter_table.__name__)
