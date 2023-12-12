@@ -7,10 +7,10 @@ from ._field import (
     get_plots_by_grouper,
 )
 from ._grouper import (
+    get_demeter_object_by_grouper,
     get_grouper_ancestors,
     get_grouper_descendants,
     get_grouper_id_by_name,
-    get_grouper_object_by_id,
 )
 
 __all__ = [
@@ -31,5 +31,5 @@ __all__ = [
     "get_grouper_ancestors",
     "get_grouper_descendants",
     "get_grouper_id_by_name",
-    "get_grouper_object_by_id",
+    "get_demeter_object_by_grouper",
 ]

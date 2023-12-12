@@ -77,9 +77,10 @@ def get_grouper_descendants(
     )
 
 
-def get_grouper_object_by_id(
+def get_demeter_object_by_grouper(
     cursor: Any,
-    demeter_table: db.TableId,
+    demeter_table: db.Table,
+    organization_id: db.TableId,
     grouper_id: db.TableId,
     include_descendants: bool = True,
 ) -> DataFrame:
@@ -113,12 +114,12 @@ def get_grouper_object_by_id(
       where ancestor.grouper_id = descendant.parent_grouper_id
     )
     select * from {table}
-    where grouper_id in (select grouper_id from descendants)
+    where organization_id = %(organization_id)s and grouper_id in (select grouper_id from descendants)
     """
 
     stmt_descendants_false = """
     select * from {table}
-    where grouper_id = %(grouper_id)s
+    where organization_id = %(organization_id)s and grouper_id = %(grouper_id)s
     """
 
     stmt = (
@@ -126,7 +127,7 @@ def get_grouper_object_by_id(
         if include_descendants
         else db.doPgFormat(stmt_descendants_false, table=Identifier(table_name))
     )
-    params = {"grouper_id": AsIs(grouper_id)}
+    params = {"organization_id": AsIs(organization_id), "grouper_id": AsIs(grouper_id)}
     cursor.execute(stmt, params)
     results = cursor.fetchall()
 

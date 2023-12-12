@@ -4,9 +4,11 @@ import pytest
 from demeter.data import (
     Field,
     Grouper,
+    Organization,
     insertOrGetField,
     insertOrGetGeom,
     insertOrGetGrouper,
+    insertOrGetOrganization,
 )
 from demeter.tests.conftest import SCHEMA_NAME
 from pandas import read_sql_query
@@ -17,10 +19,12 @@ from sqlalchemy.sql import text
 from sure import expect
 
 from demeter_utils.query import (
+    get_demeter_object_by_grouper,
     get_grouper_ancestors,
     get_grouper_descendants,
-    get_grouper_object_by_id,
 )
+
+TEST_ORGANIZATION = Organization(name="Test Organization", parent_grouper_id=None)
 
 
 class TestUpsertGrouper:
@@ -31,7 +35,14 @@ class TestUpsertGrouper:
     def test_insert_get_grouper(self, test_db_class):
         with test_db_class.connect() as conn:
             with conn.begin():
-                root_grouper = Grouper(name="Root Field Group", parent_grouper_id=None)
+                organization_id = insertOrGetOrganization(
+                    conn.connection.cursor(), TEST_ORGANIZATION
+                )
+                root_grouper = Grouper(
+                    name="Root Field Group",
+                    organization_id=organization_id,
+                    parent_grouper_id=None,
+                )
                 root_fg_id = insertOrGetGrouper(conn.connection.cursor(), root_grouper)
                 root_fg_id.should.be.equal(1)
 
@@ -43,12 +54,21 @@ class TestUpsertGrouper:
     def test_insert_child_grouper(self, test_db_class):
         with test_db_class.connect() as conn:
             with conn.begin():
-                root_grouper = Grouper(name="Root Field Group", parent_grouper_id=None)
+                organization_id = insertOrGetOrganization(
+                    conn.connection.cursor(), TEST_ORGANIZATION
+                )
+                root_grouper = Grouper(
+                    name="Root Field Group",
+                    organization_id=organization_id,
+                    parent_grouper_id=None,
+                )
                 root_fg_id = insertOrGetGrouper(conn.connection.cursor(), root_grouper)
                 root_fg_id.should.be.equal(1)
 
                 child_grouper = Grouper(
-                    name="Child Field Group", parent_grouper_id=root_fg_id
+                    name="Child Field Group",
+                    organization_id=organization_id,
+                    parent_grouper_id=root_fg_id,
                 )
                 child_fg_id = insertOrGetGrouper(
                     conn.connection.cursor(), child_grouper
@@ -58,8 +78,13 @@ class TestUpsertGrouper:
     def test_insert_orphan_grouper(self, test_db_class):
         with test_db_class.connect() as conn:
             with conn.begin():
+                organization_id = insertOrGetOrganization(
+                    conn.connection.cursor(), TEST_ORGANIZATION
+                )
                 child_grouper = Grouper(
-                    name="Child Field Group 2", parent_grouper_id=10
+                    name="Child Field Group 2",
+                    organization_id=organization_id,
+                    parent_grouper_id=10,
                 )
                 with pytest.raises(ForeignKeyViolation):
                     _ = insertOrGetGrouper(conn.connection.cursor(), child_grouper)
@@ -111,6 +136,9 @@ class TestUpsertGrouper:
     def test_get_grouper_field_in_child(self, test_db_class):
         with test_db_class.connect() as conn:
             with conn.begin():
+                organization_id = insertOrGetOrganization(
+                    conn.connection.cursor(), TEST_ORGANIZATION
+                )
                 # add field to child
                 field_geom = Point(0, 0)
                 field_geom_id = insertOrGetGeom(conn.connection.cursor(), field_geom)
@@ -123,9 +151,10 @@ class TestUpsertGrouper:
                 _ = insertOrGetField(conn.connection.cursor(), field)
 
                 with pytest.raises(Exception):
-                    _ = get_grouper_object_by_id(
+                    _ = get_demeter_object_by_grouper(
                         conn.connection.cursor(),
                         table=Field,
+                        organization_id=organization_id,
                         grouper_id=1,
                         include_descendants=False,
                     )
@@ -143,33 +172,37 @@ class TestUpsertGrouper:
                 )
                 _ = insertOrGetField(conn.connection.cursor(), field_2)
 
-                include_descendants = get_grouper_object_by_id(
+                include_descendants = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
                     table=Field,
+                    organization_id=organization_id,
                     grouper_id=1,
                     include_descendants=True,
                 )
                 len(include_descendants).should.be.equal_to(2)
 
-                exclude_descendants = get_grouper_object_by_id(
+                exclude_descendants = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
                     table=Field,
+                    organization_id=organization_id,
                     grouper_id=1,
                     include_descendants=False,
                 )
                 len(exclude_descendants).should.be.equal_to(1)
 
-                include_descendants_child = get_grouper_object_by_id(
+                include_descendants_child = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
                     table=Field,
+                    organization_id=organization_id,
                     grouper_id=2,
                     include_descendants=True,
                 )
                 len(include_descendants_child).should.be.equal_to(1)
 
-                exclude_descendants_child = get_grouper_object_by_id(
+                exclude_descendants_child = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
                     table=Field,
+                    organization_id=organization_id,
                     grouper_id=2,
                     include_descendants=False,
                 )
