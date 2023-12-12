@@ -3,8 +3,11 @@ from ._core import basic_demeter_query
 from ._crop_type import join_crop_type
 from ._field import (
     get_field_trials_by_grouper,
+    get_field_trials_by_organization,
     get_fields_by_grouper,
+    get_fields_by_organization,
     get_plots_by_grouper,
+    get_plots_by_organization,
 )
 from ._grouper import (
     get_demeter_object_by_grouper,
@@ -24,8 +27,13 @@ __all__ = [
     # CropType
     "join_crop_type",
     # Field
+    "get_fields_by_organization",
     "get_fields_by_grouper",
+    # FieldTrial
+    "get_field_trials_by_organization",
     "get_field_trials_by_grouper",
+    # Plot
+    "get_plots_by_organization",
     "get_plots_by_grouper",
     # Grouper
     "get_grouper_ancestors",
