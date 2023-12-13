@@ -2,7 +2,7 @@
 from typing import Any
 
 from demeter.data import Field, FieldTrial, Plot
-from demeter.db import TableId
+from demeter.db import Table
 from pandas import DataFrame, concat, notnull
 
 from demeter_utils.query._translate import camel_to_snake
@@ -13,7 +13,7 @@ from demeter_utils.query.demeter._crop_type import join_crop_type
 def get_act(
     cursor: Any,
     act_type: str,
-    demeter_table: TableId,
+    demeter_table: Table,
     field_ids: list[int],
     field_trial_ids: list[int],
     plot_ids: list[int],
@@ -103,17 +103,24 @@ def get_act(
 
 def get_demeter_table_ids(
     cursor: Any,
-    demeter_table: TableId,
-    field_ids: list[int],
-    field_trial_ids: list[int],
-    plot_ids: list[int],
+    demeter_table: Table,
+    field_ids: list[int] = None,
+    field_trial_ids: list[int] = None,
+    plot_ids: list[int] = None,
 ) -> DataFrame:
-    """Gets table IDs based on `demeter_table`.
+    """Gets fied_id, field_trial_id, or plot_ids based on passed `demeter_table`.
+
+    Args:
+        demeter_table (Table): Table to query; must be one of [Field, FieldTrial, Plot].
 
     Returns:
         DataFrame: Note that columns are not guaranteed to exist (e.g., if `demeter_table` is `Field`, "plot_id" and
         "field_trial_id" columns will not be present).
     """
+    if all(v is None for v in [field_ids, field_trial_ids, plot_ids]):
+        raise ValueError(
+            "At least one of `field_ids`, `field_trial_ids`, or `plot_ids` must be provided."
+        )
     table_name = camel_to_snake(demeter_table.__name__)
     table_id = table_name + "_id"
     table_ids = (
