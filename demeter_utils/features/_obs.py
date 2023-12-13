@@ -4,7 +4,8 @@ from typing import Any
 from numpy import nan
 from pandas import DataFrame, Timedelta, merge_asof
 
-from ..query import basic_demeter_query, get_obs_type_and_unit_colname
+from demeter_utils.query.demeter._core import basic_demeter_query
+from demeter_utils.query.demeter._obs import get_obs_type_and_unit_colname
 
 
 def get_observation_type_by_date(

@@ -5,8 +5,8 @@ from numpy import nan, trapz
 from pandas import NA, DataFrame, Series
 from scipy.interpolate import interp1d
 
-from ..query.demeter._core import basic_demeter_query
-from ._utils import add_feature, interpolate_time_series
+from demeter_utils.features._utils import add_feature, interpolate_time_series
+from demeter_utils.query.demeter._core import basic_demeter_query
 
 
 def get_days_after_planting(
