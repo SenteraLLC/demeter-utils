@@ -1,7 +1,12 @@
-from ._act import get_act, get_as_applied, get_harvest, get_planting
-from ._core import basic_demeter_query
-from ._crop_type import join_crop_type
-from ._field import (
+from demeter_utils.query.demeter._act import (
+    get_act,
+    get_as_applied,
+    get_harvest,
+    get_planting,
+)
+from demeter_utils.query.demeter._core import basic_demeter_query
+from demeter_utils.query.demeter._crop_type import join_crop_type
+from demeter_utils.query.demeter._field import (
     get_field_trials_by_grouper,
     get_field_trials_by_organization,
     get_fields_by_grouper,
@@ -9,7 +14,7 @@ from ._field import (
     get_plots_by_grouper,
     get_plots_by_organization,
 )
-from ._grouper import (
+from demeter_utils.query.demeter._grouper import (
     get_demeter_object_by_grouper,
     get_grouper_ancestors,
     get_grouper_descendants,
