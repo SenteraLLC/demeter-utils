@@ -23,7 +23,7 @@ def insert_act(
     crop_col: str = None,
     product_name_col: str = None,
     act_details_col_list: list = [],
-) -> None:
+) -> tuple[DataFrame, DataFrame]:
     """
     Insert Field Activities and [optional] CropType for multiple demeter objects (i.e., fields, field_trials, or plots).
 
