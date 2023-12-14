@@ -3,7 +3,7 @@ from typing import Any, Union
 
 from numpy import nan
 
-from ..query import get_as_applied
+from demeter_utils.query.demeter._act import get_as_applied
 
 
 def get_applied_fertilizer_until_date_for_field_id(

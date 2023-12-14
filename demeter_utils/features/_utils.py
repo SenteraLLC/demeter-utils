@@ -4,7 +4,7 @@ from numpy import linspace, ndarray
 from pandas import DataFrame, Series
 from scipy.interpolate import interp1d
 
-from ..query import basic_demeter_query
+from demeter_utils.query.demeter._core import basic_demeter_query
 
 
 def interpolate_time_series(
