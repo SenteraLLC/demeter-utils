@@ -1,9 +1,4 @@
-from demeter_utils.query.demeter._act import (
-    get_act,
-    get_as_applied,
-    get_harvest,
-    get_planting,
-)
+from demeter_utils.query.demeter._act import get_act
 from demeter_utils.query.demeter._core import basic_demeter_query
 from demeter_utils.query.demeter._crop_type import join_crop_type
 from demeter_utils.query.demeter._field import (
@@ -24,9 +19,6 @@ from demeter_utils.query.demeter._grouper import (
 __all__ = [
     # Act
     "get_act",
-    "get_as_applied",
-    "get_harvest",
-    "get_planting",
     # Core
     "basic_demeter_query",
     # CropType
