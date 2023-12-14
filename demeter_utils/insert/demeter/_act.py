@@ -16,11 +16,9 @@ from demeter_utils.update import update_details
 def insert_act(
     cursor: NamedTupleCursor,
     act_type: str,
-    df_management: DataFrame,
-    df_demeter_object: GeoDataFrame,
-    # demeter_id_of_act: str,
+    df_management: Union[DataFrame, GeoDataFrame],
+    df_demeter_object: Union[DataFrame, GeoDataFrame],
     demeter_object_join_cols: list[str] = ["field_trial_name"],
-    # demeter_id_cols: list[str] = ["field_id"],
     act_date_col: str = "Act_date",
     crop_col: str = None,
     product_name_col: str = None,
@@ -61,7 +59,6 @@ def insert_act(
         raise ValueError(
             f'act_type must be one of ["APPLY", "HARVEST", "MECHANICAL", "PLANT", "TILL"], not {act_type}'
         )
-    # cursor = conn.connection.cursor()
 
     # Passing a crop_type to Activity table is optional
     df_crop_types = (
@@ -86,7 +83,6 @@ def insert_act(
         cursor,
         act_type,
         df_act,
-        # demeter_id_cols,
         act_date_col,
         act_details_col_list,
     )
@@ -164,12 +160,12 @@ def _insert_or_update_act(
     cursor: NamedTupleCursor,
     act_type: str,
     df_act: DataFrame,
-    # demeter_id_of_act: str,
-    # demeter_id_cols: list[str],
     act_date_col: str = "Act_date",
     act_details_col_list: list = [],
 ) -> DataFrame:
-    """Insert Activities."""
+    """
+    Insert or update Activities from `df_act`. If the act already exists, updates the act if "details" have changed.
+    """
     act_ids = []
     for ind in tqdm(range(len(df_act)), desc=f"Inserting {act_type} Activities:"):
         row = df_act.iloc[ind]
@@ -195,23 +191,6 @@ def _insert_or_update_act(
             # Is warning enough?
             logging.warning("plot_id, field_trial_id, and field_id are all NULL.")
 
-        # field_id = (
-        #     int(row.field_id)
-        #     if "field_id" in row.index
-        #     # if demeter_id_of_act == "field_id"
-        #     # if ("field_id" in demeter_id_cols and "field_id" in row.index)
-        #     else None
-        # )
-        # field_trial_id = (
-        #     int(row.field_trial_id)
-        #     if ("field_trial_id" in demeter_id_cols and "field_trial_id" in row.index)
-        #     else None
-        # )
-        # plot_id = (
-        #     int(row.plot_id)
-        #     if ("plot_id" in demeter_id_cols and "plot_id" in row.index)
-        #     else None
-        # )
         act = Act(
             act_type=act_type,
             date_performed=row[act_date_col],
@@ -228,6 +207,7 @@ def _insert_or_update_act(
         act_id = insertOrGetAct(cursor, act)
 
         # UPDATE DETAILS
+        # TODO: How can the following be refactored into insertOrUpdateOrGetAct(cursor, act) function?
         # Now that we have act_id, we can check for differences in "details" column between act and act_id
         table_cols = [
             "act_type",
@@ -272,79 +252,6 @@ def _insert_or_update_act(
                 table_id=act_record.act_id[0],
                 details=act_dict["details"],
             )
-
-        act_ids.append(act_id)
-    df_act["act_id_" + act_type.lower()] = act_ids
-    return df_act
-
-
-def _assign_activities1(
-    cursor: NamedTupleCursor,
-    act_type: str,
-    df_management: DataFrame,
-    df_demeter_object: Union[DataFrame, GeoDataFrame],
-    demeter_object_join_col: str,
-    act_date_col: str = "Act_date",
-    act_details_col_list: list = [],
-    df_crop_types: DataFrame = None,
-    crop_col: str = "Crop",
-    product_name_col: str = "Variety",
-) -> DataFrame:
-    """Insert Activities."""
-    # Get all column in df_demeter_object.columns that begin with  any of the strings in DEMETER_IDS
-    cols_demeter_ids = [
-        c
-        for c in df_demeter_object.columns
-        if any(c.startswith(s) for s in DEMETER_IDS)
-    ]
-
-    cols_management = [
-        act_date_col,
-        demeter_object_join_col,
-    ]
-    # Separate out crop_types in case they are not provided (df_crop_types is optional).
-    cols_crop_types = (
-        [
-            crop_col,
-            product_name_col,
-        ]
-        if df_crop_types is not None
-        else []
-    )
-    df_act_ = (
-        df_management[cols_management + cols_crop_types + act_details_col_list]
-        .drop_duplicates()
-        .reset_index(drop=True)
-        .merge(
-            df_demeter_object[[demeter_object_join_col] + cols_demeter_ids],
-            on=demeter_object_join_col,
-        )
-    )
-    df_act = (
-        df_act_.merge(df_crop_types, on=[crop_col, product_name_col])
-        if df_crop_types is not None
-        else df_act_
-    )
-    act_ids = []
-    for ind in tqdm(range(len(df_act)), desc=f"Inserting {act_type} Activities:"):
-        row = df_act.iloc[ind]
-        crop_type_id = int(row.crop_type_id) if "crop_type_id" in row.index else None
-        # TODO: Support for geom_id (should only be used if more specific than field, field_trial, or plot_ids)
-
-        act = Act(
-            act_type=act_type,
-            date_performed=row[act_date_col],
-            crop_type_id=crop_type_id,
-            field_id=None,
-            field_trial_id=int(row.field_trial_id),
-            plot_id=None,
-            geom_id=None,
-            details={
-                k: None if isna(v) else v
-                for k, v in row[row.index.isin(act_details_col_list)].to_dict().items()
-            },
-        )
-        act_id = insertOrGetAct(cursor, act)
 
         act_ids.append(act_id)
     df_act["act_id_" + act_type.lower()] = act_ids
