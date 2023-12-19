@@ -67,7 +67,7 @@ def insert_act(
         else None
     )
 
-    logging.info("   Inserting %s Activities", act_type)
+    logging.info("  Inserting %s Activities", act_type)
     df_act = _build_activity_dataframe(
         df_management,
         df_demeter_object,
@@ -244,7 +244,7 @@ def _insert_or_update_act(
         # If dicts aren't the same, update details column
         if act_dict != act_db_dict:
             logging.info(
-                "     Updating details column in act table for act_id %s", act_id
+                "    Updating details column in act table for act_id %s", act_id
             )
             update_details(
                 cursor,
