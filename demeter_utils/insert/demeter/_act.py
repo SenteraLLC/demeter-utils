@@ -147,9 +147,11 @@ def _assign_crop_type(
     crop_type_ids = []
     for ind in tqdm(range(len(df_crop_types)), desc="Inserting Crop Types:"):
         row = df_crop_types.iloc[ind]
-        crop_type = CropType(
-            crop=row[crop_col].upper(), product_name=row[product_name_col].upper()
-        )
+        crop = row[crop_col] if crop_col in row.index else None
+        crop = crop.upper() if not isna(crop) else None
+        product_name = row[product_name_col] if product_name_col in row.index else None
+        product_name = product_name.upper() if not isna(product_name) else None
+        crop_type = CropType(crop=crop, product_name=product_name)
         crop_type_id = insertOrGetCropType(cursor, crop_type)
         crop_type_ids.append(crop_type_id)
     df_crop_types["crop_type_id"] = crop_type_ids
