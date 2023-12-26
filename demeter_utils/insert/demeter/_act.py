@@ -193,9 +193,12 @@ def _insert_or_update_act(
             # Is warning enough?
             logging.warning("plot_id, field_trial_id, and field_id are all NULL.")
 
+        date_performed = row[act_date_col] if act_date_col in row.index else None
+        date_performed = date_performed if not isna(date_performed) else None
+
         act = Act(
             act_type=act_type,
-            date_performed=row[act_date_col],
+            date_performed=date_performed,
             crop_type_id=crop_type_id,
             field_id=field_id,
             field_trial_id=field_trial_id,
@@ -207,7 +210,6 @@ def _insert_or_update_act(
             },
         )
         act_id = insertOrGetAct(cursor, act)
-
         # UPDATE DETAILS
         # TODO: How can the following be refactored into insertOrUpdateOrGetAct(cursor, act) function?
         # Now that we have act_id, we can check for differences in "details" column between act and act_id
