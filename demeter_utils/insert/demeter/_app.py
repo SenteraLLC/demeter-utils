@@ -32,10 +32,10 @@ APP_TYPE_ENUM = [
 def insert_or_get_app(
     cursor: NamedTupleCursor,
     organization_id: int,
-    app_type: str,
     df_management: Union[DataFrame, GeoDataFrame],
     df_demeter_object: Union[DataFrame, GeoDataFrame],
     demeter_object_join_cols: list[str] = ["field_trial_name"],
+    app_type_col: str = "APP_TYPE",
     app_date_col: str = "DATE_APPLIED",
     app_product_col: str = "PRODUCT",
     app_rate_col: str = "RATE",
@@ -50,9 +50,6 @@ def insert_or_get_app(
     Insert Field Applications and [optional] CropType or NutrientSource for multiple demeter objects (i.e., fields,
     field_trials, or plots).
     """
-    if app_type not in APP_TYPE_ENUM:
-        raise ValueError(f"app_type must be one of {APP_TYPE_ENUM}, not {app_type}")
-
     # Passing a crop_type to Application table is optional
     df_crop_types = (
         insert_or_get_crop_type(cursor, df_management, crop_col, product_name_col)
@@ -69,11 +66,12 @@ def insert_or_get_app(
         else None
     )
 
-    logging.info("  Inserting %s Applications", app_type)
+    logging.info("  Creating Applications dataframe from management data")
     df_app = _build_application_dataframe(
         df_management,
         df_demeter_object,
         demeter_object_join_cols,
+        app_type_col,
         app_date_col,
         app_product_col,
         app_rate_col,
@@ -86,10 +84,11 @@ def insert_or_get_app(
         nutrient_source_col,  # Should this be a dict for all nutrient_source columns?
     )
 
+    logging.info("  Inserting %s Applications", list(df_app[app_type_col].unique()))
     df_app = _insert_or_update_app(
         cursor,
-        app_type,
         df_app,
+        app_type_col,
         app_date_col,
         app_product_col,
         app_rate_col,
@@ -103,6 +102,7 @@ def _build_application_dataframe(
     df_management: DataFrame,
     df_demeter_object: GeoDataFrame,
     demeter_object_join_cols: list[str] = ["field_trial_name"],
+    app_type_col: str = "APP_TYPE",
     app_date_col: str = "DATE_APPLIED",
     app_product_col: str = "PRODUCT",
     app_rate_col: str = "RATE",
@@ -139,7 +139,13 @@ def _build_application_dataframe(
     )
     df_app_ = (
         df_management[
-            [app_date_col, app_product_col, app_rate_col, app_rate_unit_col]
+            [
+                app_type_col,
+                app_date_col,
+                app_product_col,
+                app_rate_col,
+                app_rate_unit_col,
+            ]
             + demeter_object_join_cols
             + cols_crop_types
             + cols_nutrient_sources
@@ -169,6 +175,7 @@ def _insert_or_update_app(
     cursor: NamedTupleCursor,
     app_type: str,
     df_app: DataFrame,
+    app_type_col: str = "APP_TYPE",
     app_date_col: str = "DATE_APPLIED",
     app_rate_col: str = "RATE",
     app_rate_unit_col: str = "RATE_UNIT",
@@ -204,6 +211,11 @@ def _insert_or_update_app(
         if all([isna(i) for i in [plot_id, field_trial_id, field_id]]):
             # Is warning enough?
             logging.warning("plot_id, field_trial_id, and field_id are all NULL.")
+
+        app_type = row[app_type_col] if app_type_col in row.index else None
+        app_type = app_type if not isna(app_type) else None
+        if app_type not in APP_TYPE_ENUM:
+            raise ValueError(f"app_type must be one of {APP_TYPE_ENUM}, not {app_type}")
 
         date_applied = row[app_date_col] if app_date_col in row.index else None
         date_applied = date_applied if not isna(date_applied) else None
