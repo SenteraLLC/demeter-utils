@@ -32,7 +32,7 @@ APP_TYPE_ENUM = [
 def insert_or_get_app(
     cursor: NamedTupleCursor,
     organization_id: int,
-    df_management: Union[DataFrame, GeoDataFrame],
+    df_application: Union[DataFrame, GeoDataFrame],
     df_demeter_object: Union[DataFrame, GeoDataFrame],
     demeter_object_join_cols: list[str] = ["field_trial_name"],
     app_type_col: str = "APP_TYPE",
@@ -52,7 +52,7 @@ def insert_or_get_app(
     """
     # Passing a crop_type to Application table is optional
     df_crop_types = (
-        insert_or_get_crop_type(cursor, df_management, crop_col, product_name_col)
+        insert_or_get_crop_type(cursor, df_application, crop_col, product_name_col)
         if any([crop_col, product_name_col])
         else None
     )
@@ -68,7 +68,7 @@ def insert_or_get_app(
 
     logging.info("  Creating Applications dataframe from management data")
     df_app = _build_application_dataframe(
-        df_management,
+        df_application,
         df_demeter_object,
         demeter_object_join_cols,
         app_type_col,
@@ -99,7 +99,7 @@ def insert_or_get_app(
 
 
 def _build_application_dataframe(
-    df_management: DataFrame,
+    df_application: DataFrame,
     df_demeter_object: GeoDataFrame,
     demeter_object_join_cols: list[str] = ["field_trial_name"],
     app_type_col: str = "APP_TYPE",
@@ -138,7 +138,7 @@ def _build_application_dataframe(
         else []
     )
     df_app_ = (
-        df_management[
+        df_application[
             [
                 app_type_col,
                 app_date_col,
