@@ -36,13 +36,14 @@ def insert_or_get_app(
     df_demeter_object: Union[DataFrame, GeoDataFrame],
     demeter_object_join_cols: list[str] = ["field_trial_name"],
     app_type_col: str = "APP_TYPE",
+    app_method_col: str = "APP_METHOD",
     app_date_col: str = "DATE_APPLIED",
     app_product_col: str = "PRODUCT",
     app_rate_col: str = "RATE",
     app_rate_unit_col: str = "RATE_UNIT",
     crop_col: str = None,
     product_name_col: str = None,
-    df_nutrients: DataFrame = None,
+    df_nutrient_sources: DataFrame = None,
     nutrient_source_col: str = None,
     app_details_col_list: list = [],
 ) -> tuple[DataFrame, DataFrame]:
@@ -58,11 +59,11 @@ def insert_or_get_app(
     )
 
     # Passing a nutrient_source to Application table is optional
-    df_nutrient_sources = (
+    df_nutrient_sources_ = (
         insert_or_get_nutrient_source(
-            cursor, organization_id, df_nutrients, nutrient_source_col
+            cursor, organization_id, df_nutrient_sources, nutrient_source_col
         )
-        if all([df_nutrients, nutrient_source_col])
+        if all([df_nutrient_sources, nutrient_source_col])
         else None
     )
 
@@ -72,6 +73,7 @@ def insert_or_get_app(
         df_demeter_object,
         demeter_object_join_cols,
         app_type_col,
+        app_method_col,
         app_date_col,
         app_product_col,
         app_rate_col,
@@ -80,7 +82,7 @@ def insert_or_get_app(
         df_crop_types,
         crop_col,
         product_name_col,
-        df_nutrient_sources,
+        df_nutrient_sources_,
         nutrient_source_col,  # Should this be a dict for all nutrient_source columns?
     )
 
@@ -89,6 +91,7 @@ def insert_or_get_app(
         cursor,
         df_app,
         app_type_col,
+        app_method_col,
         app_date_col,
         app_product_col,
         app_rate_col,
@@ -103,6 +106,7 @@ def _build_application_dataframe(
     df_demeter_object: GeoDataFrame,
     demeter_object_join_cols: list[str] = ["field_trial_name"],
     app_type_col: str = "APP_TYPE",
+    app_method_col: str = "APP_METHOD",
     app_date_col: str = "DATE_APPLIED",
     app_product_col: str = "PRODUCT",
     app_rate_col: str = "RATE",
@@ -141,6 +145,7 @@ def _build_application_dataframe(
         df_application[
             [
                 app_type_col,
+                app_method_col,
                 app_date_col,
                 app_product_col,
                 app_rate_col,
@@ -176,6 +181,7 @@ def _insert_or_update_app(
     app_type: str,
     df_app: DataFrame,
     app_type_col: str = "APP_TYPE",
+    app_method_col: str = "APP_METHOD",
     app_date_col: str = "DATE_APPLIED",
     app_rate_col: str = "RATE",
     app_rate_unit_col: str = "RATE_UNIT",
@@ -217,6 +223,8 @@ def _insert_or_update_app(
         if app_type not in APP_TYPE_ENUM:
             raise ValueError(f"app_type must be one of {APP_TYPE_ENUM}, not {app_type}")
 
+        app_method = row[app_method_col] if app_method_col in row.index else None
+        app_method = app_method if not isna(app_method) else None
         date_applied = row[app_date_col] if app_date_col in row.index else None
         date_applied = date_applied if not isna(date_applied) else None
         rate = row[app_rate_col] if app_rate_col in row.index else None
@@ -226,6 +234,7 @@ def _insert_or_update_app(
 
         app = App(
             app_type=app_type,
+            app_method=app_method,
             date_applied=date_applied,
             rate=rate,
             rate_unit=rate_unit,
@@ -246,7 +255,7 @@ def _insert_or_update_app(
         # Now that we have app_id, we can check for differences in "details" column between app and app_id
         table_cols = [
             "app_type",
-            "date_applied",
+            "app_method" "date_applied",
             "rate",
             "rate_unit",
             "crop_type_id",
@@ -267,6 +276,7 @@ def _insert_or_update_app(
         # Create App object from record
         app_db = App(
             app_type=app_record.app_type[0],
+            app_method=app_record.app_method[0],
             date_applied=app_record.date_applied[0],
             rate=app_record.rate[0],
             rate_unit=app_record.rate_unit[0],
