@@ -31,6 +31,7 @@ APP_TYPE_ENUM = [
 
 def insert_or_get_app(
     cursor: NamedTupleCursor,
+    organization_id: int,
     app_type: str,
     df_management: Union[DataFrame, GeoDataFrame],
     df_demeter_object: Union[DataFrame, GeoDataFrame],
@@ -61,7 +62,9 @@ def insert_or_get_app(
 
     # Passing a nutrient_source to Application table is optional
     df_nutrient_sources = (
-        insert_or_get_nutrient_source(cursor, df_nutrients, nutrient_source_col)
+        insert_or_get_nutrient_source(
+            cursor, organization_id, df_nutrients, nutrient_source_col
+        )
         if all([df_nutrients, nutrient_source_col])
         else None
     )

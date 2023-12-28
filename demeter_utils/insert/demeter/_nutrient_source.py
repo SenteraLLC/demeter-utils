@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 def insert_or_get_nutrient_source(
     cursor: NamedTupleCursor,
+    organization_id: int,
     df_nutrient_sources: DataFrame,
     nutrient_source_col: str,
     n_col: str = "N",
@@ -36,6 +37,8 @@ def insert_or_get_nutrient_source(
         nutrient = (
             row[nutrient_source_col] if nutrient_source_col in row.index else None
         )
+        if isna(nutrient):
+            raise ValueError("Nutrient Source cannot be null.")
         n = float(row[n_col]) if n_col in row.index else 0.0
         p2o5 = float(row[p2o5_col]) if p2o5_col in row.index else 0.0
         k2o = float(row[k2o_col]) if k2o_col in row.index else 0.0
@@ -51,6 +54,7 @@ def insert_or_get_nutrient_source(
         ch = float(row[ch_col]) if ch_col in row.index else 0.0
         nutrient_source = NutrientSource(
             nutrient=nutrient,
+            organization_id=int(organization_id),
             n=n,
             p2o5=p2o5,
             k2o=k2o,
