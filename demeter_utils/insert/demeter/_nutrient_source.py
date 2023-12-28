@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 def insert_or_get_nutrient_source(
     cursor: NamedTupleCursor,
-    df_nutrients: DataFrame,
+    df_nutrient_sources: DataFrame,
     nutrient_source_col: str,
     n_col: str = "N",
     p2o5_col: str = "P2O5",
@@ -24,13 +24,15 @@ def insert_or_get_nutrient_source(
     nutrient_details_col_list: list = [],
 ) -> DataFrame:
     """Insert NutrientSource."""
-    # df_nutrient_sources = df_nutrients[[nutrient_source_col]].drop_duplicates()
-    df_nutrient_sources = df_nutrients.drop_duplicates(subset=nutrient_source_col)
+    # df_nutrient_sources = df_nutrient_sources[[nutrient_source_col]].drop_duplicates()
+    df_nutrient_sources_ = df_nutrient_sources.drop_duplicates(
+        subset=nutrient_source_col
+    )
     nutrient_source_ids = []
     for ind in tqdm(
-        range(len(df_nutrient_sources)), desc="Inserting Nutrient Sources:"
+        range(len(df_nutrient_sources_)), desc="Inserting Nutrient Sources:"
     ):
-        row = df_nutrient_sources.iloc[ind]
+        row = df_nutrient_sources_.iloc[ind]
         nutrient = (
             row[nutrient_source_col] if nutrient_source_col in row.index else None
         )
@@ -71,5 +73,5 @@ def insert_or_get_nutrient_source(
         )
         nutrient_source_id = insertOrGetNutrientSource(cursor, nutrient_source)
         nutrient_source_ids.append(nutrient_source_id)
-    df_nutrient_sources["nutrient_source_id"] = nutrient_source_ids
-    return df_nutrient_sources
+    df_nutrient_sources_["nutrient_source_id"] = nutrient_source_ids
+    return df_nutrient_sources_
