@@ -2,13 +2,14 @@ import logging
 from dataclasses import asdict
 from typing import Union
 
-from demeter.data import Act, CropType, insertOrGetAct, insertOrGetCropType
+from demeter.data import Act, insertOrGetAct
 from geopandas import GeoDataFrame
 from pandas import DataFrame, isna
 from psycopg2.extras import NamedTupleCursor
 from tqdm import tqdm
 
 from demeter_utils.insert.demeter._core import DEMETER_IDS
+from demeter_utils.insert.demeter._crop_type import insert_or_get_crop_type
 from demeter_utils.query.demeter import basic_demeter_query
 from demeter_utils.update import update_details
 
@@ -54,7 +55,6 @@ def insert_act(
             activity. Defaults to [].
 
     """
-    logging.info("   Inserting Crop Types")
     if act_type not in ["APPLY", "HARVEST", "MECHANICAL", "PLANT", "TILL"]:
         raise ValueError(
             f'act_type must be one of ["APPLY", "HARVEST", "MECHANICAL", "PLANT", "TILL"], not {act_type}'
@@ -62,7 +62,7 @@ def insert_act(
 
     # Passing a crop_type to Activity table is optional
     df_crop_types = (
-        _assign_crop_type(cursor, df_management, crop_col, product_name_col)
+        insert_or_get_crop_type(cursor, df_management, crop_col, product_name_col)
         if any([crop_col, product_name_col])
         else None
     )
@@ -134,28 +134,6 @@ def _build_activity_dataframe(
         else df_act_
     )
     return df_act
-
-
-def _assign_crop_type(
-    cursor: NamedTupleCursor,
-    df_management: DataFrame,
-    crop_col: str = "Crop",
-    product_name_col: str = "Variety",
-) -> DataFrame:
-    """Insert CropType."""
-    df_crop_types = df_management[[crop_col, product_name_col]].drop_duplicates()
-    crop_type_ids = []
-    for ind in tqdm(range(len(df_crop_types)), desc="Inserting Crop Types:"):
-        row = df_crop_types.iloc[ind]
-        crop = row[crop_col] if crop_col in row.index else None
-        crop = crop.upper() if not isna(crop) else None
-        product_name = row[product_name_col] if product_name_col in row.index else None
-        product_name = product_name.upper() if not isna(product_name) else None
-        crop_type = CropType(crop=crop, product_name=product_name)
-        crop_type_id = insertOrGetCropType(cursor, crop_type)
-        crop_type_ids.append(crop_type_id)
-    df_crop_types["crop_type_id"] = crop_type_ids
-    return df_crop_types
 
 
 def _insert_or_update_act(
