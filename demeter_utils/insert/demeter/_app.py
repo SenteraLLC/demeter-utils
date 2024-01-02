@@ -93,7 +93,6 @@ def insert_or_get_app(
         app_type_col,
         app_method_col,
         app_date_col,
-        app_product_col,
         app_rate_col,
         app_rate_unit_col,
         app_details_col_list,
@@ -153,7 +152,7 @@ def _build_application_dataframe(
             ]
             + demeter_object_join_cols
             + cols_crop_types
-            + cols_nutrient_sources
+            # + cols_nutrient_sources
             + app_details_col_list
         ]
         .drop_duplicates()
@@ -168,8 +167,13 @@ def _build_application_dataframe(
         if df_crop_types is not None
         else df_app_
     )
+
+    # Have to use left_on/right_on because app_product_col is not necessarily similar to cols_nutrient_sources
     df_app = (
-        df_app2.merge(df_nutrient_sources, on=cols_nutrient_sources)
+        # df_app2.merge(df_nutrient_sources, on=cols_nutrient_sources)
+        df_app2.merge(
+            df_nutrient_sources, left_on=app_product_col, right_on=cols_nutrient_sources
+        )
         if df_nutrient_sources is not None
         else df_app2
     )
@@ -178,7 +182,6 @@ def _build_application_dataframe(
 
 def _insert_or_update_app(
     cursor: NamedTupleCursor,
-    app_type: str,
     df_app: DataFrame,
     app_type_col: str = "APP_TYPE",
     app_method_col: str = "APP_METHOD",
@@ -190,8 +193,11 @@ def _insert_or_update_app(
     """
     Insert or update Applications from `df_app`. If the app already exists, updates the app if "details" have changed.
     """
+    app_types = df_app[app_type_col].unique()
     app_ids = []
-    for ind in tqdm(range(len(df_app)), desc=f"Inserting {app_type} Applications:"):
+    for ind in tqdm(
+        range(len(df_app)), desc=f"Inserting {list(app_types)} Applications"
+    ):
         row = df_app.iloc[ind]
         crop_type_id = int(row.crop_type_id) if "crop_type_id" in row.index else None
         nutrient_source_id = (
@@ -228,7 +234,7 @@ def _insert_or_update_app(
         date_applied = row[app_date_col] if app_date_col in row.index else None
         date_applied = date_applied if not isna(date_applied) else None
         rate = row[app_rate_col] if app_rate_col in row.index else None
-        rate = rate if not isna(rate) else None
+        rate = float(rate) if not isna(rate) else None
         rate_unit = row[app_rate_unit_col] if app_rate_unit_col in row.index else None
         rate_unit = rate_unit if not isna(rate_unit) else None
 
