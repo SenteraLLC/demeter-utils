@@ -31,7 +31,7 @@ def insert_or_get_act(
     Args:
         cursor (NamedTupleCursor): Cursor to demeter schema.
         act_type (str): Type of activity to insert.
-        df_management (DataFrame): Management data.
+        df_management (DataFrame): Management data. Must contain the `demeter_object_join_cols` columns.
 
         df_demeter_object (GeoDataFrame): Demeter object data dictating the level of specificity of the Activity being
             inserted. For example, if an entire FieldTrial was planted on the same date and into the same crop/product,
