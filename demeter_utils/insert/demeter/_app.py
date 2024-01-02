@@ -63,7 +63,7 @@ def insert_or_get_app(
         insert_or_get_nutrient_source(
             cursor, organization_id, df_nutrient_sources, nutrient_source_col
         )
-        if all([df_nutrient_sources, nutrient_source_col])
+        if all([len(df_nutrient_sources.columns), nutrient_source_col])
         else None
     )
 
