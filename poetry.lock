@@ -489,17 +489,17 @@ css = ["tinycss2 (>=1.1.0,<1.3)"]
 
 [[package]]
 name = "boto3"
-version = "1.34.8"
+version = "1.34.9"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "boto3-1.34.8-py3-none-any.whl", hash = "sha256:d6d254a467f6859f445de9ddb6bcbdd3d688f7e08b8dbe45ddd30367ec113722"},
-    {file = "boto3-1.34.8.tar.gz", hash = "sha256:9b5136832118c3edd580d92d0529d62300ec8ecced0a0572e985e67b360770e4"},
+    {file = "boto3-1.34.9-py3-none-any.whl", hash = "sha256:8e48343d52389041af053992decf651bc4fc7b2d65eca12acdcff62d446ecdf4"},
+    {file = "boto3-1.34.9.tar.gz", hash = "sha256:18c386a55e461749e6c9c8a10627a230db18a20dd72f2950ce19546974f15cd5"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.8,<1.35.0"
+botocore = ">=1.34.9,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -508,13 +508,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.34.8"
-description = "Type annotations for boto3 1.34.8 generated with mypy-boto3-builder 7.23.0"
+version = "1.34.9"
+description = "Type annotations for boto3 1.34.9 generated with mypy-boto3-builder 7.23.0"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-stubs-1.34.8.tar.gz", hash = "sha256:03fe3ea68ed978b0188909ddd848e360f1199ece062ba174279df3dc90ccfdf0"},
-    {file = "boto3_stubs-1.34.8-py3-none-any.whl", hash = "sha256:c02f975f216f479e68ddc6af570f0dd90f01f56fcf55b12a04570dae428ca2ef"},
+    {file = "boto3-stubs-1.34.9.tar.gz", hash = "sha256:41220432e898a7a3fa60bb52ef2d49c864f5b38e2baa6a6235f57387325a242e"},
+    {file = "boto3_stubs-1.34.9-py3-none-any.whl", hash = "sha256:d75fa019e181fd87a23b7684684da47e3fba9c501bc4bd1d70ccef21c1b9bf8b"},
 ]
 
 [package.dependencies]
@@ -564,7 +564,7 @@ bedrock-agent = ["mypy-boto3-bedrock-agent (>=1.34.0,<1.35.0)"]
 bedrock-agent-runtime = ["mypy-boto3-bedrock-agent-runtime (>=1.34.0,<1.35.0)"]
 bedrock-runtime = ["mypy-boto3-bedrock-runtime (>=1.34.0,<1.35.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.34.0,<1.35.0)"]
-boto3 = ["boto3 (==1.34.8)", "botocore (==1.34.8)"]
+boto3 = ["boto3 (==1.34.9)", "botocore (==1.34.9)"]
 braket = ["mypy-boto3-braket (>=1.34.0,<1.35.0)"]
 budgets = ["mypy-boto3-budgets (>=1.34.0,<1.35.0)"]
 ce = ["mypy-boto3-ce (>=1.34.0,<1.35.0)"]
@@ -905,13 +905,13 @@ xray = ["mypy-boto3-xray (>=1.34.0,<1.35.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.8"
+version = "1.34.9"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "botocore-1.34.8-py3-none-any.whl", hash = "sha256:75bedd4130978a5b6068ef36c1f9e3616f57696b736143c3f19d995cd842007a"},
-    {file = "botocore-1.34.8.tar.gz", hash = "sha256:02a4026d713a2af1e33a77abd95ef83115efd3ea7bd01a2cffef35fef89acfe1"},
+    {file = "botocore-1.34.9-py3-none-any.whl", hash = "sha256:b40f027f371a1bd211ef67a3727c74bc3713af5fc5d830d4587abda296ebb19e"},
+    {file = "botocore-1.34.9.tar.gz", hash = "sha256:2cf43fa5b5438a95fc466c700f3098228b45df38e311103488554b2334b42ee3"},
 ]
 
 [package.dependencies]
@@ -924,13 +924,13 @@ crt = ["awscrt (==0.19.19)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.34.8"
+version = "1.34.9"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "botocore_stubs-1.34.8-py3-none-any.whl", hash = "sha256:c070dd51a43eafafaf9a783bee039be3eeac7965ac59e23c6a305dbc75c20317"},
-    {file = "botocore_stubs-1.34.8.tar.gz", hash = "sha256:d6c9aa2b119a8b776fea87e2b196c648b74e198c340db5c06f8dc37ba2d62af7"},
+    {file = "botocore_stubs-1.34.9-py3-none-any.whl", hash = "sha256:55aed8679dce47b2ee1e35028826037b643b8897419ec4b7c493289ef0fd1bbf"},
+    {file = "botocore_stubs-1.34.9.tar.gz", hash = "sha256:20a3c2ffc19dfa1ded192cafefca855f569f9e80b077ddc6390114432d7560c6"},
 ]
 
 [package.dependencies]
@@ -1413,7 +1413,7 @@ typing_inspect = "^0.8.0"
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
 reference = "dem-457-data-ingest"
-resolved_reference = "8191709d37307f72fc62eaabcc26d84f3420c8b4"
+resolved_reference = "1b854c048a45ba8b166c83ff68efa1b014f2631e"
 
 [[package]]
 name = "dictdiffer"
@@ -1487,13 +1487,13 @@ dev = ["mypy (==0.950)", "pylint (==2.13.8)"]
 
 [[package]]
 name = "fastjsonschema"
-version = "2.19.0"
+version = "2.19.1"
 description = "Fastest Python implementation of JSON schema"
 optional = false
 python-versions = "*"
 files = [
-    {file = "fastjsonschema-2.19.0-py3-none-any.whl", hash = "sha256:b9fd1a2dd6971dbc7fee280a95bd199ae0dd9ce22beb91cc75e9c1c528a5170e"},
-    {file = "fastjsonschema-2.19.0.tar.gz", hash = "sha256:e25df6647e1bc4a26070b700897b07b542ec898dd4f1f6ea013e7f6a88417225"},
+    {file = "fastjsonschema-2.19.1-py3-none-any.whl", hash = "sha256:3672b47bc94178c9f23dbb654bf47440155d4db9df5f7bc47643315f9c405cd0"},
+    {file = "fastjsonschema-2.19.1.tar.gz", hash = "sha256:e3126a94bdc4623d3de4485f8d468a12f02a67921315ddc87836d6e456dc789d"},
 ]
 
 [package.extras]
@@ -2525,13 +2525,13 @@ test = ["coverage", "ipykernel (>=6.14)", "mypy", "paramiko", "pre-commit", "pyt
 
 [[package]]
 name = "jupyter-core"
-version = "5.6.0"
+version = "5.5.1"
 description = "Jupyter core package. A base package on which Jupyter projects rely."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_core-5.6.0-py3-none-any.whl", hash = "sha256:7613ee3c01f1b0632b927d368bf4e2f5d38503320b2179eec46eea91d026b0ce"},
-    {file = "jupyter_core-5.6.0.tar.gz", hash = "sha256:2970f1554685c89ebfedd784e44eea62d17a935e817f7bb704329a6129e178ca"},
+    {file = "jupyter_core-5.5.1-py3-none-any.whl", hash = "sha256:220dfb00c45f0d780ce132bb7976b58263f81a3ada6e90a9b6823785a424f739"},
+    {file = "jupyter_core-5.5.1.tar.gz", hash = "sha256:1553311a97ccd12936037f36b9ab4d6ae8ceea6ad2d5c90d94a909e752178e40"},
 ]
 
 [package.dependencies]
