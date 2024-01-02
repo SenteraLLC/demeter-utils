@@ -50,6 +50,50 @@ def insert_or_get_app(
     """
     Insert Field Applications and [optional] CropType or NutrientSource for multiple demeter objects (i.e., fields,
     field_trials, or plots).
+
+    Args:
+        cursor (NamedTupleCursor): Cursor to demeter schema.
+        organization_id (int): Organization ID.
+
+        df_application (Union[DataFrame, GeoDataFrame]): Application data. Must contain the `demeter_object_join_cols`
+            columns.
+
+        df_demeter_object (Union[DataFrame, GeoDataFrame]): Demeter object data dictating the level of specificity of
+            the Application being inserted. For example, if an entire FieldTrial had a "blanket" application on the same
+            date, you might pass "gdf_field_trials" DataFrame. Note there is a constraint on the App table to allow one
+            and only one of ["field_id", "field_trial_id", "plot_id"].
+
+        demeter_object_join_cols (list[str], optional): Columns to join `df_management` to `df_demeter_object`. Defaults
+            to ["field_trial_name"].
+
+        app_type_col (str, optional): Column in `df_application` that contains the type of application. Defaults to
+            "APP_TYPE".
+
+        app_method_col (str, optional): Column in `df_application` that contains the method of application. Defaults to
+            "APP_METHOD".
+
+        app_date_col (str, optional): Column in `df_application` that contains the date of the application. Defaults to
+            "DATE_APPLIED".
+
+        app_product_col (str, optional): Column in `df_application` that contains the product name. Defaults to
+            "PRODUCT".
+
+        app_rate_col (str, optional): Column in `df_application` that contains the rate of the application. Defaults to
+            "RATE".
+
+        app_rate_unit_col (str, optional): Column in `df_application` that contains the rate unit of the application.
+            Defaults to "RATE_UNIT".
+
+        crop_col (str, optional): Column in `df_application` that contains the crop name. Defaults to None.
+        product_name_col (str, optional): Column in `df_application` that contains the product name. Defaults to None.
+
+        df_nutrient_sources (DataFrame, optional): Nutrient source data. Must contain the `nutrient_source_col` column.
+            Defaults to None.
+
+        nutrient_source_col (str, optional): Column in `df_nutrient_sources` that contains the nutrient source name.
+
+        app_details_col_list (list, optional): List of columns in `df_application` that contain details about the
+            application. Defaults to [].
     """
     # Passing a crop_type to Application table is optional
     df_crop_types = (
