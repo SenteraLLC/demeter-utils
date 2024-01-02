@@ -261,7 +261,8 @@ def _insert_or_update_app(
         # Now that we have app_id, we can check for differences in "details" column between app and app_id
         table_cols = [
             "app_type",
-            "app_method" "date_applied",
+            "app_method",
+            "date_applied",
             "rate",
             "rate_unit",
             "crop_type_id",
