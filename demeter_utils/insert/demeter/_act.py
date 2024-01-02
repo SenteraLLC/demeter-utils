@@ -14,7 +14,7 @@ from demeter_utils.query.demeter import basic_demeter_query
 from demeter_utils.update import update_details
 
 
-def insert_act(
+def insert_or_get_act(
     cursor: NamedTupleCursor,
     act_type: str,
     df_management: Union[DataFrame, GeoDataFrame],
