@@ -32,15 +32,11 @@ def insert_or_get_act(
         cursor (NamedTupleCursor): Cursor to demeter schema.
         act_type (str): Type of activity to insert.
         df_management (DataFrame): Management data.
-        df_demeter_object (GeoDataFrame): Demeter object data.
 
-        demeter_id_of_act (str): Demeter IDs (one of ["field_id", "field_trial_id", "plot_id"]) to be passed to Act
-            records being inserted. Choose the level that corresponds to the specificity of the Activity being inserted.
-            For example, if an entire FieldTrial was planted on the same date and into the same crop/product,
-            `"field_trial_id"` is appropriate. If each Plot from a FieldTrial had a different fertilizer application
-            (product, rate, timing, etc.), `"plot_id"` is appropriate. The passed Demeter ID will be the ID inserted
-            into the Act record. Note there is a constraint on the Act table to allow one and only one of
-            ["field_id", "field_trial_id", "plot_id"].
+        df_demeter_object (GeoDataFrame): Demeter object data dictating the level of specificity of the Activity being
+            inserted. For example, if an entire FieldTrial was planted on the same date and into the same crop/product,
+            you might pass "gdf_field_trials" DataFrame. Note there is a constraint on the Act table to allow one and
+            only one of ["field_id", "field_trial_id", "plot_id"].
 
         demeter_object_join_cols (list[str], optional): Columns to join `df_management` to `df_demeter_object`. Defaults
             to ["field_trial_name"].
