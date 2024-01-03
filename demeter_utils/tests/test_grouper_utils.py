@@ -10,7 +10,6 @@ from demeter.data import (
     insertOrGetGrouper,
     insertOrGetOrganization,
 )
-from demeter.tests.conftest import SCHEMA_NAME
 from pandas import read_sql_query
 from pandas.testing import assert_frame_equal
 from psycopg2.errors import ForeignKeyViolation
@@ -18,13 +17,16 @@ from shapely.geometry import Point
 from sqlalchemy.sql import text
 from sure import expect
 
-from demeter_utils.query import (
+from demeter_utils.query.demeter._grouper import (
     get_demeter_object_by_grouper,
     get_grouper_ancestors,
     get_grouper_descendants,
 )
 
-TEST_ORGANIZATION = Organization(name="Test Organization", parent_grouper_id=None)
+# from demeter_utils.tests.conftest import SCHEMA_NAME
+
+SCHEMA_NAME = "test_demeter_utils"
+TEST_ORGANIZATION = Organization(name="Test Organization")
 
 
 class TestUpsertGrouper:
@@ -101,7 +103,7 @@ class TestUpsertGrouper:
                 with pytest.raises(Exception):
                     _ = get_grouper_ancestors(conn.connection.cursor(), 3)
 
-                cols = ["distance", "grouper_id"]
+                cols = ["distance", "table_id"]
                 assert_frame_equal(
                     left=get_grouper_ancestors(conn.connection.cursor(), 2)[
                         cols
@@ -124,7 +126,7 @@ class TestUpsertGrouper:
                 with pytest.raises(Exception):
                     _ = get_grouper_descendants(conn.connection.cursor(), 3)
 
-                cols = ["distance", "grouper_id"]
+                cols = ["distance", "table_id"]
                 assert_frame_equal(
                     left=get_grouper_descendants(conn.connection.cursor(), 2)[cols],
                     right=get_grouper_descendants(conn.connection.cursor(), 2)[
@@ -143,9 +145,10 @@ class TestUpsertGrouper:
                 field_geom = Point(0, 0)
                 field_geom_id = insertOrGetGeom(conn.connection.cursor(), field_geom)
                 field = Field(
+                    name="Test Field",
+                    organization_id=organization_id,
                     geom_id=field_geom_id,
                     date_start=datetime(2022, 1, 1),
-                    name="Test Field",
                     grouper_id=2,
                 )
                 _ = insertOrGetField(conn.connection.cursor(), field)
@@ -165,16 +168,17 @@ class TestUpsertGrouper:
                     conn.connection.cursor(), field_geom_2
                 )
                 field_2 = Field(
+                    name="Test Field 2",
+                    organization_id=organization_id,
                     geom_id=field_geom_id_2,
                     date_start=datetime(2022, 1, 1),
-                    name="Test Field 2",
                     grouper_id=1,
                 )
                 _ = insertOrGetField(conn.connection.cursor(), field_2)
 
                 include_descendants = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
-                    table=Field,
+                    demeter_table=Field,
                     organization_id=organization_id,
                     grouper_id=1,
                     include_descendants=True,
@@ -183,7 +187,7 @@ class TestUpsertGrouper:
 
                 exclude_descendants = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
-                    table=Field,
+                    demeter_table=Field,
                     organization_id=organization_id,
                     grouper_id=1,
                     include_descendants=False,
@@ -192,7 +196,7 @@ class TestUpsertGrouper:
 
                 include_descendants_child = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
-                    table=Field,
+                    demeter_table=Field,
                     organization_id=organization_id,
                     grouper_id=2,
                     include_descendants=True,
@@ -201,7 +205,7 @@ class TestUpsertGrouper:
 
                 exclude_descendants_child = get_demeter_object_by_grouper(
                     conn.connection.cursor(),
-                    table=Field,
+                    demeter_table=Field,
                     organization_id=organization_id,
                     grouper_id=2,
                     include_descendants=False,
