@@ -8,7 +8,7 @@ from psycopg2.extras import NamedTupleCursor
 from tqdm import tqdm
 
 
-def insert_groupers(
+def insert_or_get_groupers(
     cursor: NamedTupleCursor,
     gdf_grouper: Union[DataFrame, GeoDataFrame],
     organization_id: int,

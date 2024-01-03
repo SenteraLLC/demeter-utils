@@ -5,7 +5,7 @@ from pandas import DataFrame
 from psycopg2.extras import NamedTupleCursor
 
 
-def insert_organization(cursor: NamedTupleCursor, organization_name: str) -> int:
+def insert_or_get_organization(cursor: NamedTupleCursor, organization_name: str) -> int:
     """Insert Organization."""
     logging.info("  Inserting Organization: %s", organization_name)
     organization = Organization(name=organization_name)
