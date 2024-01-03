@@ -5,10 +5,10 @@ from os import getenv
 
 from demeter.data import (
     Field,
-    FieldGroup,
+    Grouper,
     insertOrGetField,
-    insertOrGetFieldGroup,
     insertOrGetGeom,
+    insertOrGetGrouper,
 )
 from geopandas import GeoDataFrame
 from psycopg2.extras import NamedTupleCursor
@@ -32,21 +32,21 @@ def _assign_field_group_ids(
     """
     ASSET_SENTERA_ID = literal_eval(getenv("ASSET_SENTERA_ID"))  # noqa: N806
 
-    field_group = FieldGroup(
+    field_group = Grouper(
         name=org_name, details={"sentera_id": getenv("ORG_SENTERA_ID")}
     )
-    field_group_id = insertOrGetFieldGroup(cursor, field_group)
+    field_group_id = insertOrGetGrouper(cursor, field_group)
 
     field_group_db_ids = []
     for asset in ASSET_SENTERA_ID.keys():
-        temp_field_group = FieldGroup(
+        temp_field_group = Grouper(
             name=asset,
             parent_field_group_id=field_group_id,
             details={
                 "sentera_id": ASSET_SENTERA_ID[asset],
             },
         )
-        temp_field_group_id = insertOrGetFieldGroup(cursor, temp_field_group)
+        temp_field_group_id = insertOrGetGrouper(cursor, temp_field_group)
         field_group_db_ids += [temp_field_group_id]
     return field_group_db_ids
 
@@ -114,7 +114,7 @@ def insert_field_and_field_group(
     """Insert experimental design/plot information into `demeter` database.
 
     Inserts:
-    - FieldGroup
+    - Grouper
     - Geom (each plot)
     - Field (each plot)
 

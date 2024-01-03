@@ -14,9 +14,9 @@ from os.path import dirname, join, realpath
 
 import pytest
 from demeter.db import getConnection
+from demeter_initialize.schema._utils.initialize import initialize_schema_type
 from dotenv import load_dotenv
 from geoalchemy2 import Geometry  # Required import for sqlalchemy to use Geometry types
-from initialize.schema._utils.initialize import initialize_schema_type
 from psycopg2.extensions import AsIs
 from sqlalchemy import MetaData
 from sqlalchemy.orm import sessionmaker
@@ -25,7 +25,7 @@ from sqlalchemy.sql import text
 load_dotenv()
 
 # prepare database working environment
-SCHEMA_NAME = "test_demeter"
+SCHEMA_NAME = "test_demeter_utils"
 
 
 @pytest.fixture(scope="function")

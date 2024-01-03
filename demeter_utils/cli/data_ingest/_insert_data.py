@@ -5,15 +5,15 @@ from demeter.data import (
     Act,
     CropType,
     Field,
-    FieldGroup,
+    Grouper,
     Observation,
     ObservationType,
     UnitType,
     insertOrGetAct,
     insertOrGetCropType,
     insertOrGetField,
-    insertOrGetFieldGroup,
     insertOrGetGeom,
+    insertOrGetGrouper,
     insertOrGetObservation,
     insertOrGetObservationType,
     insertOrGetUnitType,
@@ -33,7 +33,7 @@ def insert_data(
     """Insert Bayer Canola Phase I data into `demeter`.
 
     Currently inserts:
-    - FieldGroup
+    - Grouper
     - Geom (each plot)
     - Field (each plot)
     - CropType (corn, no product name)
@@ -51,17 +51,17 @@ def insert_data(
     with connect.cursor() as cursor:
         # insert field groups
         logging.info("   Inserting Field Groups")
-        bayer_canola_fg = FieldGroup(name="Bayer Canola")
-        bayer_canola_fg_id = insertOrGetFieldGroup(cursor, bayer_canola_fg)
+        bayer_canola_fg = Grouper(name="Bayer Canola")
+        bayer_canola_fg_id = insertOrGetGrouper(cursor, bayer_canola_fg)
 
         asset_demeter_ids = []
         for asset in ASSET_SENTERA_ID.keys():
-            temp_fg = FieldGroup(
+            temp_fg = Grouper(
                 name=asset,
                 parent_field_group_id=bayer_canola_fg_id,
                 details=file_metadata[asset],  # add geojson metadata here
             )
-            temp_fg_id = insertOrGetFieldGroup(cursor, temp_fg)
+            temp_fg_id = insertOrGetGrouper(cursor, temp_fg)
             asset_demeter_ids += [temp_fg_id]
 
         # insert crop type

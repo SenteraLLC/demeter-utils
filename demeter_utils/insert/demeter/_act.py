@@ -2,18 +2,19 @@ import logging
 from dataclasses import asdict
 from typing import Union
 
-from demeter.data import Act, CropType, insertOrGetAct, insertOrGetCropType
+from demeter.data import Act, insertOrGetAct
 from geopandas import GeoDataFrame
 from pandas import DataFrame, isna
 from psycopg2.extras import NamedTupleCursor
 from tqdm import tqdm
 
 from demeter_utils.insert.demeter._core import DEMETER_IDS
+from demeter_utils.insert.demeter._crop_type import insert_or_get_crop_type
 from demeter_utils.query.demeter import basic_demeter_query
 from demeter_utils.update import update_details
 
 
-def insert_act(
+def insert_or_get_act(
     cursor: NamedTupleCursor,
     act_type: str,
     df_management: Union[DataFrame, GeoDataFrame],
@@ -30,16 +31,14 @@ def insert_act(
     Args:
         cursor (NamedTupleCursor): Cursor to demeter schema.
         act_type (str): Type of activity to insert.
-        df_management (DataFrame): Management data.
-        df_demeter_object (GeoDataFrame): Demeter object data.
 
-        demeter_id_of_act (str): Demeter IDs (one of ["field_id", "field_trial_id", "plot_id"]) to be passed to Act
-            records being inserted. Choose the level that corresponds to the specificity of the Activity being inserted.
-            For example, if an entire FieldTrial was planted on the same date and into the same crop/product,
-            `"field_trial_id"` is appropriate. If each Plot from a FieldTrial had a different fertilizer application
-            (product, rate, timing, etc.), `"plot_id"` is appropriate. The passed Demeter ID will be the ID inserted
-            into the Act record. Note there is a constraint on the Act table to allow one and only one of
-            ["field_id", "field_trial_id", "plot_id"].
+        df_management (Union[DataFrame, GeoDataFrame]): Management data. Must contain the `demeter_object_join_cols`
+            columns.
+
+        df_demeter_object (Union[DataFrame, GeoDataFrame]): Demeter object data dictating the level of specificity of
+            the Activity being inserted. For example, if an entire FieldTrial was planted on the same date and into the
+            same crop/product, you might pass "gdf_field_trials" DataFrame. Note there is a constraint on the Act table
+            to allow one and only one of ["field_id", "field_trial_id", "plot_id"].
 
         demeter_object_join_cols (list[str], optional): Columns to join `df_management` to `df_demeter_object`. Defaults
             to ["field_trial_name"].
@@ -54,7 +53,6 @@ def insert_act(
             activity. Defaults to [].
 
     """
-    logging.info("   Inserting Crop Types")
     if act_type not in ["APPLY", "HARVEST", "MECHANICAL", "PLANT", "TILL"]:
         raise ValueError(
             f'act_type must be one of ["APPLY", "HARVEST", "MECHANICAL", "PLANT", "TILL"], not {act_type}'
@@ -62,12 +60,12 @@ def insert_act(
 
     # Passing a crop_type to Activity table is optional
     df_crop_types = (
-        _assign_crop_type(cursor, df_management, crop_col, product_name_col)
+        insert_or_get_crop_type(cursor, df_management, crop_col, product_name_col)
         if any([crop_col, product_name_col])
         else None
     )
 
-    logging.info("   Inserting %s Activities", act_type)
+    logging.info("  Inserting %s Activities", act_type)
     df_act = _build_activity_dataframe(
         df_management,
         df_demeter_object,
@@ -136,26 +134,6 @@ def _build_activity_dataframe(
     return df_act
 
 
-def _assign_crop_type(
-    cursor: NamedTupleCursor,
-    df_management: DataFrame,
-    crop_col: str = "Crop",
-    product_name_col: str = "Variety",
-) -> DataFrame:
-    """Insert CropType."""
-    df_crop_types = df_management[[crop_col, product_name_col]].drop_duplicates()
-    crop_type_ids = []
-    for ind in tqdm(range(len(df_crop_types)), desc="Inserting Crop Types:"):
-        row = df_crop_types.iloc[ind]
-        crop_type = CropType(
-            crop=row[crop_col].upper(), product_name=row[product_name_col].upper()
-        )
-        crop_type_id = insertOrGetCropType(cursor, crop_type)
-        crop_type_ids.append(crop_type_id)
-    df_crop_types["crop_type_id"] = crop_type_ids
-    return df_crop_types
-
-
 def _insert_or_update_act(
     cursor: NamedTupleCursor,
     act_type: str,
@@ -191,9 +169,12 @@ def _insert_or_update_act(
             # Is warning enough?
             logging.warning("plot_id, field_trial_id, and field_id are all NULL.")
 
+        date_performed = row[act_date_col] if act_date_col in row.index else None
+        date_performed = date_performed if not isna(date_performed) else None
+
         act = Act(
             act_type=act_type,
-            date_performed=row[act_date_col],
+            date_performed=date_performed,
             crop_type_id=crop_type_id,
             field_id=field_id,
             field_trial_id=field_trial_id,
@@ -205,7 +186,6 @@ def _insert_or_update_act(
             },
         )
         act_id = insertOrGetAct(cursor, act)
-
         # UPDATE DETAILS
         # TODO: How can the following be refactored into insertOrUpdateOrGetAct(cursor, act) function?
         # Now that we have act_id, we can check for differences in "details" column between act and act_id
@@ -244,7 +224,7 @@ def _insert_or_update_act(
         # If dicts aren't the same, update details column
         if act_dict != act_db_dict:
             logging.info(
-                "     Updating details column in act table for act_id %s", act_id
+                "    Updating details column in act table for act_id %s", act_id
             )
             update_details(
                 cursor,

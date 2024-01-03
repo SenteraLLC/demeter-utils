@@ -1,7 +1,7 @@
 import pytest
 from sure import expect
 
-from demeter_utils.query import find_duplicate_points
+from demeter_utils.query.weather._weather import find_duplicate_points
 from demeter_utils.tests.data import COORDINATE_LIST_WITH_DUPLICATES
 
 
