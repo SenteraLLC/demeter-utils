@@ -1413,8 +1413,8 @@ typing_inspect = "^0.8.0"
 [package.source]
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
-reference = "dem-457-ocp-data-ingest"
-resolved_reference = "c5d698d7dac029dffa4df8704426ed8a8ef75353"
+reference = "main"
+resolved_reference = "ee0201d695a9ff0372fa856d12bcbe1275debcc9"
 
 [[package]]
 name = "dictdiffer"
@@ -5828,4 +5828,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10.4"
-content-hash = "1c7112272a3821e8b3b466b1cd41d664ff53cf16c80ca14b06692b762aa3aa82"
+content-hash = "58ceb8b41875118196aec4650305cd56c5f59a8e13059d519c5096f4621506bd"
