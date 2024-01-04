@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "demeter_utils"
-version = "1.1.0"
+version = "1.1.1"
 description = "Python library that provides wrapper functions for interacting with the demeter database at a higher level."
 authors = []
 
@@ -12,7 +12,7 @@ psycopg2 = "^2.9.3"
 pyarrow = "^14.0.1"
 scipy = "^1.10.0"
 seaborn = "^0.12.2"
-demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch = "dem-457-ocp-data-ingest"}
+demeter = {git = "ssh://git@github.com/SenteraLLC/demeter.git", branch = "main"}
 gql_utils = { git = "ssh://git@github.com/SenteraLLC/gql-utils.git", branch = "main"}
 
 [tool.poetry.scripts]
