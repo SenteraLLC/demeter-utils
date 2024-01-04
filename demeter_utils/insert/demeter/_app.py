@@ -184,16 +184,21 @@ def _build_application_dataframe(
         if df_nutrient_sources is not None
         else []
     )
+    app_table_cols = [
+        c
+        for c in [
+            app_type_col,
+            app_method_col,
+            app_date_col,
+            app_product_col,
+            app_rate_col,
+            app_rate_unit_col,
+        ]
+        if not isna(c)
+    ]
     df_app_ = (
         df_application[
-            [
-                app_type_col,
-                app_method_col,
-                app_date_col,
-                app_product_col,
-                app_rate_col,
-                app_rate_unit_col,
-            ]
+            app_table_cols
             + demeter_object_join_cols
             + cols_crop_types
             # + cols_nutrient_sources

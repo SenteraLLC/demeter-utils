@@ -490,17 +490,17 @@ css = ["tinycss2 (>=1.1.0,<1.3)"]
 
 [[package]]
 name = "boto3"
-version = "1.34.11"
+version = "1.34.12"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "boto3-1.34.11-py3-none-any.whl", hash = "sha256:1af021e0c6e3040e8de66d403e963566476235bb70f9a8e3f6784813ac2d8026"},
-    {file = "boto3-1.34.11.tar.gz", hash = "sha256:31c130a40ec0631059b77d7e87f67ad03ff1685a5b37638ac0c4687026a3259d"},
+    {file = "boto3-1.34.12-py3-none-any.whl", hash = "sha256:7d7eac86a2cbdfb8074927119da61884bfa29f3c504717d455371fc0a07c99d8"},
+    {file = "boto3-1.34.12.tar.gz", hash = "sha256:67b763669f9eff10a55fe199875d6e66fda8051647af49f8b9b8fced674d75d7"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.11,<1.35.0"
+botocore = ">=1.34.12,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -509,13 +509,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.34.11"
-description = "Type annotations for boto3 1.34.11 generated with mypy-boto3-builder 7.23.0"
+version = "1.34.12"
+description = "Type annotations for boto3 1.34.12 generated with mypy-boto3-builder 7.23.0"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-stubs-1.34.11.tar.gz", hash = "sha256:184f0dbc901baff1f5b252218d57fbca5b75521c0641ad9a4d7fa34aa20cfb7a"},
-    {file = "boto3_stubs-1.34.11-py3-none-any.whl", hash = "sha256:7fe6acc350bc103d6a500828180b1696fb897ab45cf36c16ac4ed33a9c36a9e0"},
+    {file = "boto3-stubs-1.34.12.tar.gz", hash = "sha256:f0f9ea058624e22359f4060a5aece334eaabb4173581b7b1e2fc41056d44f938"},
+    {file = "boto3_stubs-1.34.12-py3-none-any.whl", hash = "sha256:f0ed25e31eab1ee9b0e8e8e1226160243b15be5b65129f0947cbe10915971a8a"},
 ]
 
 [package.dependencies]
@@ -565,7 +565,7 @@ bedrock-agent = ["mypy-boto3-bedrock-agent (>=1.34.0,<1.35.0)"]
 bedrock-agent-runtime = ["mypy-boto3-bedrock-agent-runtime (>=1.34.0,<1.35.0)"]
 bedrock-runtime = ["mypy-boto3-bedrock-runtime (>=1.34.0,<1.35.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.34.0,<1.35.0)"]
-boto3 = ["boto3 (==1.34.11)", "botocore (==1.34.11)"]
+boto3 = ["boto3 (==1.34.12)", "botocore (==1.34.12)"]
 braket = ["mypy-boto3-braket (>=1.34.0,<1.35.0)"]
 budgets = ["mypy-boto3-budgets (>=1.34.0,<1.35.0)"]
 ce = ["mypy-boto3-ce (>=1.34.0,<1.35.0)"]
@@ -906,13 +906,13 @@ xray = ["mypy-boto3-xray (>=1.34.0,<1.35.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.11"
+version = "1.34.12"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "botocore-1.34.11-py3-none-any.whl", hash = "sha256:1ff1398b6ea670e1c01ac67a33af3da854f8e700d3528289c04f319c330d8250"},
-    {file = "botocore-1.34.11.tar.gz", hash = "sha256:51905c3d623c60df5dc5794387de7caf886d350180a01a3dfa762e903edb45a9"},
+    {file = "botocore-1.34.12-py3-none-any.whl", hash = "sha256:346b0788f3bf4c68928db909170e4c7300119a22f9a2176bf5f764d3542997e8"},
+    {file = "botocore-1.34.12.tar.gz", hash = "sha256:53dfc19d63f2b70821e9804b7ecfc5e50fc84d9bd6818359b27db629ef43ec59"},
 ]
 
 [package.dependencies]
@@ -925,13 +925,13 @@ crt = ["awscrt (==0.19.19)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.34.11"
+version = "1.34.12"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "botocore_stubs-1.34.11-py3-none-any.whl", hash = "sha256:cae356fe9d23305087d6e909b2759fe7855166ff2fcd59984d04c7ebbb3997db"},
-    {file = "botocore_stubs-1.34.11.tar.gz", hash = "sha256:c0bb8723c8e6d756e1e321584d118fdd2183b5d1d19f0e910b8658c0110f07a6"},
+    {file = "botocore_stubs-1.34.12-py3-none-any.whl", hash = "sha256:6f2414ea5c2aba7d67c8a6ab8d8090eb3cdaa58eec23c4c4949c512d01b7907a"},
+    {file = "botocore_stubs-1.34.12.tar.gz", hash = "sha256:bc0caf41c0e05464ea74a8c502d8e5e16761a2f9975ff598483b87c4c1d7f253"},
 ]
 
 [package.dependencies]
@@ -1375,7 +1375,7 @@ files = [
 
 [[package]]
 name = "demeter"
-version = "2.2.0"
+version = "2.2.1"
 description = "The database schema and API that supports agronomic modeling and data science activities."
 optional = false
 python-versions = "~3.10.4"
@@ -1414,7 +1414,7 @@ typing_inspect = "^0.8.0"
 type = "git"
 url = "ssh://git@github.com/SenteraLLC/demeter.git"
 reference = "main"
-resolved_reference = "e9535ce78a06261aeb8733c2b47b495868dc1468"
+resolved_reference = "ee0201d695a9ff0372fa856d12bcbe1275debcc9"
 
 [[package]]
 name = "dictdiffer"
@@ -2526,13 +2526,13 @@ test = ["coverage", "ipykernel (>=6.14)", "mypy", "paramiko", "pre-commit", "pyt
 
 [[package]]
 name = "jupyter-core"
-version = "5.6.1"
+version = "5.7.0"
 description = "Jupyter core package. A base package on which Jupyter projects rely."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_core-5.6.1-py3-none-any.whl", hash = "sha256:3d16aec2e1ec84b69f7794e49c32830c1d950ad149526aec954c100047c5f3a7"},
-    {file = "jupyter_core-5.6.1.tar.gz", hash = "sha256:5139be639404f7f80f3db6f687f47b8a8ec97286b4fa063c984024720e7224dc"},
+    {file = "jupyter_core-5.7.0-py3-none-any.whl", hash = "sha256:16eea462f7dad23ba9f86542bdf17f830804e2028eb48d609b6134d91681e983"},
+    {file = "jupyter_core-5.7.0.tar.gz", hash = "sha256:cb8d3ed92144d2463a3c5664fdd686a3f0c1442ea45df8babb1c1a9e6333fe03"},
 ]
 
 [package.dependencies]
@@ -2571,13 +2571,13 @@ test = ["click", "pre-commit", "pytest (>=7.0)", "pytest-asyncio (>=0.19.0)", "p
 
 [[package]]
 name = "jupyter-server"
-version = "2.12.1"
+version = "2.12.2"
 description = "The backend—i.e. core services, APIs, and REST endpoints—to Jupyter web applications."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_server-2.12.1-py3-none-any.whl", hash = "sha256:fd030dd7be1ca572e4598203f718df6630c12bd28a599d7f1791c4d7938e1010"},
-    {file = "jupyter_server-2.12.1.tar.gz", hash = "sha256:dc77b7dcc5fc0547acba2b2844f01798008667201eea27c6319ff9257d700a6d"},
+    {file = "jupyter_server-2.12.2-py3-none-any.whl", hash = "sha256:abcfa33f98a959f908c8733aa2d9fa0101d26941cbd49b148f4cef4d3046fc61"},
+    {file = "jupyter_server-2.12.2.tar.gz", hash = "sha256:5eae86be15224b5375cdec0c3542ce72ff20f7a25297a2a8166a250bb455a519"},
 ]
 
 [package.dependencies]
