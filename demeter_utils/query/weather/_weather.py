@@ -4,7 +4,7 @@ from datetime import date
 from typing import Any, List
 
 from demeter.weather.query import get_cell_id, get_daily_weather_types
-from geopandas import GeoDataFrame, GeoSeries
+from geopandas import GeoDataFrame
 from pandas import merge as pd_merge
 from pandas import read_sql
 from pyproj import CRS
@@ -213,7 +213,7 @@ def query_daily_weather(
         )
         return GeoDataFrame(
             df_pivot,
-            geometry=GeoSeries.from_wkt(df_pivot[gdf_sql.geometry.name]),
+            geometry=df_pivot.geometry.name,
             crs=gdf_sql.crs,
         )
         # return pivot_geodataframe(
