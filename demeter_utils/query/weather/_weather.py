@@ -168,7 +168,7 @@ def query_daily_weather(
     df_sql = read_sql(
         sql=stmt,
         # con=conn,
-        con=cursor.conneciton,
+        con=cursor.connection,
         params=args,
         parse_dates=["date", "date_requested"],
     )
