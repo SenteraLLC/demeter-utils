@@ -3,8 +3,6 @@ from typing import Any, Union
 
 from numpy import nan
 
-from demeter_utils.query.demeter._act import get_as_applied
-
 
 def get_applied_fertilizer_until_date_for_field_id(
     cursor: Any,
@@ -22,24 +20,25 @@ def get_applied_fertilizer_until_date_for_field_id(
         nutrient (str): Applied nutrient to consider.
         method (str): Application method to consider; if not given, all methods are considered.
     """
-    # get all fertilizer activity for this `field_id`
-    df_applied_full = get_as_applied(
-        cursor, field_id=field_id, colname_date="date_performed"
-    )
+    pass
+    # # get all fertilizer activity for this `field_id`
+    # df_applied_full = get_as_applied(
+    #     cursor, field_id=field_id, colname_date="date_performed"
+    # )
 
-    # reduce based on end date
-    df_apps = df_applied_full.loc[df_applied_full["date_performed"] < date_limit]
+    # # reduce based on end date
+    # df_apps = df_applied_full.loc[df_applied_full["date_performed"] < date_limit]
 
-    # if no rows left, then return 0
-    if len(df_apps) == 0:
-        return 0
+    # # if no rows left, then return 0
+    # if len(df_apps) == 0:
+    #     return 0
 
-    # filter on nutrient and method (if available)
-    df_apps = df_apps.loc[df_apps["nutrient"] == nutrient]
-    if method is not None:
-        df_apps = df_apps.loc[df_apps["method"] == method]
+    # # filter on nutrient and method (if available)
+    # df_apps = df_apps.loc[df_apps["nutrient"] == nutrient]
+    # if method is not None:
+    #     df_apps = df_apps.loc[df_apps["method"] == method]
 
-    return float(df_apps["rate_lbs_acre"].sum())
+    # return float(df_apps["rate_lbs_acre"].sum())
 
 
 def get_yield_response_to_application(
