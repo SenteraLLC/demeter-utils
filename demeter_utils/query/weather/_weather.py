@@ -80,7 +80,8 @@ def _join_coordinates_to_unique_cell_ids(
 
 
 def query_daily_weather(
-    conn: Any,
+    # conn: Any,
+    cursor: Any,
     coordinate_list: List[Point],
     startdate: date,
     enddate: date,
@@ -115,7 +116,9 @@ def query_daily_weather(
     assert not all((include_metadata is True, wide is True)), msg
 
     df_coords = _join_coordinates_to_unique_cell_ids(
-        conn.connection.cursor(), coordinate_list
+        # conn.connection.cursor(),
+        cursor,
+        coordinate_list,
     )  # uses get_cell_id()
     cell_id_list = (
         df_coords["cell_id"].unique().tolist()
@@ -123,9 +126,10 @@ def query_daily_weather(
     assert all(
         isinstance(c, int) for c in cell_id_list
     ), "`cell_ids` must be passed as a `integer`"
-    df_params = get_daily_weather_types(conn.connection.cursor())[
-        ["weather_type_id", "weather_type"]
-    ]
+    df_params = get_daily_weather_types(
+        # conn.connection.cursor(),
+        cursor
+    )[["weather_type_id", "weather_type"]]
     for p in parameters:
         assert (
             p in df_params["weather_type"].to_list()
@@ -162,7 +166,11 @@ def query_daily_weather(
 
     # TODO: Should we raise a special error if user tries to get daily weather for cell_id that isn't populated?
     df_sql = read_sql(
-        sql=stmt, con=conn, params=args, parse_dates=["date", "date_requested"]
+        sql=stmt,
+        # con=conn,
+        con=cursor.conneciton,
+        params=args,
+        parse_dates=["date", "date_requested"],
     )
 
     # Now that we have data for each cell_id, join back to the input coordinate list and sort.
