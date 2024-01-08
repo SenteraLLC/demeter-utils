@@ -4,8 +4,7 @@ from datetime import date
 from typing import Any, List
 
 from demeter.weather.query import get_cell_id, get_daily_weather_types
-from geo_utils.vector import pivot_geodataframe
-from geopandas import GeoDataFrame
+from geopandas import GeoDataFrame, GeoSeries
 from pandas import merge as pd_merge
 from pandas import read_sql
 from pyproj import CRS
@@ -203,10 +202,24 @@ def query_daily_weather(
         gdf_sql.drop(columns="index", inplace=True)
         return gdf_sql
     else:
-        return pivot_geodataframe(
-            gdf_sql,
-            index=[gdf_sql.geometry.name, "date"],
-            columns="weather_type",
-            values="value",
-            spatial_index="index",
-        ).drop(columns="index")
+        df_pivot = (
+            gdf_sql.pivot(
+                index=[gdf_sql.geometry.name, "date"],
+                columns="weather_type",
+                values="value",
+            )
+            .rename_axis(None, axis=1)
+            .reset_index()
+        )
+        return GeoDataFrame(
+            df_pivot,
+            geometry=GeoSeries.from_wkt(df_pivot[gdf_sql.geometry.name]),
+            crs=gdf_sql.crs,
+        )
+        # return pivot_geodataframe(
+        #     gdf_sql,
+        #     index=[gdf_sql.geometry.name, "date"],
+        #     columns="weather_type",
+        #     values="value",
+        #     spatial_index="index",
+        # ).drop(columns="index")
