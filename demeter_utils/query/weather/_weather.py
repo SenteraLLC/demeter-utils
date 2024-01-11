@@ -210,10 +210,3 @@ def query_daily_weather(
             geometry=df_pivot.geometry.name,
             crs=gdf_sql.crs,
         )
-        # return pivot_geodataframe(
-        #     gdf_sql,
-        #     index=[gdf_sql.geometry.name, "date"],
-        #     columns="weather_type",
-        #     values="value",
-        #     spatial_index="index",
-        # ).drop(columns="index")
