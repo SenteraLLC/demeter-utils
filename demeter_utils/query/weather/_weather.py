@@ -79,7 +79,6 @@ def _join_coordinates_to_unique_cell_ids(
 
 
 def query_daily_weather(
-    # conn: Any,
     cursor: Any,
     coordinate_list: List[Point],
     startdate: date,
@@ -92,7 +91,7 @@ def query_daily_weather(
     Queries the `daily` weather table based on lat/lngs, startdate, enddate, and parameter list.
 
     Args:
-        conn (Connection): Active connection to the database.
+        cursor (Any): Active cursor to the database.
         coordinate_list (List[Point]): Spatial coordinates to query (must be lat/lng/WGS-84).
         startdate (datetime): Start date of the query (inclusive); e.g., `date(2023, 3, 28)`.
         enddate (datetime): End date of the query (inclusive); e.g., `date(2023, 4, 4)`.
@@ -115,7 +114,6 @@ def query_daily_weather(
     assert not all((include_metadata is True, wide is True)), msg
 
     df_coords = _join_coordinates_to_unique_cell_ids(
-        # conn.connection.cursor(),
         cursor,
         coordinate_list,
     )  # uses get_cell_id()
@@ -125,10 +123,7 @@ def query_daily_weather(
     assert all(
         isinstance(c, int) for c in cell_id_list
     ), "`cell_ids` must be passed as a `integer`"
-    df_params = get_daily_weather_types(
-        # conn.connection.cursor(),
-        cursor
-    )[["weather_type_id", "weather_type"]]
+    df_params = get_daily_weather_types(cursor)[["weather_type_id", "weather_type"]]
     for p in parameters:
         assert (
             p in df_params["weather_type"].to_list()
@@ -166,7 +161,6 @@ def query_daily_weather(
     # TODO: Should we raise a special error if user tries to get daily weather for cell_id that isn't populated?
     df_sql = read_sql(
         sql=stmt,
-        # con=conn,
         con=cursor.connection,
         params=args,
         parse_dates=["date", "date_requested"],
